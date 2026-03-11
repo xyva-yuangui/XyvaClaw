@@ -317,7 +317,7 @@ git push origin feature/your-feature
 
 If xyvaClaw helps you, please give it a ⭐! It motivates us to keep improving.
 
-如果 xyvaClaw 对你有帮助，请给个 ⭐ 吧！这是我们持续改进的动力。
+如果 xyvaClaw 对你有帮助，请给个 ⭐ 吧！这是我持续改进的动力。
 
 ---
 
