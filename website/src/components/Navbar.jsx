@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { Github, Menu, X } from 'lucide-react';
+import { Github, Menu, X, Globe } from 'lucide-react';
+import { useLang, t } from '../i18n';
 
 const LINKS = [
-  { label: 'Features', href: '#features' },
-  { label: 'Comparison', href: '#comparison' },
-  { label: 'Skills', href: '#skills' },
-  { label: 'Install', href: '#install' },
-  { label: 'Docs', href: '#docs' },
+  { en: 'Features', zh: '特性', href: '#features' },
+  { en: 'Comparison', zh: '对比', href: '#comparison' },
+  { en: 'Skills', zh: '技能', href: '#skills' },
+  { en: 'Install', zh: '安装', href: '#install' },
+  { en: 'Architecture', zh: '架构', href: '#docs' },
 ];
 
 export default function Navbar() {
+  const { lang, toggle } = useLang();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
 
@@ -43,9 +45,19 @@ export default function Navbar() {
               href={l.href}
               className="text-sm text-gray-400 hover:text-white transition"
             >
-              {l.label}
+              {t(lang, l.zh, l.en)}
             </a>
           ))}
+
+          <button
+            onClick={toggle}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-sm text-gray-400 hover:bg-white/10 hover:text-white transition"
+            title={t(lang, 'Switch to English', '切换到中文')}
+          >
+            <Globe size={14} />
+            {lang === 'zh' ? 'EN' : '中文'}
+          </button>
+
           <a
             href="https://github.com/xyva-yuangui/XyvaClaw"
             target="_blank"
@@ -57,12 +69,20 @@ export default function Navbar() {
           </a>
         </div>
 
-        <button
-          onClick={() => setOpen(!open)}
-          className="md:hidden text-gray-400 hover:text-white"
-        >
-          {open ? <X size={24} /> : <Menu size={24} />}
-        </button>
+        <div className="flex items-center gap-3 md:hidden">
+          <button
+            onClick={toggle}
+            className="text-sm text-gray-400 hover:text-white px-2 py-1 rounded bg-white/5"
+          >
+            {lang === 'zh' ? 'EN' : '中文'}
+          </button>
+          <button
+            onClick={() => setOpen(!open)}
+            className="text-gray-400 hover:text-white"
+          >
+            {open ? <X size={24} /> : <Menu size={24} />}
+          </button>
+        </div>
       </div>
 
       {open && (
@@ -74,7 +94,7 @@ export default function Navbar() {
               onClick={() => setOpen(false)}
               className="block text-gray-400 hover:text-white py-1"
             >
-              {l.label}
+              {t(lang, l.zh, l.en)}
             </a>
           ))}
         </div>

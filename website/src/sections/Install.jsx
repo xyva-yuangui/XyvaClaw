@@ -1,16 +1,18 @@
 import React, { useState } from 'react';
 import { Copy, Check, Terminal, Monitor, Server } from 'lucide-react';
+import { useLang, t } from '../i18n';
 
 export default function Install() {
+  const { lang } = useLang();
   const [tab, setTab] = useState('mac');
   const [copied, setCopied] = useState(false);
 
   const commands = {
     mac: `git clone https://github.com/xyva-yuangui/XyvaClaw.git
-cd xyvaclaw
+cd XyvaClaw
 bash xyvaclaw-setup.sh`,
     linux: `git clone https://github.com/xyva-yuangui/XyvaClaw.git
-cd xyvaclaw
+cd XyvaClaw
 bash xyvaclaw-setup-linux.sh`,
   };
 
@@ -21,12 +23,12 @@ bash xyvaclaw-setup-linux.sh`,
   };
 
   const steps = [
-    { icon: '✅', text: 'Check & install dependencies (Node.js 22+, Python 3, ffmpeg)' },
-    { icon: '📦', text: 'Install OpenClaw runtime via npm' },
-    { icon: '🌐', text: 'Launch Web Setup Wizard — configure API keys in browser' },
-    { icon: '🚀', text: 'Deploy configs, skills (38), and extensions (Feishu + Lossless-Claw)' },
-    { icon: '🔧', text: 'Generate identity files from templates' },
-    { icon: '⚙️', text: 'Register system service — auto-start on boot' },
+    { icon: '✅', en: 'Check & install dependencies (Node.js 22+, Python 3, ffmpeg)', zh: '检测并安装依赖（Node.js 22+、Python 3、ffmpeg）' },
+    { icon: '📦', en: 'Install OpenClaw runtime via npm', zh: '通过 npm 安装 OpenClaw 运行时' },
+    { icon: '🌐', en: 'Launch Web Setup Wizard — configure API keys in browser', zh: '启动 Web 配置向导 — 在浏览器中配置 API Key' },
+    { icon: '🚀', en: 'Deploy configs, skills (38), and extensions (Feishu + Lossless-Claw)', zh: '部署配置、技能（38 个）和扩展（飞书 + 无损引擎）' },
+    { icon: '🔧', en: 'Generate identity files from templates', zh: '从模板生成身份文件' },
+    { icon: '⚙️', en: 'Register system service — auto-start on boot', zh: '注册系统服务 — 开机自启' },
   ];
 
   return (
@@ -34,10 +36,10 @@ bash xyvaclaw-setup-linux.sh`,
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-16">
           <h2 className="text-3xl sm:text-5xl font-bold mb-4">
-            <span className="gradient-text">Two minutes</span> to launch.
+            <span className="gradient-text">{t(lang, '两分钟', 'Two minutes')}</span> {t(lang, '完成部署。', 'to launch.')}
           </h2>
           <p className="text-gray-400 text-lg">
-            两分钟完成部署，浏览器中完成配置
+            {t(lang, '一条命令部署，浏览器中完成配置', 'One command to deploy, configure in browser')}
           </p>
         </div>
 
@@ -101,7 +103,7 @@ bash xyvaclaw-setup-linux.sh`,
         {/* Steps */}
         <div className="mt-12">
           <h3 className="text-lg font-semibold text-gray-300 mb-6 text-center">
-            The installer handles everything:
+            {t(lang, '安装器自动完成以下步骤：', 'The installer handles everything:')}
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {steps.map((step, i) => (
@@ -110,7 +112,7 @@ bash xyvaclaw-setup-linux.sh`,
                 className="flex items-start gap-3 p-4 rounded-xl bg-white/[0.02] border border-white/5"
               >
                 <span className="text-lg mt-0.5">{step.icon}</span>
-                <span className="text-sm text-gray-400">{step.text}</span>
+                <span className="text-sm text-gray-400">{t(lang, step.zh, step.en)}</span>
               </div>
             ))}
           </div>
@@ -119,11 +121,11 @@ bash xyvaclaw-setup-linux.sh`,
         {/* Requirements */}
         <div className="mt-10 text-center">
           <p className="text-sm text-gray-500">
-            <strong className="text-gray-400">Requirements:</strong>{' '}
-            Node.js 22+ · Python 3.10+ · At least one API key (
+            <strong className="text-gray-400">{t(lang, '环境要求：', 'Requirements: ')}</strong>
+            Node.js 22+ · Python 3.10+ · {t(lang, '至少一个 API Key（', 'At least one API key (')}
             <a href="https://platform.deepseek.com/api_keys" target="_blank" rel="noopener noreferrer" className="text-brand-400 hover:text-brand-300">DeepSeek</a>{' '}
-            or{' '}
-            <a href="https://bailian.console.aliyun.com/" target="_blank" rel="noopener noreferrer" className="text-brand-400 hover:text-brand-300">Bailian</a>
+            {t(lang, '或', 'or')}{' '}
+            <a href="https://bailian.console.aliyun.com/" target="_blank" rel="noopener noreferrer" className="text-brand-400 hover:text-brand-300">{t(lang, '百炼', 'Bailian')}</a>
             )
           </p>
         </div>
