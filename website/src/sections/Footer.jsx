@@ -34,7 +34,7 @@ export default function Footer() {
       </div>
 
       {/* Links */}
-      <div className="max-w-7xl mx-auto px-6 pb-12 grid grid-cols-2 sm:grid-cols-4 gap-8 text-sm">
+      <div className="max-w-7xl mx-auto px-6 pb-12 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-8 text-sm">
         <div>
           <h4 className="font-semibold text-gray-300 mb-3">{t(lang, '产品', 'Product')}</h4>
           <ul className="space-y-2">
@@ -59,6 +59,21 @@ export default function Footer() {
             <li><a href="https://github.com/xyva-yuangui/XyvaClaw" className="text-gray-500 hover:text-gray-300 transition">GitHub</a></li>
             <li><a href="https://github.com/xyva-yuangui/XyvaClaw/issues" className="text-gray-500 hover:text-gray-300 transition">Issues</a></li>
             <li><a href="https://github.com/xyva-yuangui/XyvaClaw/discussions" className="text-gray-500 hover:text-gray-300 transition">{t(lang, '讨论', 'Discussions')}</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 className="font-semibold text-gray-300 mb-3">{t(lang, '联系我们', 'Contact')}</h4>
+          <ul className="space-y-2">
+            <li className="text-gray-500">
+              <span className="text-gray-400 font-medium">{t(lang, 'QQ 群', 'QQ Group')}</span>
+              <br />
+              <span className="text-brand-400/80 font-mono text-xs select-all">1087471835</span>
+            </li>
+            <li className="text-gray-500">
+              <span className="text-gray-400 font-medium">{t(lang, 'QQ 号', 'QQ')}</span>
+              <br />
+              <span className="text-brand-400/80 font-mono text-xs select-all">1693721627</span>
+            </li>
           </ul>
         </div>
         <div>

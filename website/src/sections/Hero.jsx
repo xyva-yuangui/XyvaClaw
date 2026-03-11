@@ -34,15 +34,26 @@ export default function Hero() {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.1 }}
-          className="text-5xl sm:text-6xl lg:text-8xl font-black tracking-tight leading-[1.1] mb-6"
+          className={`font-black tracking-tight leading-[1.05] mb-6 ${
+            lang === 'zh'
+              ? 'text-6xl sm:text-7xl lg:text-[7rem]'
+              : 'text-5xl sm:text-6xl lg:text-8xl'
+          }`}
         >
-          <span className="gradient-text">
-            {t(lang, '你的 AI', 'Your AI')}
-          </span>
-          <br />
-          <span className="text-white">
-            {t(lang, '会进化', 'That Evolves')}
-          </span>
+          {lang === 'zh' ? (
+            <>
+              <span className="text-white">你的 </span>
+              <span className="gradient-text">AI</span>
+              <br />
+              <span className="text-white">会进化</span>
+            </>
+          ) : (
+            <>
+              <span className="gradient-text">Your AI</span>
+              <br />
+              <span className="text-white">That Evolves</span>
+            </>
+          )}
         </motion.h1>
 
         <motion.p
