@@ -4,7 +4,7 @@ import { Copy, Check, ArrowRight, Star } from 'lucide-react';
 
 export default function Hero() {
   const [copied, setCopied] = useState(false);
-  const cmd = 'git clone https://github.com/YOUR_USERNAME/xyvaclaw.git && cd xyvaclaw && bash xyvaclaw-setup.sh';
+  const cmd = 'git clone https://github.com/xyva-yuangui/XyvaClaw.git && cd xyvaclaw && bash xyvaclaw-setup.sh';
 
   const handleCopy = () => {
     navigator.clipboard.writeText(cmd);
@@ -89,14 +89,14 @@ export default function Hero() {
           className="flex flex-col sm:flex-row items-center justify-center gap-4"
         >
           <a
-            href="https://github.com/YOUR_USERNAME/xyvaclaw"
+            href="https://github.com/xyva-yuangui/XyvaClaw"
             className="group flex items-center gap-2 px-8 py-3.5 bg-brand-600 hover:bg-brand-500 text-white rounded-xl font-semibold text-lg transition shadow-lg shadow-brand-600/25 hover:shadow-brand-500/40"
           >
             Get Started
             <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
           </a>
           <a
-            href="https://github.com/YOUR_USERNAME/xyvaclaw"
+            href="https://github.com/xyva-yuangui/XyvaClaw"
             className="group flex items-center gap-2 px-8 py-3.5 bg-white/5 hover:bg-white/10 border border-white/10 text-gray-300 hover:text-white rounded-xl font-medium text-lg transition"
           >
             <Star size={18} />

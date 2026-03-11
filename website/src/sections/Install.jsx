@@ -6,10 +6,10 @@ export default function Install() {
   const [copied, setCopied] = useState(false);
 
   const commands = {
-    mac: `git clone https://github.com/YOUR_USERNAME/xyvaclaw.git
+    mac: `git clone https://github.com/xyva-yuangui/XyvaClaw.git
 cd xyvaclaw
 bash xyvaclaw-setup.sh`,
-    linux: `git clone https://github.com/YOUR_USERNAME/xyvaclaw.git
+    linux: `git clone https://github.com/xyva-yuangui/XyvaClaw.git
 cd xyvaclaw
 bash xyvaclaw-setup-linux.sh`,
   };

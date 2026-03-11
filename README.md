@@ -18,7 +18,7 @@
 
 ---
 
-<img src="https://raw.githubusercontent.com/YOUR_USERNAME/xyvaclaw/main/docs/assets/wizard-preview.png" alt="xyvaClaw Setup Wizard" width="700">
+<img src="https://raw.githubusercontent.com/xyva-yuangui/XyvaClaw/main/docs/assets/wizard-preview.png" alt="xyvaClaw Setup Wizard" width="700">
 
 </div>
 
@@ -135,14 +135,14 @@ xyvaClaw 是基于 [OpenClaw](https://github.com/nicepkg/openclaw) 运行时**�
 
 ### macOS
 ```bash
-git clone https://github.com/YOUR_USERNAME/xyvaclaw.git
+git clone https://github.com/xyva-yuangui/XyvaClaw.git
 cd xyvaclaw
 bash xyvaclaw-setup.sh
 ```
 
 ### Linux (Ubuntu/Debian/CentOS)
 ```bash
-git clone https://github.com/YOUR_USERNAME/xyvaclaw.git
+git clone https://github.com/xyva-yuangui/XyvaClaw.git
 cd xyvaclaw
 bash xyvaclaw-setup-linux.sh
 ```
@@ -292,7 +292,7 @@ Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for gui
 
 ```bash
 # Fork → Clone → Branch → Code → PR
-git clone https://github.com/YOUR_USERNAME/xyvaclaw.git
+git clone https://github.com/xyva-yuangui/XyvaClaw.git
 cd xyvaclaw
 git checkout -b feature/your-feature
 # Make changes

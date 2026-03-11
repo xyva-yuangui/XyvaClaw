@@ -32,7 +32,7 @@
 用户安装流程：
 ```bash
 # 方式1: git clone
-git clone https://github.com/YOUR_USERNAME/xyvaclaw.git
+git clone https://github.com/xyva-yuangui/XyvaClaw.git
 cd xyvaclaw && bash xyvaclaw-setup.sh
 
 # 方式2: 下载 Release

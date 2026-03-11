@@ -15,14 +15,14 @@ export default function Footer() {
         </p>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           <a
-            href="https://github.com/YOUR_USERNAME/xyvaclaw"
+            href="https://github.com/xyva-yuangui/XyvaClaw"
             className="group flex items-center gap-2 px-8 py-3.5 bg-brand-600 hover:bg-brand-500 text-white rounded-xl font-semibold text-lg transition shadow-lg shadow-brand-600/25"
           >
             <Github size={20} />
             Clone from GitHub
           </a>
           <a
-            href="https://github.com/YOUR_USERNAME/xyvaclaw/releases"
+            href="https://github.com/xyva-yuangui/XyvaClaw/releases"
             className="flex items-center gap-2 px-8 py-3.5 bg-white/5 hover:bg-white/10 border border-white/10 text-gray-300 hover:text-white rounded-xl font-medium text-lg transition"
           >
             Download Release
@@ -44,18 +44,18 @@ export default function Footer() {
         <div>
           <h4 className="font-semibold text-gray-300 mb-3">Documentation</h4>
           <ul className="space-y-2">
-            <li><a href="https://github.com/YOUR_USERNAME/xyvaclaw/blob/main/docs/API-KEYS-GUIDE.md" className="text-gray-500 hover:text-gray-300 transition">API Keys Guide</a></li>
-            <li><a href="https://github.com/YOUR_USERNAME/xyvaclaw/blob/main/docs/FEISHU-SETUP.md" className="text-gray-500 hover:text-gray-300 transition">Feishu Setup</a></li>
-            <li><a href="https://github.com/YOUR_USERNAME/xyvaclaw/blob/main/docs/FAQ.md" className="text-gray-500 hover:text-gray-300 transition">FAQ</a></li>
-            <li><a href="https://github.com/YOUR_USERNAME/xyvaclaw/blob/main/docs/PRODUCT-INTRODUCTION.md" className="text-gray-500 hover:text-gray-300 transition">Product Intro</a></li>
+            <li><a href="https://github.com/xyva-yuangui/XyvaClaw/blob/main/docs/API-KEYS-GUIDE.md" className="text-gray-500 hover:text-gray-300 transition">API Keys Guide</a></li>
+            <li><a href="https://github.com/xyva-yuangui/XyvaClaw/blob/main/docs/FEISHU-SETUP.md" className="text-gray-500 hover:text-gray-300 transition">Feishu Setup</a></li>
+            <li><a href="https://github.com/xyva-yuangui/XyvaClaw/blob/main/docs/FAQ.md" className="text-gray-500 hover:text-gray-300 transition">FAQ</a></li>
+            <li><a href="https://github.com/xyva-yuangui/XyvaClaw/blob/main/docs/PRODUCT-INTRODUCTION.md" className="text-gray-500 hover:text-gray-300 transition">Product Intro</a></li>
           </ul>
         </div>
         <div>
           <h4 className="font-semibold text-gray-300 mb-3">Community</h4>
           <ul className="space-y-2">
-            <li><a href="https://github.com/YOUR_USERNAME/xyvaclaw" className="text-gray-500 hover:text-gray-300 transition">GitHub</a></li>
-            <li><a href="https://github.com/YOUR_USERNAME/xyvaclaw/issues" className="text-gray-500 hover:text-gray-300 transition">Issues</a></li>
-            <li><a href="https://github.com/YOUR_USERNAME/xyvaclaw/discussions" className="text-gray-500 hover:text-gray-300 transition">Discussions</a></li>
+            <li><a href="https://github.com/xyva-yuangui/XyvaClaw" className="text-gray-500 hover:text-gray-300 transition">GitHub</a></li>
+            <li><a href="https://github.com/xyva-yuangui/XyvaClaw/issues" className="text-gray-500 hover:text-gray-300 transition">Issues</a></li>
+            <li><a href="https://github.com/xyva-yuangui/XyvaClaw/discussions" className="text-gray-500 hover:text-gray-300 transition">Discussions</a></li>
           </ul>
         </div>
         <div>
