@@ -79,7 +79,7 @@ python3 quick_report.py
 
 编辑图表生成脚本：
 ```bash
-vim /Users/momo/.openclaw/workspace/output/generate_charts.py
+vim ~/.xyvaclaw/workspace/output/generate_charts.py
 ```
 
 可以：
@@ -112,7 +112,7 @@ vim /Users/momo/.openclaw/workspace/output/generate_charts.py
 ├── quick_report.py       # 快速生成脚本
 └── generate_ai_manju_report.py  # AI 漫剧报告专用
 
-/Users/momo/.openclaw/workspace/output/
+~/.xyvaclaw/workspace/output/
 ├── generate_charts.py    # 图表生成脚本
 ├── chart_market_size.png  # 市场规模图
 ├── chart_age_distribution.png  # 年龄分布图

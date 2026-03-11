@@ -54,7 +54,7 @@ Use the bundled script to capture + upload + send in one step:
 node {baseDir}/scripts/capture-and-send.mjs
 
 # Capture and send to specific chat
-node {baseDir}/scripts/capture-and-send.mjs --chat "oc_bb11ddeb722729367b17cbd179a189b4"
+node {baseDir}/scripts/capture-and-send.mjs --chat "__GROUP_ID__"
 
 # Send an existing image file
 node {baseDir}/scripts/capture-and-send.mjs --file /path/to/image.png

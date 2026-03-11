@@ -2,7 +2,7 @@
   "providers": {
     "bailian": {
       "baseUrl": "https://coding.dashscope.aliyuncs.com/v1",
-      "apiKey": "sk-sp-0e18bc017d6748c985ac273e47701224",
+      "apiKey": "__API_KEY__",
       "api": "openai-completions",
       "models": [
         {

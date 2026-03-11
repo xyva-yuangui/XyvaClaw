@@ -6,7 +6,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-JOBS_FILE = Path("/Users/momo/.openclaw/cron/jobs.json")
+JOBS_FILE = Path("~/.xyvaclaw/cron/jobs.json")
 
 
 def shell(cmd: list[str]) -> tuple[int, str]:

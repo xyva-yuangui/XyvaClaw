@@ -14,7 +14,7 @@ import json
 from pathlib import Path
 
 # 添加路径
-sys.path.insert(0, '/Users/momo/.openclaw/workspace/output')
+sys.path.insert(0, '~/.xyvaclaw/workspace/output')
 
 def generate_charts():
     """生成所有图表"""
@@ -24,7 +24,7 @@ def generate_charts():
     import subprocess
     result = subprocess.run([
         sys.executable,
-        '/Users/momo/.openclaw/workspace/output/generate_charts.py'
+        '~/.xyvaclaw/workspace/output/generate_charts.py'
     ], capture_output=True, text=True)
     
     if result.returncode == 0:

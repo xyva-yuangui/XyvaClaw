@@ -13,7 +13,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { basename, resolve } from "node:path";
 import { parseArgs } from "node:util";
 
-const DEFAULT_CHAT = "oc_bb11ddeb722729367b17cbd179a189b4";
+const DEFAULT_CHAT = "__GROUP_ID__";
 
 const { values: args } = parseArgs({
   options: {

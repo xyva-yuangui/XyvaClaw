@@ -1,6 +1,6 @@
 #!/bin/bash
 # OpenClaw gateway health check script
-# Recommended cron: */10 * * * * /Users/momo/.openclaw/scripts/health-check.sh
+# Recommended cron: */10 * * * * ~/.xyvaclaw/scripts/health-check.sh
 
 LOG_FILE="$HOME/.openclaw/logs/healthcheck.log"
 GATEWAY_PORT=18789

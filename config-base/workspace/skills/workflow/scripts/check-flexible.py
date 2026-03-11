@@ -112,7 +112,7 @@ def test_example_with_fallback():
             print("  ✅ 示例工作流运行成功")
             
             # 检查输出文件
-            output_dir = Path("/Users/momo/.openclaw/workspace/skills/output/reports")
+            output_dir = Path("~/.xyvaclaw/workspace/skills/output/reports")
             if output_dir.exists():
                 reports = list(output_dir.glob("daily_report_*.md"))
                 if reports:

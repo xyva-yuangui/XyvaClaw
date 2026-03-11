@@ -1,9 +1,0 @@
-{"ts":"2026-03-03T01:22:38.679Z","task_id":"task_20260303012238_35ab60","event":"TASK_CREATED","state":"COLLECTING","operator":"momo"}
-{"ts":"2026-03-03T01:22:49.164Z","task_id":"task_20260303012238_35ab60","event":"INGEST_SCREENSHOTS","operator":"momo","count":1}
-{"ts":"2026-03-03T01:22:49.164Z","task_id":"task_20260303012238_35ab60","event":"AUTO_COLLECT","operator":"momo","jobs":1,"files":1}
-{"ts":"2026-03-03T01:23:44.340Z","task_id":"task_20260303012238_35ab60","event":"INGEST_SCREENSHOTS","operator":"momo","count":1}
-{"ts":"2026-03-03T01:23:44.340Z","task_id":"task_20260303012238_35ab60","event":"AUTO_COLLECT","operator":"momo","jobs":1,"files":1}
-{"ts":"2026-03-03T01:23:44.921Z","task_id":"task_20260303012238_35ab60","event":"EXTRACT_OFFERS","operator":"momo","count":1}
-{"ts":"2026-03-03T01:23:44.921Z","task_id":"task_20260303012238_35ab60","event":"OCR_EXTRACT","operator":"momo","count":1}
-{"ts":"2026-03-03T01:23:44.921Z","task_id":"task_20260303012238_35ab60","event":"RANK_OFFERS","operator":"momo","recommended_offer_id":"ocr_2"}
-{"ts":"2026-03-03T01:23:44.922Z","task_id":"task_20260303012238_35ab60","event":"BUILD_CHECKOUT_DRAFT","operator":"momo","offer_id":"ocr_2"}

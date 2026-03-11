@@ -22,7 +22,7 @@ def main():
     result = subprocess.run(
         [
             sys.executable,
-            '/Users/momo/.openclaw/workspace/skills/feishu-doc-extended/generate_ai_manju_report.py',
+            '~/.xyvaclaw/workspace/skills/feishu-doc-extended/generate_ai_manju_report.py',
         ]
     )
     return result.returncode == 0

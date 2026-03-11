@@ -21,12 +21,12 @@
     "deepseek:default": {
       "type": "api_key",
       "provider": "deepseek",
-      "key": "sk-7ce67ca108b44f7f88eb1f922022ca73"
+      "key": "__API_KEY__"
     },
     "bailian:default": {
       "type": "api_key",
       "provider": "bailian",
-      "key": "sk-sp-0e18bc017d6748c985ac273e47701224"
+      "key": "__API_KEY__"
     }
   },
   "usageStats": {

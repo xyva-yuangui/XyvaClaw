@@ -14,7 +14,7 @@
 ### 2. 手动运行
 
 ```bash
-cd /Users/momo/.openclaw/workspace/skills/workflow/examples/daily-stock-report
+cd ~/.xyvaclaw/workspace/skills/workflow/examples/daily-stock-report
 ./run.sh --manual
 ```
 
@@ -26,7 +26,7 @@ cd /Users/momo/.openclaw/workspace/skills/workflow/examples/daily-stock-report
 {
   "type": "systemEvent",
   "handler": "main",
-  "command": "bash /Users/momo/.openclaw/workspace/skills/workflow/examples/daily-stock-report/run.sh",
+  "command": "bash ~/.xyvaclaw/workspace/skills/workflow/examples/daily-stock-report/run.sh",
   "schedule": "09:00",
   "days": ["monday", "tuesday", "wednesday", "thursday", "friday"],
   "timezone": "Asia/Shanghai",

@@ -36,7 +36,7 @@ updated: 2026-03-11
 
 ### 输出格式
 - PNG 高清图片（300dpi）
-- 保存到 `/Users/momo/.openclaw/output/charts/`
+- 保存到 `~/.xyvaclaw/output/charts/`
 
 ## 使用方法
 

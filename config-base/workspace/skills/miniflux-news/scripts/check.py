@@ -11,7 +11,7 @@ def check_config():
     """检查配置"""
     config_paths = [
         os.path.expanduser("~/.config/clawdbot/miniflux-news.json"),
-        "/Users/momo/.config/clawdbot/miniflux-news.json"
+        "~/.config/clawdbot/miniflux-news.json"
     ]
     
     env_url = os.environ.get("MINIFLUX_URL")

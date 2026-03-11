@@ -135,7 +135,7 @@ def build_config_base(source_dir, output_dir):
             shutil.copy2(f, dst_config / f.name)
             print(f"   -> {f.name}")
 
-    print(f"[3/8] 复制 agents/ (去除 sessions)...")
+    print(f"[3/8] 复制 agents/ (去除 sessions, 脱敏 JSON)...")
     src_agents = source / 'agents'
     dst_agents = output / 'agents'
     if src_agents.exists():
@@ -146,7 +146,15 @@ def build_config_base(source_dir, output_dir):
                     dst_agent = dst_agents / agent_dir.name / 'agent'
                     dst_agent.mkdir(parents=True, exist_ok=True)
                     for f in agent_conf.glob('*.json'):
-                        shutil.copy2(f, dst_agent / f.name)
+                        # Sanitize agent JSON files too
+                        try:
+                            agent_data = json.loads(f.read_text())
+                            agent_data = sanitize_obj(agent_data)
+                            (dst_agent / f.name).write_text(
+                                json.dumps(agent_data, indent=2, ensure_ascii=False) + '\n'
+                            )
+                        except (json.JSONDecodeError, UnicodeDecodeError):
+                            shutil.copy2(f, dst_agent / f.name)
                         print(f"   -> agents/{agent_dir.name}/agent/{f.name}")
 
     print(f"[4/8] 复制 extensions/...")
@@ -196,7 +204,8 @@ def build_config_base(source_dir, output_dir):
                     skill_dir, dst_skill,
                     ignore=shutil.ignore_patterns(
                         'node_modules', '__pycache__', '.venv',
-                        '*.pyc', '.DS_Store', 'output', '.cache'
+                        '*.pyc', '.DS_Store', 'output', '.cache',
+                        'runtime', 'sessions', 'TEST-RESULTS-*',
                     ),
                     dirs_exist_ok=True
                 )
@@ -220,6 +229,28 @@ def build_config_base(source_dir, output_dir):
             if f.is_file():
                 shutil.copy2(f, dst_comp / f.name)
                 print(f"   -> completions/{f.name}")
+
+    # [9/8] Post-process: replace hardcoded home paths in all text files
+    print(f"[9/8] 替换硬编码路径...")
+    home_dir = str(Path.home())
+    username = Path.home().name
+    TEXT_EXTS = {'.py', '.sh', '.md', '.mjs', '.json', '.ts', '.yaml', '.yml', '.txt'}
+    replaced_count = 0
+    for fpath in output.rglob('*'):
+        if fpath.is_file() and fpath.suffix in TEXT_EXTS:
+            try:
+                content = fpath.read_text(errors='replace')
+                original = content
+                # Replace specific paths first, then generic
+                content = content.replace(f'{home_dir}/.openclaw', '~/.xyvaclaw')
+                content = content.replace(f'{home_dir}/.config/clawdbot', '~/.config/clawdbot')
+                content = content.replace(home_dir, '~')
+                if content != original:
+                    fpath.write_text(content)
+                    replaced_count += 1
+            except Exception:
+                pass
+    print(f"   -> {replaced_count} 个文件中的路径已替换")
 
     print("\n=============================")
     print("Done! config-base is ready.")

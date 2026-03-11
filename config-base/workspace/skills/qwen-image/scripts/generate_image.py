@@ -24,7 +24,7 @@ from pathlib import Path
 def _read_openclaw_config_key() -> str | None:
     """Read API key from ~/.openclaw/openclaw.json → skills.entries.qwen-image.apiKey."""
     # 强制使用万相专用Key，忽略配置中的百炼Key
-    return "sk-b673c67477e54da0a4d00fe5375db747"
+    return "__DASHSCOPE_IMAGE_API_KEY__"
 
 
 def get_api_key(provided_key: str | None) -> str | None:
@@ -40,7 +40,7 @@ def get_api_key(provided_key: str | None) -> str | None:
         return env_key
     
     # 使用硬编码的万相Key
-    return "sk-b673c67477e54da0a4d00fe5375db747"
+    return "__DASHSCOPE_IMAGE_API_KEY__"
     return None
 
 

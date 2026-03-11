@@ -106,7 +106,7 @@ generator.send_to_group("📄 完整报告：https://feishu.cn/docx/xxx")
 
 ## 📊 图表生成
 
-图表脚本：`/Users/momo/.openclaw/workspace/output/generate_charts.py`
+图表脚本：`~/.xyvaclaw/workspace/output/generate_charts.py`
 
 生成的图表：
 1. `chart_market_size.png` - 市场规模对比

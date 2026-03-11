@@ -1,7 +1,0 @@
-{"ts":"2026-03-02T14:54:57.758Z","task_id":"task_20260302145457_aa7cb6","event":"TASK_CREATED","state":"COLLECTING","operator":"momo"}
-{"ts":"2026-03-02T14:55:03.626Z","task_id":"task_20260302145457_aa7cb6","event":"TASK_ADVANCED","state":"ANALYZING","operator":"momo"}
-{"ts":"2026-03-02T14:55:03.658Z","task_id":"task_20260302145457_aa7cb6","event":"TASK_ADVANCED","state":"RANKED","operator":"momo"}
-{"ts":"2026-03-02T14:55:03.686Z","task_id":"task_20260302145457_aa7cb6","event":"TASK_ADVANCED","state":"DRAFT_READY","operator":"momo"}
-{"ts":"2026-03-02T14:55:03.714Z","task_id":"task_20260302145457_aa7cb6","event":"TASK_ADVANCED","state":"WAIT_CONFIRM_SUBMIT","operator":"momo"}
-{"ts":"2026-03-02T14:55:07.658Z","task_id":"task_20260302145457_aa7cb6","event":"CONFIRM_SUBMIT","operator":"momo"}
-{"ts":"2026-03-02T14:55:07.686Z","task_id":"task_20260302145457_aa7cb6","event":"CONFIRM_PAY","operator":"momo"}

@@ -126,4 +126,4 @@ playwright install
 
 ## 输出目录
 
-截图和输出文件保存到：`/Users/momo/.openclaw/output/browser/`
+截图和输出文件保存到：`~/.xyvaclaw/output/browser/`

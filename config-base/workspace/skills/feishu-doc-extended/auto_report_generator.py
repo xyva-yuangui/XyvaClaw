@@ -30,16 +30,16 @@ class AutoReportGenerator:
         """生成所有图表"""
         print("📊 生成图表...")
         
-        chart_script = '/Users/momo/.openclaw/workspace/output/generate_charts.py'
+        chart_script = '~/.xyvaclaw/workspace/output/generate_charts.py'
         result = subprocess.run([sys.executable, chart_script], 
                               capture_output=True, text=True)
         
         if result.returncode == 0:
             self.charts = [
-                '/Users/momo/.openclaw/workspace/output/chart_market_size.png',
-                '/Users/momo/.openclaw/workspace/output/chart_age_distribution.png',
-                '/Users/momo/.openclaw/workspace/output/chart_revenue_model.png',
-                '/Users/momo/.openclaw/workspace/output/chart_cost_comparison.png'
+                '~/.xyvaclaw/workspace/output/chart_market_size.png',
+                '~/.xyvaclaw/workspace/output/chart_age_distribution.png',
+                '~/.xyvaclaw/workspace/output/chart_revenue_model.png',
+                '~/.xyvaclaw/workspace/output/chart_cost_comparison.png'
             ]
             print(f"✅ 生成 {len(self.charts)} 张图表")
             return True
@@ -103,7 +103,7 @@ class AutoReportGenerator:
 - 2026 预测：240-243 亿元
 - 增长率：+45%
 
-![市场规模对比](file:///Users/momo/.openclaw/workspace/output/chart_market_size.png)
+![市场规模对比](file://~/.xyvaclaw/workspace/output/chart_market_size.png)
 
 ---
 
@@ -114,7 +114,7 @@ class AutoReportGenerator:
 **31-40 岁（23%）**：历史悬疑，付费高  
 **40+ 岁（28%）**：传统题材，付费中
 
-![年龄分布](file:///Users/momo/.openclaw/workspace/output/chart_age_distribution.png)
+![年龄分布](file://~/.xyvaclaw/workspace/output/chart_age_distribution.png)
 
 ---
 
@@ -124,7 +124,7 @@ class AutoReportGenerator:
 **IAP（内购）**：25%  
 **会员分账**：15%
 
-![变现模式](file:///Users/momo/.openclaw/workspace/output/chart_revenue_model.png)
+![变现模式](file://~/.xyvaclaw/workspace/output/chart_revenue_model.png)
 
 ---
 
@@ -134,7 +134,7 @@ class AutoReportGenerator:
 **演员成本**：节约 100%  
 **总成本**：5-10 万 → 1-2 万/分钟
 
-![成本对比](file:///Users/momo/.openclaw/workspace/output/chart_cost_comparison.png)
+![成本对比](file://~/.xyvaclaw/workspace/output/chart_cost_comparison.png)
 
 ---
 

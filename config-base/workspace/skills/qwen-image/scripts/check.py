@@ -5,7 +5,7 @@ import os
 from pathlib import Path
 
 # 使用绝对路径
-base_dir = Path("/Users/momo/.openclaw/workspace/skills/qwen-image")
+base_dir = Path("~/.xyvaclaw/workspace/skills/qwen-image")
 
 # 检查脚本是否存在
 script_path = base_dir / "scripts" / "generate_image.py"

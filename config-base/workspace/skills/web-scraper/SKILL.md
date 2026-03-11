@@ -35,8 +35,8 @@ updated: 2026-03-11
 
 ### 输出格式
 - JSON 结构化数据
-- 保存到 `/Users/momo/.openclaw/output/scraping/`
-- 会话保存到 `/Users/momo/.openclaw/sessions/web-scraper/`
+- 保存到 `~/.xyvaclaw/output/scraping/`
+- 会话保存到 `~/.xyvaclaw/sessions/web-scraper/`
 
 ## 使用方法
 

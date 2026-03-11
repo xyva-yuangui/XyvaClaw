@@ -48,7 +48,7 @@ The agent can send messages directly via Feishu channel tools. For formatted mes
 
 # Template-based sending
 python3 {baseDir}/scripts/send_message.py \
-  --chat "oc_bb11ddeb722729367b17cbd179a189b4" \
+  --chat "__GROUP_ID__" \
   --template "daily-report" \
   --vars '{"date": "2026-03-02", "summary": "完成5项任务"}'
 ```
@@ -60,13 +60,13 @@ Combine with screenshot-sender:
 ```bash
 # Capture and send screenshot
 node ~/.openclaw/workspace/skills/screenshot-sender/scripts/capture-and-send.mjs \
-  --chat "oc_bb11ddeb722729367b17cbd179a189b4" \
+  --chat "__GROUP_ID__" \
   --caption "当前屏幕截图"
 
 # Send existing image
 node ~/.openclaw/workspace/skills/screenshot-sender/scripts/capture-and-send.mjs \
   --file /path/to/image.png \
-  --chat "oc_bb11ddeb722729367b17cbd179a189b4"
+  --chat "__GROUP_ID__"
 ```
 
 ## 3. Interactive Card Format
@@ -146,13 +146,13 @@ python3 {baseDir}/scripts/send_message.py --list-templates
 
 # Send with template
 python3 {baseDir}/scripts/send_message.py \
-  --chat "oc_bb11ddeb722729367b17cbd179a189b4" \
+  --chat "__GROUP_ID__" \
   --template "daily-report" \
   --vars '{"date": "2026-03-02", "completed": "- 修复截图\n- 清理skills", "issues": "无", "plan": "开发新skill"}'
 
 # Send raw text
 python3 {baseDir}/scripts/send_message.py \
-  --chat "oc_bb11ddeb722729367b17cbd179a189b4" \
+  --chat "__GROUP_ID__" \
   --text "这是一条测试消息"
 ```
 

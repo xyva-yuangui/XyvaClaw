@@ -1,6 +1,6 @@
 #!/bin/bash
 # OpenClaw log rotation script
-# Recommended cron: 0 4 * * * /Users/momo/.openclaw/scripts/log-rotate.sh
+# Recommended cron: 0 4 * * * ~/.xyvaclaw/scripts/log-rotate.sh
 
 LOG_DIR="$HOME/.openclaw/logs"
 MAX_SIZE_MB=50

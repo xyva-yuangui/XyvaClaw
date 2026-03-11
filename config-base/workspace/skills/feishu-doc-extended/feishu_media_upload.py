@@ -469,7 +469,7 @@ def test_upload():
     uploader = FeishuMediaUploader()
     
     # 测试图片
-    image_path = '/Users/momo/.openclaw/workspace/output/chart_market_size.png'
+    image_path = '~/.xyvaclaw/workspace/output/chart_market_size.png'
     image_key = uploader.upload_image(image_path)
     
     if image_key:
