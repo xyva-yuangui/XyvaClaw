@@ -26,16 +26,16 @@ node scripts/feishu_agent_runtime.mjs create \
   --type flight \
   --query '{"from":"SHA","to":"SZX","date":"2026-03-10"}' \
   --platforms feizhu,qunar,ctrip,meituan \
-  --operator momo
+  --operator __YOUR_NAME__
 ```
 
 ### 2) 推进状态到待提交确认
 
 ```bash
-node scripts/feishu_agent_runtime.mjs advance --operator momo
-node scripts/feishu_agent_runtime.mjs advance --operator momo
-node scripts/feishu_agent_runtime.mjs advance --operator momo
-node scripts/feishu_agent_runtime.mjs advance --operator momo
+node scripts/feishu_agent_runtime.mjs advance --operator __YOUR_NAME__
+node scripts/feishu_agent_runtime.mjs advance --operator __YOUR_NAME__
+node scripts/feishu_agent_runtime.mjs advance --operator __YOUR_NAME__
+node scripts/feishu_agent_runtime.mjs advance --operator __YOUR_NAME__
 ```
 
 ### 2.1 自动采集 + 自动比价（推荐）
@@ -48,7 +48,7 @@ node scripts/feishu_agent_runtime.mjs auto-compare \
   --item-selector '.item-card' \
   --scroll-count 3 \
   --wait 3000 \
-  --operator momo
+  --operator __YOUR_NAME__
 
 # 仅查看“选中商品”的图片与价格（不是整页）
 node scripts/feishu_agent_runtime.mjs selected --task task_xxx
@@ -60,7 +60,7 @@ node scripts/feishu_agent_runtime.mjs selected --task task_xxx
 node scripts/feishu_agent_runtime.mjs ingest \
   --task task_xxx \
   --files '/tmp/ctrip_1.png,/tmp/qunar_1.png' \
-  --operator momo
+  --operator __YOUR_NAME__
 
 # 自动采集截图（通过 browser-pilot）并自动入库 evidence
 node scripts/feishu_agent_runtime.mjs collect \
@@ -68,33 +68,33 @@ node scripts/feishu_agent_runtime.mjs collect \
   --urls '[{"source":"ctrip","url":"https://flights.ctrip.com"},{"source":"qunar","url":"https://flight.qunar.com"}]' \
   --wait 3000 \
   --full-page \
-  --operator momo
+  --operator __YOUR_NAME__
 
 node scripts/feishu_agent_runtime.mjs extract \
   --task task_xxx \
   --offers '[{"offer_id":"o1","source":"ctrip","final_price":1280},{"offer_id":"o2","source":"qunar","final_price":1250}]' \
-  --operator momo
+  --operator __YOUR_NAME__
 
-node scripts/feishu_agent_runtime.mjs rank --task task_xxx --operator momo
-node scripts/feishu_agent_runtime.mjs draft --task task_xxx --offer o2 --operator momo
+node scripts/feishu_agent_runtime.mjs rank --task task_xxx --operator __YOUR_NAME__
+node scripts/feishu_agent_runtime.mjs draft --task task_xxx --offer o2 --operator __YOUR_NAME__
 
 # 使用截图 sidecar 自动提取报价（可替代 extract）
-node scripts/feishu_agent_runtime.mjs ocr-extract --task task_xxx --operator momo
+node scripts/feishu_agent_runtime.mjs ocr-extract --task task_xxx --operator __YOUR_NAME__
 ```
 
 ### 3) 飞书文本命令（兜底）
 
 ```bash
-node scripts/feishu_agent_runtime.mjs cmd --text 'CONFIRM_SUBMIT task_xxx' --operator momo
-node scripts/feishu_agent_runtime.mjs cmd --text 'CONFIRM_PAY task_xxx' --operator momo
-node scripts/feishu_agent_runtime.mjs cmd --text 'ABORT task_xxx' --operator momo
+node scripts/feishu_agent_runtime.mjs cmd --text 'CONFIRM_SUBMIT task_xxx' --operator __YOUR_NAME__
+node scripts/feishu_agent_runtime.mjs cmd --text 'CONFIRM_PAY task_xxx' --operator __YOUR_NAME__
+node scripts/feishu_agent_runtime.mjs cmd --text 'ABORT task_xxx' --operator __YOUR_NAME__
 ```
 
 ### 3.1 支付前最终校验
 
 ```bash
-node scripts/feishu_agent_runtime.mjs risk-check --task task_xxx --operator momo
-node scripts/feishu_agent_runtime.mjs final-check --task task_xxx --operator momo
+node scripts/feishu_agent_runtime.mjs risk-check --task task_xxx --operator __YOUR_NAME__
+node scripts/feishu_agent_runtime.mjs final-check --task task_xxx --operator __YOUR_NAME__
 ```
 
 ### 4) 查看当前任务

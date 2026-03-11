@@ -230,11 +230,28 @@ def build_config_base(source_dir, output_dir):
                 shutil.copy2(f, dst_comp / f.name)
                 print(f"   -> completions/{f.name}")
 
-    # [9/8] Post-process: replace hardcoded home paths in all text files
-    print(f"[9/8] 替换硬编码路径...")
+    # [9/8] Post-process: replace hardcoded paths, private URLs, personal names
+    print(f"[9/8] 替换硬编码路径和个人信息...")
     home_dir = str(Path.home())
     username = Path.home().name
     TEXT_EXTS = {'.py', '.sh', '.md', '.mjs', '.json', '.ts', '.yaml', '.yml', '.txt'}
+
+    # Private URLs to replace (add your own private service URLs here)
+    PRIVATE_URL_REPLACEMENTS = {
+        'http://lianghua.nanyangqiankun.top': '__TUSHARE_HTTP_URL__',
+    }
+
+    # Personal names/identifiers to replace
+    PERSONAL_NAME_REPLACEMENTS = {
+        '老贾': 'AI助手',
+    }
+
+    # Username in operator contexts
+    OPERATOR_REPLACEMENTS = {
+        f'--operator {username}': '--operator __YOUR_NAME__',
+        f'"{username}"': '"__YOUR_NAME__"',
+    }
+
     replaced_count = 0
     for fpath in output.rglob('*'):
         if fpath.is_file() and fpath.suffix in TEXT_EXTS:
@@ -245,12 +262,21 @@ def build_config_base(source_dir, output_dir):
                 content = content.replace(f'{home_dir}/.openclaw', '~/.xyvaclaw')
                 content = content.replace(f'{home_dir}/.config/clawdbot', '~/.config/clawdbot')
                 content = content.replace(home_dir, '~')
+                # Replace private URLs
+                for url, placeholder in PRIVATE_URL_REPLACEMENTS.items():
+                    content = content.replace(url, placeholder)
+                # Replace personal names
+                for name, replacement in PERSONAL_NAME_REPLACEMENTS.items():
+                    content = content.replace(name, replacement)
+                # Replace operator usernames
+                for pattern, replacement in OPERATOR_REPLACEMENTS.items():
+                    content = content.replace(pattern, replacement)
                 if content != original:
                     fpath.write_text(content)
                     replaced_count += 1
             except Exception:
                 pass
-    print(f"   -> {replaced_count} 个文件中的路径已替换")
+    print(f"   -> {replaced_count} 个文件中的路径/个人信息已替换")
 
     print("\n=============================")
     print("Done! config-base is ready.")

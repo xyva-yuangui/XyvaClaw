@@ -101,7 +101,7 @@ osascript -e 'tell application "Safari" to activate'
 osascript -e 'display notification "消息内容" with title "标题" subtitle "副标题" sound name "default"'
 
 # Notification with custom sound
-osascript -e 'display notification "提醒" with title "老贾提醒" sound name "Glass"'
+osascript -e 'display notification "提醒" with title "AI助手提醒" sound name "Glass"'
 ```
 
 ## 4. Clipboard

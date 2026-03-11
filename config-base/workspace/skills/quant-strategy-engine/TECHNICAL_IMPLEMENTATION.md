@@ -44,7 +44,7 @@ class DataFetcher:
         self.token = "a2bd39d0aa6e6cd26729e7e3a6cddccb85b255ca0a9da996150191a9f14b"
         self.pro = ts.pro_api(self.token)
         self.pro._DataApi__token = self.token
-        self.pro._DataApi__http_url = 'http://lianghua.nanyangqiankun.top'
+        self.pro._DataApi__http_url = '__TUSHARE_HTTP_URL__'
         
         # mootdx 配置
         from mootdx.quotes import Quotes

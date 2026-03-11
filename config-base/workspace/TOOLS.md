@@ -3,7 +3,7 @@
 > 详细参数和代码示例见 `playbooks/tools-reference.md`
 
 ## Tushare
-- 私有网关: `http://lianghua.nanyangqiankun.top`
+- 私有网关: `__TUSHARE_HTTP_URL__`
 - 代码格式: `000001.SZ`(深) / `600519.SH`(沪)
 - 分析前必做: 交易日确认(`trade_cal`) → 停牌检查 → 空值检查 → 复权(默认qfq)
 

@@ -66,7 +66,7 @@ def prev_trading_day(d: date = None) -> date:
 
 # Tushare configuration
 TUSHARE_TOKEN = "a2bd39d0aa6e6cd26729e7e3a6cddccb85b255ca0a9da996150191a9f14b"
-TUSHARE_URL = "http://lianghua.nanyangqiankun.top"
+TUSHARE_URL = "__TUSHARE_HTTP_URL__"
 
 def _try_tushare():
     """Try importing tushare."""
