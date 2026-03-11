@@ -14,6 +14,11 @@
 
 **一键部署。自我进化。38+ 技能。五级模型容灾。飞书深度集成。**
 
+**作者：圆规（Xyva-yuangui）**
+
+**交流讨论：Q群：1087471835**
+
+
 [English](#-english) · [中文](#-中文) · [Quick Start](#-quick-start) · [Skills](#-skills-38) · [Docs](docs/)
 
 ---
