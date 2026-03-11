@@ -1,0 +1,6 @@
+{
+  "slug": "vision-reader",
+  "name": "Vision Reader",
+  "version": "1.0.0",
+  "description": "Read and understand image content using vision-capable AI models or OCR. Use when the user asks to read/analyze an image, extract text from a screenshot, understand what's in a photo, do OCR on a document, or needs visual content interpreted. Supports local images and URLs."
+}

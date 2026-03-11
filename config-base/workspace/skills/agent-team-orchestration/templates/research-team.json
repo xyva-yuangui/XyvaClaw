@@ -1,0 +1,98 @@
+{
+  "name": "研究团队",
+  "description": "分析师 + 验证员，用于深度研究和信息验证",
+  "version": "1.0.0",
+  "roles": [
+    {
+      "name": "分析师",
+      "description": "负责信息收集、初步分析、报告撰写",
+      "skills": [
+        "auto-researcher",
+        "web-scraper",
+        "data-analyst-1.0.0",
+        "content-creator"
+      ],
+      "responsibilities": [
+        "多源信息采集",
+        "数据清洗和整理",
+        "初步分析报告",
+        "图表制作"
+      ],
+      "model": "qwen3.5-plus",
+      "temperature": 0.7
+    },
+    {
+      "name": "验证员",
+      "description": "负责交叉验证、质量检查、风险评估",
+      "skills": [
+        "ddg-search",
+        "multi-search-engine",
+        "security-auditor",
+        "code-review"
+      ],
+      "responsibilities": [
+        "信息来源验证",
+        "数据交叉验证",
+        "逻辑一致性检查",
+        "风险评估"
+      ],
+      "model": "qwen3-max",
+      "temperature": 0.3
+    }
+  ],
+  "workflow": {
+    "steps": [
+      {
+        "step": 1,
+        "role": "分析师",
+        "task": "需求分析和信息采集",
+        "output": "原始数据集合 + 来源清单"
+      },
+      {
+        "step": 2,
+        "role": "验证员",
+        "task": "信息验证和交叉检查",
+        "output": "验证报告（含置信度）"
+      },
+      {
+        "step": 3,
+        "role": "分析师",
+        "task": "深度分析和报告撰写",
+        "output": "分析报告初稿"
+      },
+      {
+        "step": 4,
+        "role": "验证员",
+        "task": "质量审查和最终确认",
+        "output": "最终报告 + 置信度评估"
+      }
+    ],
+    "handoff_protocol": {
+      "format": "json",
+      "required_fields": [
+        "task_id",
+        "from_role",
+        "to_role",
+        "artifacts",
+        "notes",
+        "confidence_level"
+      ]
+    }
+  },
+  "communication": {
+    "channel": "team_chat",
+    "notification": "on_handoff",
+    "escalation": "on_conflict"
+  },
+  "quality_gates": {
+    "min_confidence": "medium",
+    "require_cross_validation": true,
+    "require_sources": true
+  },
+  "example_tasks": [
+    "分析 A 股市场趋势",
+    "竞品调研报告",
+    "行业深度研究",
+    "政策影响分析"
+  ]
+}

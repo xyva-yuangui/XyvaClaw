@@ -1,0 +1,2 @@
+{"ts":"2026-03-02T14:55:13.637Z","task_id":"task_20260302145513_86ef61","event":"TASK_CREATED","state":"COLLECTING","operator":"momo"}
+{"ts":"2026-03-02T14:55:13.666Z","task_id":"task_20260302145513_86ef61","event":"ABORT","operator":"momo","reason":"feishu_text_command"}

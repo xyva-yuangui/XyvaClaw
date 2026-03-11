@@ -1,0 +1,74 @@
+{
+  "task_id": "task_20260303002503_5f6f49",
+  "task_type": "shop",
+  "query": {
+    "keyword": "iPhone 15"
+  },
+  "platforms": [
+    "taobao",
+    "jd"
+  ],
+  "note": "",
+  "created_by": "momo",
+  "created_at": "2026-03-03T00:25:03.916Z",
+  "updated_at": "2026-03-03T01:22:34.489Z",
+  "state": "ABORTED",
+  "execution": {
+    "confirm_submit": false,
+    "confirm_pay": false,
+    "abort": true
+  },
+  "evidence": [
+    {
+      "evidence_id": "ev_49c2673c",
+      "file": "/Users/momo/.openclaw/workspace/skills/commerce-travel-shopper/runtime_sample_ocr.png",
+      "captured_at": "2026-03-03T00:25:09.851Z"
+    }
+  ],
+  "offers": [
+    {
+      "offer_id": "ocr_1",
+      "source": "ctrip",
+      "base_price": 0,
+      "tax_fee": 0,
+      "coupon": 0,
+      "final_price": 899,
+      "policy_text": "携程 酒店总价 899 可免费取消 房量充足",
+      "inventory_hint": "in_stock",
+      "evidence_id": "ev_49c2673c",
+      "captured_at": "2026-03-03T00:25:09.851Z"
+    }
+  ],
+  "ranking": {
+    "recommended_offer_id": null,
+    "reason": [],
+    "ranked_offer_ids": []
+  },
+  "checkout_draft": null,
+  "audit": [
+    {
+      "ts": "2026-03-03T00:25:09.851Z",
+      "action": "INGEST_SCREENSHOTS",
+      "operator": "momo",
+      "count": 1
+    },
+    {
+      "ts": "2026-03-03T00:25:09.882Z",
+      "action": "EXTRACT_OFFERS",
+      "operator": "momo",
+      "count": 1
+    },
+    {
+      "ts": "2026-03-03T00:25:09.883Z",
+      "action": "OCR_EXTRACT",
+      "operator": "momo",
+      "count": 1
+    },
+    {
+      "ts": "2026-03-03T01:22:34.489Z",
+      "action": "ABORT",
+      "operator": "momo",
+      "reason": "feishu_text_command"
+    }
+  ]
+}

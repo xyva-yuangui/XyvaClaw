@@ -1,0 +1,5 @@
+{"ts":"2026-03-03T00:25:03.916Z","task_id":"task_20260303002503_5f6f49","event":"TASK_CREATED","state":"COLLECTING","operator":"momo"}
+{"ts":"2026-03-03T00:25:09.853Z","task_id":"task_20260303002503_5f6f49","event":"INGEST_SCREENSHOTS","operator":"momo","count":1}
+{"ts":"2026-03-03T00:25:09.883Z","task_id":"task_20260303002503_5f6f49","event":"EXTRACT_OFFERS","operator":"momo","count":1}
+{"ts":"2026-03-03T00:25:09.883Z","task_id":"task_20260303002503_5f6f49","event":"OCR_EXTRACT","operator":"momo","count":1}
+{"ts":"2026-03-03T01:22:34.490Z","task_id":"task_20260303002503_5f6f49","event":"ABORT","operator":"momo","reason":"feishu_text_command"}

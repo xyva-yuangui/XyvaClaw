@@ -1,0 +1,12 @@
+{"ts":"2026-03-02T15:32:17.399Z","task_id":"task_20260302153217_592751","event":"TASK_CREATED","state":"COLLECTING","operator":"momo"}
+{"ts":"2026-03-02T15:32:26.816Z","task_id":"task_20260302153217_592751","event":"INGEST_SCREENSHOTS","operator":"momo","count":1}
+{"ts":"2026-03-02T15:32:26.848Z","task_id":"task_20260302153217_592751","event":"EXTRACT_OFFERS","operator":"momo","count":1}
+{"ts":"2026-03-02T15:32:26.849Z","task_id":"task_20260302153217_592751","event":"OCR_EXTRACT","operator":"momo","count":1}
+{"ts":"2026-03-02T15:32:26.880Z","task_id":"task_20260302153217_592751","event":"RANK_OFFERS","operator":"momo","recommended_offer_id":"ocr_1"}
+{"ts":"2026-03-02T15:32:26.911Z","task_id":"task_20260302153217_592751","event":"BUILD_CHECKOUT_DRAFT","operator":"momo","offer_id":"ocr_1"}
+{"ts":"2026-03-02T15:32:26.941Z","task_id":"task_20260302153217_592751","event":"CONFIRM_SUBMIT","operator":"momo"}
+{"ts":"2026-03-02T15:32:26.971Z","task_id":"task_20260302153217_592751","event":"RISK_CHECK","operator":"momo","pass":true,"reasons":[]}
+{"ts":"2026-03-02T15:32:27.001Z","task_id":"task_20260302153217_592751","event":"RISK_CHECK","operator":"momo","pass":true,"reasons":[]}
+{"ts":"2026-03-02T15:32:27.001Z","task_id":"task_20260302153217_592751","event":"FINAL_CHECK","operator":"momo","pass":true,"expected_price":899}
+{"ts":"2026-03-02T15:32:27.032Z","task_id":"task_20260302153217_592751","event":"RISK_CHECK","operator":"momo","pass":true,"reasons":[]}
+{"ts":"2026-03-02T15:32:27.032Z","task_id":"task_20260302153217_592751","event":"CONFIRM_PAY","operator":"momo"}

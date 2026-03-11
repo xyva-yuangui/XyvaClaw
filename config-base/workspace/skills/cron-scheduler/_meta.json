@@ -1,0 +1,8 @@
+{
+  "ownerId": "local-openclaw",
+  "slug": "cron-scheduler",
+  "version": "1.0.0",
+  "publishedAt": 1773162000000,
+  "name": "Cron Scheduler",
+  "description": "Natural-language-friendly cron management for OpenClaw. Create/list/enable/disable/run/audit cron jobs via thin CLI wrappers."
+}

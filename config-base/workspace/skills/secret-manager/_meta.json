@@ -1,0 +1,8 @@
+{
+  "ownerId": "kn7byy3h5e1mtfmhptqafescvd80q1bm",
+  "slug": "secret-manager",
+  "version": "1.0.0",
+  "publishedAt": 1770481536762,
+  "name": "Secret Manager",
+  "description": "Manage API keys securely via system keyring (macOS Keychain / GNOME Keyring) and inject them into OpenClaw config."
+}

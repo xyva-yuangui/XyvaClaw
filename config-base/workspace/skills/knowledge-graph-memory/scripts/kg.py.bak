@@ -1,0 +1,567 @@
+#!/usr/bin/env python3
+"""
+Knowledge Graph Memory — SQLite-based entity-relation graph for OpenClaw.
+Supports: ingest, query, path, neighbors, reinforce, decay, prune, merge, stats, --check.
+"""
+
+import argparse
+import hashlib
+import json
+import math
+import os
+import sqlite3
+import sys
+from datetime import datetime, timedelta
+from pathlib import Path
+
+DEFAULT_DB = os.path.expanduser("~/.openclaw/memory/knowledge-graph.sqlite")
+DEFAULT_CONFIG = os.path.expanduser(
+    "~/.openclaw/workspace/skills/knowledge-graph-memory/graph-config.yaml"
+)
+DECAY_LAMBDA = 0.01  # ~230-day half-life
+
+
+# ── database ────────────────────────────────────────────────────────────────
+
+def get_db(db_path: str = DEFAULT_DB) -> sqlite3.Connection:
+    os.makedirs(os.path.dirname(db_path), exist_ok=True)
+    conn = sqlite3.connect(db_path)
+    conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA journal_mode=WAL")
+    conn.execute("PRAGMA foreign_keys=ON")
+    _init_schema(conn)
+    return conn
+
+
+def _init_schema(conn: sqlite3.Connection):
+    conn.executescript("""
+        CREATE TABLE IF NOT EXISTS entities (
+            id TEXT PRIMARY KEY,
+            name TEXT NOT NULL,
+            type TEXT NOT NULL,
+            properties TEXT DEFAULT '{}',
+            confidence REAL DEFAULT 1.0,
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL,
+            access_count INTEGER DEFAULT 0,
+            decay_score REAL DEFAULT 1.0
+        );
+        CREATE INDEX IF NOT EXISTS idx_entities_name ON entities(name);
+        CREATE INDEX IF NOT EXISTS idx_entities_type ON entities(type);
+
+        CREATE TABLE IF NOT EXISTS relations (
+            id TEXT PRIMARY KEY,
+            source_id TEXT NOT NULL REFERENCES entities(id) ON DELETE CASCADE,
+            target_id TEXT NOT NULL REFERENCES entities(id) ON DELETE CASCADE,
+            type TEXT NOT NULL,
+            properties TEXT DEFAULT '{}',
+            weight REAL DEFAULT 1.0,
+            evidence TEXT,
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL
+        );
+        CREATE INDEX IF NOT EXISTS idx_rel_source ON relations(source_id);
+        CREATE INDEX IF NOT EXISTS idx_rel_target ON relations(target_id);
+        CREATE INDEX IF NOT EXISTS idx_rel_type ON relations(type);
+
+        CREATE TABLE IF NOT EXISTS fragments (
+            id TEXT PRIMARY KEY,
+            content TEXT NOT NULL,
+            source TEXT,
+            source_id TEXT,
+            entities TEXT DEFAULT '[]',
+            created_at TEXT NOT NULL
+        );
+    """)
+    conn.commit()
+
+
+# ── helpers ─────────────────────────────────────────────────────────────────
+
+def _uid(prefix: str, name: str) -> str:
+    return f"{prefix}_{hashlib.sha256(name.encode()).hexdigest()[:12]}"
+
+
+def _now() -> str:
+    return datetime.now().isoformat(timespec="seconds")
+
+
+def _json_dumps(obj) -> str:
+    return json.dumps(obj, ensure_ascii=False)
+
+
+# ── CRUD: entities ──────────────────────────────────────────────────────────
+
+def upsert_entity(conn, name: str, etype: str, properties: dict | None = None,
+                  confidence: float = 1.0) -> str:
+    eid = _uid("e", f"{etype}:{name}")
+    now = _now()
+    existing = conn.execute("SELECT id FROM entities WHERE id=?", (eid,)).fetchone()
+    if existing:
+        conn.execute("""
+            UPDATE entities SET updated_at=?, access_count=access_count+1,
+                   decay_score=1.0, confidence=MAX(confidence,?)
+            WHERE id=?
+        """, (now, confidence, eid))
+    else:
+        conn.execute("""
+            INSERT INTO entities (id, name, type, properties, confidence, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        """, (eid, name, etype, _json_dumps(properties or {}), confidence, now, now))
+    conn.commit()
+    return eid
+
+
+def get_entity(conn, name: str = None, eid: str = None) -> dict | None:
+    if eid:
+        row = conn.execute("SELECT * FROM entities WHERE id=?", (eid,)).fetchone()
+    elif name:
+        row = conn.execute(
+            "SELECT * FROM entities WHERE name=? COLLATE NOCASE", (name,)
+        ).fetchone()
+    else:
+        return None
+    if row:
+        # bump access
+        conn.execute(
+            "UPDATE entities SET access_count=access_count+1, updated_at=? WHERE id=?",
+            (_now(), row["id"]),
+        )
+        conn.commit()
+        return dict(row)
+    return None
+
+
+# ── CRUD: relations ─────────────────────────────────────────────────────────
+
+def add_relation(conn, source_id: str, target_id: str, rtype: str,
+                 weight: float = 1.0, evidence: str = None, properties: dict | None = None) -> str:
+    rid = _uid("r", f"{source_id}:{rtype}:{target_id}")
+    now = _now()
+    existing = conn.execute("SELECT id FROM relations WHERE id=?", (rid,)).fetchone()
+    if existing:
+        conn.execute("""
+            UPDATE relations SET weight=weight+0.1, updated_at=?, evidence=COALESCE(?,evidence)
+            WHERE id=?
+        """, (now, evidence, rid))
+    else:
+        conn.execute("""
+            INSERT INTO relations (id, source_id, target_id, type, properties, weight, evidence, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (rid, source_id, target_id, rtype, _json_dumps(properties or {}), weight, evidence, now, now))
+    conn.commit()
+    return rid
+
+
+# ── ingest ──────────────────────────────────────────────────────────────────
+
+def ingest_text(conn, text: str, source: str = "manual") -> dict:
+    """Simple rule-based entity/relation extraction. Returns summary."""
+    # For a production system, this would call an LLM. Here we do keyword-based extraction.
+    entities_found = []
+    relations_found = []
+
+    # Simple heuristic: extract quoted terms and capitalized phrases as entities
+    import re
+    # Chinese entity patterns: 《xxx》 or 「xxx」
+    for m in re.finditer(r'[《「]([^》」]+)[》」]', text):
+        eid = upsert_entity(conn, m.group(1), "concept")
+        entities_found.append({"name": m.group(1), "type": "concept", "id": eid})
+
+    # Detect patterns like "X是Y的Z" or "X使用Y"
+    for m in re.finditer(r'(\S{2,8})(?:是|为)(\S{2,8})的(\S{2,8})', text):
+        subj, obj, role = m.group(1), m.group(2), m.group(3)
+        sid = upsert_entity(conn, subj, "person")
+        oid = upsert_entity(conn, obj, "company")
+        rid = add_relation(conn, sid, oid, role, evidence=text[:200])
+        entities_found.extend([
+            {"name": subj, "type": "person", "id": sid},
+            {"name": obj, "type": "company", "id": oid},
+        ])
+        relations_found.append({"source": subj, "target": obj, "type": role, "id": rid})
+
+    for m in re.finditer(r'(\S{2,8})(?:使用|用|采用)(\S{2,8})', text):
+        subj, obj = m.group(1), m.group(2)
+        sid = upsert_entity(conn, subj, "concept")
+        oid = upsert_entity(conn, obj, "tool")
+        rid = add_relation(conn, sid, oid, "uses", evidence=text[:200])
+        entities_found.extend([
+            {"name": subj, "type": "concept", "id": sid},
+            {"name": obj, "type": "tool", "id": oid},
+        ])
+        relations_found.append({"source": subj, "target": obj, "type": "uses", "id": rid})
+
+    # Store fragment
+    fid = _uid("f", text[:100])
+    entity_ids = list({e["id"] for e in entities_found})
+    conn.execute("""
+        INSERT OR REPLACE INTO fragments (id, content, source, entities, created_at)
+        VALUES (?, ?, ?, ?, ?)
+    """, (fid, text, source, _json_dumps(entity_ids), _now()))
+    conn.commit()
+
+    return {
+        "entities_extracted": len(entities_found),
+        "relations_extracted": len(relations_found),
+        "fragment_id": fid,
+        "entities": entities_found,
+        "relations": relations_found,
+    }
+
+
+def ingest_file(conn, filepath: str) -> dict:
+    with open(filepath, "r", encoding="utf-8") as f:
+        text = f.read()
+    return ingest_text(conn, text, source=f"file:{filepath}")
+
+
+# ── query ───────────────────────────────────────────────────────────────────
+
+def query_entity(conn, name: str) -> dict | None:
+    ent = get_entity(conn, name=name)
+    if not ent:
+        return None
+    # get relations
+    rels_out = conn.execute("""
+        SELECT r.*, e.name as target_name FROM relations r
+        JOIN entities e ON r.target_id=e.id WHERE r.source_id=?
+    """, (ent["id"],)).fetchall()
+    rels_in = conn.execute("""
+        SELECT r.*, e.name as source_name FROM relations r
+        JOIN entities e ON r.source_id=e.id WHERE r.target_id=?
+    """, (ent["id"],)).fetchall()
+    return {
+        "entity": dict(ent),
+        "outgoing": [dict(r) for r in rels_out],
+        "incoming": [dict(r) for r in rels_in],
+    }
+
+
+def query_relation(conn, name: str, rtype: str) -> list:
+    ent = get_entity(conn, name=name)
+    if not ent:
+        return []
+    rows = conn.execute("""
+        SELECT r.*, e.name as target_name FROM relations r
+        JOIN entities e ON r.target_id=e.id
+        WHERE r.source_id=? AND r.type=?
+    """, (ent["id"], rtype)).fetchall()
+    return [dict(r) for r in rows]
+
+
+def find_path(conn, from_name: str, to_name: str, max_depth: int = 4) -> list | None:
+    """BFS shortest path between two entities."""
+    e_from = get_entity(conn, name=from_name)
+    e_to = get_entity(conn, name=to_name)
+    if not e_from or not e_to:
+        return None
+
+    visited = {e_from["id"]}
+    queue = [(e_from["id"], [e_from["name"]])]
+
+    for _ in range(max_depth):
+        next_queue = []
+        for eid, path in queue:
+            neighbors = conn.execute("""
+                SELECT r.type, r.target_id, e.name FROM relations r
+                JOIN entities e ON r.target_id=e.id WHERE r.source_id=?
+                UNION
+                SELECT r.type, r.source_id, e.name FROM relations r
+                JOIN entities e ON r.source_id=e.id WHERE r.target_id=?
+            """, (eid, eid)).fetchall()
+            for rel_type, nid, nname in neighbors:
+                if nid == e_to["id"]:
+                    return path + [f"--{rel_type}-->", nname]
+                if nid not in visited:
+                    visited.add(nid)
+                    next_queue.append((nid, path + [f"--{rel_type}-->", nname]))
+        queue = next_queue
+    return None
+
+
+def get_neighbors(conn, name: str, depth: int = 1) -> dict:
+    ent = get_entity(conn, name=name)
+    if not ent:
+        return {"error": f"Entity '{name}' not found"}
+
+    result = {"center": ent["name"], "neighbors": []}
+    visited = {ent["id"]}
+    current_layer = [ent["id"]]
+
+    for d in range(depth):
+        next_layer = []
+        for eid in current_layer:
+            rows = conn.execute("""
+                SELECT r.type as rel_type, e.id, e.name, e.type as etype, 'out' as direction
+                FROM relations r JOIN entities e ON r.target_id=e.id WHERE r.source_id=?
+                UNION
+                SELECT r.type as rel_type, e.id, e.name, e.type as etype, 'in' as direction
+                FROM relations r JOIN entities e ON r.source_id=e.id WHERE r.target_id=?
+            """, (eid, eid)).fetchall()
+            for row in rows:
+                if row["id"] not in visited:
+                    visited.add(row["id"])
+                    next_layer.append(row["id"])
+                    result["neighbors"].append({
+                        "name": row["name"],
+                        "type": row["etype"],
+                        "relation": row["rel_type"],
+                        "direction": row["direction"],
+                        "depth": d + 1,
+                    })
+        current_layer = next_layer
+    return result
+
+
+# ── reinforce / decay / prune ───────────────────────────────────────────────
+
+def reinforce(conn, name: str, reason: str = ""):
+    ent = get_entity(conn, name=name)
+    if not ent:
+        print(json.dumps({"error": f"Entity '{name}' not found"}))
+        return
+    conn.execute("""
+        UPDATE entities SET decay_score=1.0, access_count=access_count+1, updated_at=?
+        WHERE id=?
+    """, (_now(), ent["id"]))
+    conn.commit()
+    print(json.dumps({"reinforced": name, "reason": reason, "new_decay_score": 1.0}))
+
+
+def run_decay(conn, lam: float = DECAY_LAMBDA):
+    now = datetime.now()
+    rows = conn.execute("SELECT id, updated_at, decay_score FROM entities").fetchall()
+    updated = 0
+    for row in rows:
+        last = datetime.fromisoformat(row["updated_at"])
+        days = (now - last).total_seconds() / 86400
+        new_score = row["decay_score"] * math.exp(-lam * days)
+        conn.execute("UPDATE entities SET decay_score=? WHERE id=?", (round(new_score, 6), row["id"]))
+        updated += 1
+    conn.commit()
+    print(json.dumps({"decayed_entities": updated, "lambda": lam}))
+
+
+def prune(conn, threshold: float = 0.05):
+    rows = conn.execute(
+        "SELECT id, name, decay_score FROM entities WHERE decay_score < ?", (threshold,)
+    ).fetchall()
+    pruned = []
+    for row in rows:
+        conn.execute("DELETE FROM entities WHERE id=?", (row["id"],))
+        pruned.append({"name": row["name"], "decay_score": row["decay_score"]})
+    conn.commit()
+    print(json.dumps({"pruned": len(pruned), "entities": pruned}))
+
+
+# ── merge / dedup ───────────────────────────────────────────────────────────
+
+def find_duplicates(conn) -> list:
+    rows = conn.execute("""
+        SELECT name, COUNT(*) as cnt FROM entities
+        GROUP BY LOWER(name) HAVING cnt > 1
+    """).fetchall()
+    return [dict(r) for r in rows]
+
+
+def merge_entities(conn, keep_id: str, remove_id: str):
+    # Reassign relations
+    conn.execute("UPDATE relations SET source_id=? WHERE source_id=?", (keep_id, remove_id))
+    conn.execute("UPDATE relations SET target_id=? WHERE target_id=?", (keep_id, remove_id))
+    conn.execute("DELETE FROM entities WHERE id=?", (remove_id,))
+    conn.commit()
+
+
+# ── stats ───────────────────────────────────────────────────────────────────
+
+def stats(conn) -> dict:
+    e_count = conn.execute("SELECT COUNT(*) FROM entities").fetchone()[0]
+    r_count = conn.execute("SELECT COUNT(*) FROM relations").fetchone()[0]
+    f_count = conn.execute("SELECT COUNT(*) FROM fragments").fetchone()[0]
+    avg_decay = conn.execute("SELECT AVG(decay_score) FROM entities").fetchone()[0] or 0
+
+    type_dist = conn.execute(
+        "SELECT type, COUNT(*) as cnt FROM entities GROUP BY type ORDER BY cnt DESC"
+    ).fetchall()
+
+    most_connected = conn.execute("""
+        SELECT e.name, (
+            (SELECT COUNT(*) FROM relations WHERE source_id=e.id) +
+            (SELECT COUNT(*) FROM relations WHERE target_id=e.id)
+        ) as connections
+        FROM entities e ORDER BY connections DESC LIMIT 5
+    """).fetchall()
+
+    most_accessed = conn.execute(
+        "SELECT name, access_count FROM entities ORDER BY access_count DESC LIMIT 5"
+    ).fetchall()
+
+    return {
+        "entities": e_count,
+        "relations": r_count,
+        "fragments": f_count,
+        "avg_decay_score": round(avg_decay, 4),
+        "type_distribution": {r["type"]: r["cnt"] for r in type_dist},
+        "most_connected": [{"name": r["name"], "connections": r[1]} for r in most_connected],
+        "most_accessed": [{"name": r["name"], "access_count": r["access_count"]} for r in most_accessed],
+    }
+
+
+# ── health check ────────────────────────────────────────────────────────────
+
+def health_check(db_path: str = DEFAULT_DB) -> dict:
+    checks = []
+
+    # Check SQLite writable
+    try:
+        conn = get_db(db_path)
+        conn.execute("SELECT 1")
+        checks.append({"name": "sqlite_db", "type": "file", "status": "ok", "path": db_path})
+    except Exception as e:
+        checks.append({"name": "sqlite_db", "type": "file", "status": "fail", "message": str(e)})
+        return _check_result(checks)
+
+    # Check entity count
+    s = stats(conn)
+    checks.append({
+        "name": "data",
+        "type": "env",
+        "status": "ok",
+        "message": f"{s['entities']} entities, {s['relations']} relations, {s['fragments']} fragments",
+    })
+
+    conn.close()
+    return _check_result(checks)
+
+
+def _check_result(checks: list) -> dict:
+    overall = "fail" if any(c["status"] == "fail" for c in checks) \
+        else "warn" if any(c["status"] == "warn" for c in checks) else "ok"
+    return {
+        "skill": "knowledge-graph-memory",
+        "version": "1.0.0",
+        "status": overall,
+        "checks": checks,
+        "timestamp": _now(),
+    }
+
+
+# ── CLI ─────────────────────────────────────────────────────────────────────
+
+def main():
+    parser = argparse.ArgumentParser(description="Knowledge Graph Memory CLI")
+    parser.add_argument("--db", default=DEFAULT_DB, help="Database path")
+    parser.add_argument("--check", action="store_true", help="Health check")
+
+    sub = parser.add_subparsers(dest="command")
+
+    # ingest
+    p_ingest = sub.add_parser("ingest", help="Ingest text or file")
+    p_ingest.add_argument("--text", help="Text to ingest")
+    p_ingest.add_argument("--file", help="File to ingest")
+
+    # query
+    p_query = sub.add_parser("query", help="Query entity or relation")
+    p_query.add_argument("--entity", help="Entity name")
+    p_query.add_argument("--relation", nargs=2, metavar=("NAME", "TYPE"), help="Query relations")
+
+    # path
+    p_path = sub.add_parser("path", help="Find path between entities")
+    p_path.add_argument("--from", dest="from_name", required=True)
+    p_path.add_argument("--to", dest="to_name", required=True)
+    p_path.add_argument("--depth", type=int, default=4)
+
+    # neighbors
+    p_neigh = sub.add_parser("neighbors", help="Get neighbors of entity")
+    p_neigh.add_argument("--entity", required=True)
+    p_neigh.add_argument("--depth", type=int, default=1)
+
+    # reinforce
+    p_reinforce = sub.add_parser("reinforce", help="Reinforce entity")
+    p_reinforce.add_argument("--entity", required=True)
+    p_reinforce.add_argument("--reason", default="")
+
+    # decay
+    sub.add_parser("decay", help="Run decay on all entities")
+
+    # prune
+    p_prune = sub.add_parser("prune", help="Prune low-score entities")
+    p_prune.add_argument("--threshold", type=float, default=0.05)
+
+    # find-duplicates
+    sub.add_parser("find-duplicates", help="Find duplicate entities")
+
+    # merge
+    p_merge = sub.add_parser("merge", help="Merge entities")
+    p_merge.add_argument("--ids", nargs=2, required=True, metavar=("KEEP", "REMOVE"))
+
+    # stats
+    sub.add_parser("stats", help="Show graph statistics")
+
+    args = parser.parse_args()
+
+    if args.check:
+        result = health_check(args.db)
+        print(json.dumps(result, indent=2, ensure_ascii=False))
+        sys.exit(0 if result["status"] != "fail" else 1)
+
+    if not args.command:
+        parser.print_help()
+        sys.exit(0)
+
+    conn = get_db(args.db)
+
+    if args.command == "ingest":
+        if args.text:
+            result = ingest_text(conn, args.text)
+        elif args.file:
+            result = ingest_file(conn, args.file)
+        else:
+            print('{"error": "Provide --text or --file"}')
+            sys.exit(1)
+        print(json.dumps(result, indent=2, ensure_ascii=False))
+
+    elif args.command == "query":
+        if args.entity:
+            result = query_entity(conn, args.entity)
+            print(json.dumps(result, indent=2, ensure_ascii=False) if result
+                  else json.dumps({"error": f"Entity '{args.entity}' not found"}))
+        elif args.relation:
+            result = query_relation(conn, args.relation[0], args.relation[1])
+            print(json.dumps(result, indent=2, ensure_ascii=False))
+
+    elif args.command == "path":
+        result = find_path(conn, args.from_name, args.to_name, args.depth)
+        print(json.dumps({"path": result} if result else {"path": None, "message": "No path found"},
+                         indent=2, ensure_ascii=False))
+
+    elif args.command == "neighbors":
+        result = get_neighbors(conn, args.entity, args.depth)
+        print(json.dumps(result, indent=2, ensure_ascii=False))
+
+    elif args.command == "reinforce":
+        reinforce(conn, args.entity, args.reason)
+
+    elif args.command == "decay":
+        run_decay(conn)
+
+    elif args.command == "prune":
+        prune(conn, args.threshold)
+
+    elif args.command == "find-duplicates":
+        result = find_duplicates(conn)
+        print(json.dumps(result, indent=2, ensure_ascii=False))
+
+    elif args.command == "merge":
+        merge_entities(conn, args.ids[0], args.ids[1])
+        print(json.dumps({"merged": args.ids[0], "removed": args.ids[1]}))
+
+    elif args.command == "stats":
+        result = stats(conn)
+        print(json.dumps(result, indent=2, ensure_ascii=False))
+
+    conn.close()
+
+
+if __name__ == "__main__":
+    main()

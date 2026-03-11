@@ -1,0 +1,8 @@
+{
+  "id": "stock-alert",
+  "name": "选股提醒",
+  "card": {
+    "header": {"title": "📈 选股推荐 - {{date}}"},
+    "body": "**Top {{count}} 候选股**\n\n{{stock_table}}\n\n⚠️ 仅供研究参考，不构成投资建议"
+  }
+}

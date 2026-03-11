@@ -1,0 +1,50 @@
+{
+  "version": 1,
+  "profiles": {
+    "qwen-portal:default": {
+      "type": "oauth",
+      "provider": "qwen-portal",
+      "access": "N4IRXleqxr3seznYlfIpIPTonpLekfsWn8WXfg9DDYDuTGiSu6uxbaM89RhH8tlL8UpJws7nE4vI12SRJhiu1g",
+      "refresh": "DJMwIQeEH8NsWHdwJTz1IHOFyqHgm1Dc2ToQW0qo-Rpxdudv0fNlmN0va7540-xyGJVcdM2rOJm52FswjOiITQ",
+      "expires": 1772648520740
+    },
+    "kimi-coding:default": {
+      "type": "api_key",
+      "provider": "kimi-coding",
+      "key": "1"
+    },
+    "minimax-cn:default": {
+      "type": "api_key",
+      "provider": "minimax-cn",
+      "key": "sk-api-hgADfSDbHWFpwHU39fG9uL9AR5wfmSAMpFVJfnPi1qyRNidsMWzO9ZfpVJY6RwiDCHHo0HUbop-yKM-RWw9VPDU5m9hK54Sg5Oe6Iopb4RLluPpDoSVteac"
+    },
+    "deepseek:default": {
+      "type": "api_key",
+      "provider": "deepseek",
+      "key": "sk-7ce67ca108b44f7f88eb1f922022ca73"
+    },
+    "bailian:default": {
+      "type": "api_key",
+      "provider": "bailian",
+      "key": "sk-sp-0e18bc017d6748c985ac273e47701224"
+    }
+  },
+  "usageStats": {
+    "qwen-portal:default": {
+      "lastUsed": 1772370906158,
+      "errorCount": 0
+    },
+    "kimi-coding:default": {
+      "lastUsed": 1772354741211,
+      "errorCount": 0
+    },
+    "minimax-cn:default": {
+      "lastUsed": 1772371948770,
+      "errorCount": 0
+    },
+    "deepseek:default": {
+      "errorCount": 0,
+      "lastUsed": 1773244556700
+    }
+  }
+}

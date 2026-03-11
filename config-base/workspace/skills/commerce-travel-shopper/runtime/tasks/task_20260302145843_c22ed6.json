@@ -1,0 +1,112 @@
+{
+  "task_id": "task_20260302145843_c22ed6",
+  "task_type": "hotel",
+  "query": {
+    "city": "深圳",
+    "checkin": "2026-03-10",
+    "checkout": "2026-03-12"
+  },
+  "platforms": [
+    "feizhu",
+    "qunar",
+    "ctrip",
+    "meituan"
+  ],
+  "note": "",
+  "created_by": "momo",
+  "created_at": "2026-03-02T14:58:43.377Z",
+  "updated_at": "2026-03-02T14:58:52.071Z",
+  "state": "DONE",
+  "execution": {
+    "confirm_submit": true,
+    "confirm_pay": true,
+    "abort": false
+  },
+  "evidence": [
+    {
+      "evidence_id": "ev_8a9f3c69",
+      "file": "/Users/momo/.openclaw/workspace/skills/commerce-travel-shopper/runtime_sample.png",
+      "captured_at": "2026-03-02T14:58:51.895Z"
+    }
+  ],
+  "offers": [
+    {
+      "offer_id": "o1",
+      "source": "ctrip",
+      "base_price": 880,
+      "tax_fee": 0,
+      "coupon": 40,
+      "final_price": 840,
+      "policy_text": "free_cancel",
+      "inventory_hint": "",
+      "evidence_id": "",
+      "captured_at": "2026-03-02T14:58:51.925Z"
+    },
+    {
+      "offer_id": "o2",
+      "source": "qunar",
+      "base_price": 0,
+      "tax_fee": 0,
+      "coupon": 0,
+      "final_price": 860,
+      "policy_text": "strict",
+      "inventory_hint": "",
+      "evidence_id": "",
+      "captured_at": "2026-03-02T14:58:51.926Z"
+    }
+  ],
+  "ranking": {
+    "recommended_offer_id": "o1",
+    "reason": [
+      "final_price_min",
+      "policy_checked_manually"
+    ],
+    "ranked_offer_ids": [
+      "o1",
+      "o2"
+    ]
+  },
+  "checkout_draft": {
+    "offer_id": "o2",
+    "source": "qunar",
+    "expected_price": 860,
+    "created_at": "2026-03-02T14:58:51.983Z",
+    "note": "wait for CONFIRM_SUBMIT then CONFIRM_PAY"
+  },
+  "audit": [
+    {
+      "ts": "2026-03-02T14:58:51.895Z",
+      "action": "INGEST_SCREENSHOTS",
+      "operator": "momo",
+      "count": 1
+    },
+    {
+      "ts": "2026-03-02T14:58:51.926Z",
+      "action": "EXTRACT_OFFERS",
+      "operator": "momo",
+      "count": 2
+    },
+    {
+      "ts": "2026-03-02T14:58:51.955Z",
+      "action": "RANK_OFFERS",
+      "operator": "momo",
+      "recommended_offer_id": "o1"
+    },
+    {
+      "ts": "2026-03-02T14:58:51.984Z",
+      "action": "BUILD_CHECKOUT_DRAFT",
+      "operator": "momo",
+      "offer_id": "o2"
+    },
+    {
+      "ts": "2026-03-02T14:58:52.013Z",
+      "action": "CONFIRM_SUBMIT",
+      "operator": "momo"
+    },
+    {
+      "ts": "2026-03-02T14:58:52.071Z",
+      "action": "CONFIRM_PAY",
+      "operator": "momo"
+    }
+  ]
+}

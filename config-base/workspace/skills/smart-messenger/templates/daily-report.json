@@ -1,0 +1,8 @@
+{
+  "id": "daily-report",
+  "name": "每日复盘报告",
+  "card": {
+    "header": {"title": "📋 每日复盘 - {{date}}"},
+    "body": "## 今日完成\n{{completed}}\n\n## 遇到问题\n{{issues}}\n\n## 明日计划\n{{plan}}"
+  }
+}

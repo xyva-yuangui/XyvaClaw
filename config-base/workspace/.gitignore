@@ -1,0 +1,13 @@
+# OS files
+.DS_Store
+Thumbs.db
+
+# Large/regenerated files
+*.log
+
+# Node modules
+node_modules/
+
+# Temporary files
+*.lock
+/tmp/

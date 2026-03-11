@@ -1,0 +1,8 @@
+{
+  "ownerId": "kn77z49xfssappp65hpybb9gx180x56e",
+  "slug": "code-review",
+  "version": "1.0.0",
+  "publishedAt": 1770729869941,
+  "name": "Code Review",
+  "description": "Systematic code review patterns covering security, performance, maintainability, correctness, and testing — with severity levels, structured feedback guidance, review process, and anti-patterns to avoid. Use when reviewing PRs, establishing review standards, or improving review quality."
+}

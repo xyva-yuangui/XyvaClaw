@@ -1,0 +1,8 @@
+{
+  "id": "morning-briefing",
+  "name": "晨报",
+  "card": {
+    "header": {"title": "🌅 早安 - {{date}}"},
+    "body": "**天气**: {{weather}}\n\n**待办**: {{todo_count}}项\n{{todo_list}}\n\n**日历**: {{events}}"
+  }
+}

@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.env
+*.sqlite
+*.log
+.DS_Store
+*.tar.gz
+config-base/extensions/*/node_modules/
+setup-wizard/node_modules/
+setup-wizard/dist/

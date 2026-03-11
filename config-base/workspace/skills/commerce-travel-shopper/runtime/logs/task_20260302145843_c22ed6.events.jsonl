@@ -1,0 +1,8 @@
+{"ts":"2026-03-02T14:58:43.377Z","task_id":"task_20260302145843_c22ed6","event":"TASK_CREATED","state":"COLLECTING","operator":"momo"}
+{"ts":"2026-03-02T14:58:51.896Z","task_id":"task_20260302145843_c22ed6","event":"INGEST_SCREENSHOTS","operator":"momo","count":1}
+{"ts":"2026-03-02T14:58:51.926Z","task_id":"task_20260302145843_c22ed6","event":"EXTRACT_OFFERS","operator":"momo","count":2}
+{"ts":"2026-03-02T14:58:51.956Z","task_id":"task_20260302145843_c22ed6","event":"RANK_OFFERS","operator":"momo","recommended_offer_id":"o1"}
+{"ts":"2026-03-02T14:58:51.984Z","task_id":"task_20260302145843_c22ed6","event":"BUILD_CHECKOUT_DRAFT","operator":"momo","offer_id":"o2"}
+{"ts":"2026-03-02T14:58:52.013Z","task_id":"task_20260302145843_c22ed6","event":"CONFIRM_SUBMIT","operator":"momo"}
+{"ts":"2026-03-02T14:58:52.042Z","task_id":"task_20260302145843_c22ed6","event":"FINAL_CHECK","operator":"momo","pass":true,"expected_price":860}
+{"ts":"2026-03-02T14:58:52.072Z","task_id":"task_20260302145843_c22ed6","event":"CONFIRM_PAY","operator":"momo"}

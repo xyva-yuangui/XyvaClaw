@@ -1,0 +1,6 @@
+{
+  "slug": "system-control",
+  "name": "System Control",
+  "version": "1.0.0",
+  "description": "Control and monitor macOS system functions. Use when the user asks about system info (CPU, memory, disk, battery), app management (launch/quit apps, window list), notifications, clipboard operations, volume/brightness control, or any OS-level task on macOS."
+}

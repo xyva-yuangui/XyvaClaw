@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Browser Pilot Test Page</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-section { margin: 20px 0; padding: 20px; border: 1px solid #ccc; }
+        h2 { color: #333; }
+        button { padding: 10px 20px; margin: 10px; background: #007bff; color: white; border: none; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        input[type="file"] { margin: 10px 0; }
+        .result { margin: 10px 0; padding: 10px; background: #f8f9fa; border-left: 4px solid #007bff; }
+    </style>
+</head>
+<body>
+    <h1>Browser Pilot 测试页面</h1>
+    
+    <div class="test-section">
+        <h2>1. 文件上传测试</h2>
+        <form id="upload-form">
+            <input type="file" id="file-input" name="file">
+            <button type="button" onclick="uploadFile()">上传文件</button>
+        </form>
+        <div id="upload-result" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>2. 文件下载测试</h2>
+        <button onclick="downloadFile()">下载测试文件</button>
+        <div id="download-result" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>3. 多标签页测试</h2>
+        <button onclick="openNewTab()">打开新标签页</button>
+        <button onclick="switchToTab(0)">切换到标签页 1</button>
+        <button onclick="switchToTab(1)">切换到标签页 2</button>
+        <div id="tab-info" class="result">当前标签页: 1</div>
+    </div>
+    
+    <script>
+        // 文件上传
+        function uploadFile() {
+            const fileInput = document.getElementById('file-input');
+            if (fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                document.getElementById('upload-result').innerHTML = 
+                    `✅ 已选择文件: ${file.name} (${(file.size / 1024).toFixed(2)} KB)`;
+            } else {
+                document.getElementById('upload-result').innerHTML = 
+                    '❌ 请先选择文件';
+            }
+        }
+        
+        // 文件下载
+        function downloadFile() {
+            const content = '这是 browser-pilot 测试文件\n生成时间: ' + new Date().toLocaleString();
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'browser-pilot-test.txt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            document.getElementById('download-result').innerHTML = 
+                '✅ 测试文件已开始下载';
+        }
+        
+        // 多标签页
+        function openNewTab() {
+            window.open('about:blank', '_blank');
+            updateTabInfo();
+        }
+        
+        function switchToTab(index) {
+            // 这里只是模拟，实际切换需要浏览器 API
+            document.getElementById('tab-info').innerHTML = 
+                `当前标签页: ${index + 1} (模拟切换)`;
+        }
+        
+        function updateTabInfo() {
+            // 这里只是模拟显示
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,117 @@
+{
+  "task_id": "task_20260303012238_35ab60",
+  "task_type": "product",
+  "query": {
+    "keyword": "牛奶",
+    "budget": 100
+  },
+  "platforms": [
+    "jd",
+    "taobao"
+  ],
+  "note": "",
+  "created_by": "momo",
+  "created_at": "2026-03-03T01:22:38.679Z",
+  "updated_at": "2026-03-03T01:23:44.921Z",
+  "state": "WAIT_CONFIRM_SUBMIT",
+  "execution": {
+    "confirm_submit": false,
+    "confirm_pay": false,
+    "abort": false
+  },
+  "evidence": [
+    {
+      "evidence_id": "ev_39bc8d6a",
+      "file": "/Users/momo/.openclaw/workspace/skills/commerce-travel-shopper/runtime/evidence/task_20260303012238_35ab60/20260303012245_1_jd.png",
+      "captured_at": "2026-03-03T01:22:49.163Z"
+    },
+    {
+      "evidence_id": "ev_2a3a3a59",
+      "file": "/Users/momo/.openclaw/workspace/skills/commerce-travel-shopper/runtime/evidence/task_20260303012238_35ab60/20260303012341_1_jd.png",
+      "captured_at": "2026-03-03T01:23:44.339Z"
+    }
+  ],
+  "offers": [
+    {
+      "offer_id": "ocr_2",
+      "source": "jd",
+      "base_price": 0,
+      "tax_fee": 0,
+      "coupon": 0,
+      "final_price": 89,
+      "policy_text": "",
+      "inventory_hint": "",
+      "evidence_id": "ev_2a3a3a59",
+      "captured_at": "2026-03-03T01:23:44.339Z"
+    }
+  ],
+  "ranking": {
+    "recommended_offer_id": "ocr_2",
+    "reason": [
+      "final_price_min",
+      "policy_checked_manually"
+    ],
+    "ranked_offer_ids": [
+      "ocr_2"
+    ]
+  },
+  "checkout_draft": {
+    "offer_id": "ocr_2",
+    "source": "jd",
+    "expected_price": 89,
+    "created_at": "2026-03-03T01:23:44.921Z",
+    "note": "wait for CONFIRM_SUBMIT then CONFIRM_PAY"
+  },
+  "audit": [
+    {
+      "ts": "2026-03-03T01:22:49.163Z",
+      "action": "INGEST_SCREENSHOTS",
+      "operator": "momo",
+      "count": 1
+    },
+    {
+      "ts": "2026-03-03T01:22:49.164Z",
+      "action": "AUTO_COLLECT",
+      "operator": "momo",
+      "jobs": 1,
+      "files": 1
+    },
+    {
+      "ts": "2026-03-03T01:23:44.339Z",
+      "action": "INGEST_SCREENSHOTS",
+      "operator": "momo",
+      "count": 1
+    },
+    {
+      "ts": "2026-03-03T01:23:44.340Z",
+      "action": "AUTO_COLLECT",
+      "operator": "momo",
+      "jobs": 1,
+      "files": 1
+    },
+    {
+      "ts": "2026-03-03T01:23:44.921Z",
+      "action": "EXTRACT_OFFERS",
+      "operator": "momo",
+      "count": 1
+    },
+    {
+      "ts": "2026-03-03T01:23:44.921Z",
+      "action": "OCR_EXTRACT",
+      "operator": "momo",
+      "count": 1
+    },
+    {
+      "ts": "2026-03-03T01:23:44.921Z",
+      "action": "RANK_OFFERS",
+      "operator": "momo",
+      "recommended_offer_id": "ocr_2"
+    },
+    {
+      "ts": "2026-03-03T01:23:44.921Z",
+      "action": "BUILD_CHECKOUT_DRAFT",
+      "operator": "momo",
+      "offer_id": "ocr_2"
+    }
+  ]
+}

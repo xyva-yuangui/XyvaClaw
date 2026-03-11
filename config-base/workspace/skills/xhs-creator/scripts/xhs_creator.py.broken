@@ -1,0 +1,483 @@
+#!/usr/bin/env python3
+"""
+小红书统一创作流水线 (xhs-creator)
+合并自: xhs-content-workflow + xhs-content-templates + xhs-quality-checklist + xhs-monetization
+
+Modes: auto, create, render-only, check-only
+"""
+
+import argparse
+import json
+import os
+import subprocess
+import sys
+import time
+from datetime import datetime
+from pathlib import Path
+
+SKILLS_DIR = Path.home() / ".openclaw" / "workspace" / "skills"
+OUTPUT_BASE = Path.home() / ".openclaw" / "output" / "xhs-creator"
+RENDER_SCRIPT = SKILLS_DIR / "_archived" / "auto-redbook-skills-0.1.0" / "scripts" / "render_xhs_v2.py"
+HUMANIZE_SCRIPT = SKILLS_DIR / "humanize-ai-text" / "scripts" / "transform.py"
+TRACKER_SCRIPT = SKILLS_DIR / "effect-tracker" / "scripts" / "tracker.py"
+
+STYLES = ["种草", "干货", "踩坑", "教程", "分享"]
+
+TEMPLATES = {
+    "pain-solution": {
+        "name": "痛点解决型", "rating": 5,
+        "structure": "痛点场景→效果数据→方案1-3→核心心法→行动清单→福利→互动",
+        "title_formula": "这{N}个{方法}让我{收益}！",
+    },
+    "compare": {
+        "name": "对比测评型", "rating": 4,
+        "structure": "选择困难→测评对象→维度对比→综合评分→购买建议→避坑提醒",
+        "title_formula": "{A}vs{B}，到底选哪个？亲测后告诉你",
+    },
+    "tutorial": {
+        "name": "教程步骤型", "rating": 4,
+        "structure": "成果展示→前后对比→学习路径→步骤详解→FAQ→资源推荐",
+        "title_formula": "手把手教你{技能}，{时间}就能学会！",
+    },
+    "list": {
+        "name": "清单汇总型", "rating": 4,
+        "structure": "汇总价值→筛选标准→清单项→使用建议→获取方式",
+        "title_formula": "{N}个{领域}神器，全部免费！",
+    },
+    "story": {
+        "name": "故事经历型", "rating": 5,
+        "structure": "高光/低谷开场→背景→转折点→行动→关键决策→结果→经验",
+        "title_formula": "从{起点}到{终点}，我做对了这{N}件事",
+    },
+    "opinion": {
+        "name": "观点态度型", "rating": 3,
+        "structure": "争议话题→个人立场→论据1-3→反驳预设→升华观点",
+        "title_formula": "别再{错误做法}了！{正确观点}才是关键",
+    },
+    "hot": {
+        "name": "热点评论型", "rating": 3,
+        "structure": "热点事件→背景→独特视角→深度分析→启示→互动",
+        "title_formula": "关于{热点}，99%的人都忽略了这个细节",
+    },
+}
+
+STYLE_TEMPLATES = {
+    "种草": ["pain-solution", "compare", "story"],
+    "干货": ["tutorial", "list", "pain-solution"],
+    "踩坑": ["story", "pain-solution", "opinion"],
+    "教程": ["tutorial", "list"],
+    "分享": ["story", "list", "opinion"],
+}
+
+HOOKS = [
+    "😱 痛点场景（你是不是也...）",
+    "📊 效果数据（3个月从...到...）",
+    "❓ 疑问开场（为什么...）",
+    "💥 反常识（[常识]是错的）",
+]
+
+QUALITY_WEIGHTS = {
+    "content_depth": 0.30,
+    "viral_structure": 0.30,
+    "humanization": 0.25,
+    "shareability": 0.15,
+}
+
+
+def _now() -> str:
+    return datetime.now().isoformat(timespec="seconds")
+
+
+def _track(action: str, status: str = "ok"):
+    if TRACKER_SCRIPT.is_file():
+        try:
+            subprocess.run(
+                [sys.executable, str(TRACKER_SCRIPT), "record",
+                 "--skill", "xhs-creator", "--action", action, "--status", status],
+                capture_output=True, timeout=5,
+            )
+        except Exception:
+            pass
+
+
+def _load_auto_tune_config() -> dict:
+    """Load auto-tune optimization config"""
+    config_file = SKILLS_DIR / "xhs-creator" / "config" / "auto_tune_config.json"
+    if config_file.exists():
+        try:
+            with open(config_file, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except:
+            pass
+    return {}
+
+
+def _optimize_title(title: str, config: dict) -> str:
+    """根据优化配置优化标题"""
+    optimizations = config.get("optimizations", {})
+    
+    if not optimizations.get("title_enhancement", {}).get("enabled"):
+        return title
+    
+    params = optimizations["title_enhancement"]["params"]
+    optimized = title
+    
+    # 添加数字
+    if params.get("add_numbers") and not any(c.isdigit() for c in optimized):
+        optimized = f"5 个{optimized}"
+    
+    # 添加情绪词
+    if params.get("add_emotions"):
+        emotion_words = ["必备", "神器", "震惊", "必看", "绝了", "真香"]
+        if not any(word in optimized for word in emotion_words):
+            optimized = f"{optimized}必备"
+    
+    # 添加疑问句
+    if params.get("add_questions") and "?" not in optimized and "？" not in optimized:
+        optimized = f"{optimized}？"
+    
+    # 添加感叹号增强语气
+    if "！" not in optimized and "!" not in optimized:
+        optimized = f"{optimized}！"
+    
+    print(f"  🚀 标题优化：{title} → {optimized}")
+    return optimized
+
+
+
+def _select_template(style: str, template_name: str = None) -> dict:
+    if template_name and template_name in TEMPLATES:
+        return TEMPLATES[template_name]
+    candidates = STYLE_TEMPLATES.get(style, ["pain-solution"])
+    import random
+    return TEMPLATES[random.choice(candidates)]
+
+
+def _quality_check(content: str, title: str, tags: list) -> dict:
+    score_detail = {}
+
+    # Content depth
+    lines = content.strip().split("\n")
+    has_data = any(c in content for c in ["数据", "统计", "%", "调查", "研究"])
+    has_sections = content.count("##") >= 3
+    card_count = max(1, len(lines) // 15)
+    depth = min(10, 3 + (2 if has_data else 0) + (2 if has_sections else 0) + min(3, card_count))
+    score_detail["content_depth"] = depth
+
+    # Viral structure
+    title_ok = len(title) <= 20
+    has_hook = any(kw in content[:200] for kw in ["你是不是", "为什么", "真的", "居然", "震惊"])
+    has_cta = any(kw in content[-300:] for kw in ["收藏", "关注", "评论", "私信", "转发", "点赞"])
+    viral = 4 + (2 if title_ok else 0) + (2 if has_hook else 0) + (2 if has_cta else 0)
+    score_detail["viral_structure"] = min(10, viral)
+
+    # Humanization
+    ai_words = ["综上所述", "总之", "需要注意的是", "值得一提的是", "总而言之"]
+    ai_count = sum(1 for w in ai_words if w in content)
+    human_words = ["真香", "绝了", "yyds", "啊", "呢", "吧", "哈哈", "!", "！"]
+    human_count = sum(1 for w in human_words if w in content)
+    humanize = max(3, min(10, 7 - ai_count * 2 + min(3, human_count)))
+    score_detail["humanization"] = humanize
+
+    # Shareability
+    tag_ok = 5 <= len(tags) <= 10
+    has_list = "清单" in content or "步骤" in content or any(f"{i}." in content for i in range(1, 6))
+    share = 5 + (2 if tag_ok else 0) + (2 if has_list else 0) + (1 if has_cta else 0)
+    score_detail["shareability"] = min(10, share)
+
+    total = sum(score_detail[k] * QUALITY_WEIGHTS[k] for k in QUALITY_WEIGHTS)
+
+    if total >= 9:
+        verdict = "爆款潜质 → 立即发布+推广"
+    elif total >= 8:
+        verdict = "优质内容 → 可发布"
+    elif total >= 7:
+        verdict = "合格 → 建议优化后发布"
+    else:
+        verdict = "不合格 → 重新创作"
+
+    return {
+        "total_score": round(total, 1),
+        "detail": score_detail,
+        "verdict": verdict,
+        "checks": {
+            "title_length": f"{len(title)}字 {'✅' if len(title) <= 20 else '❌ >20字'}",
+            "tag_count": f"{len(tags)}个 {'✅' if 5 <= len(tags) <= 10 else '⚠️'}",
+            "has_hook": "✅" if has_hook else "⚠️ 缺少开头钩子",
+            "has_cta": "✅" if has_cta else "⚠️ 缺少行动号召",
+            "ai_taste": f"{'✅ 低' if ai_count == 0 else '⚠️ 检测到 ' + str(ai_count) + ' 个AI味词'}",
+        },
+    }
+
+
+def cmd_create(topic: str, style: str = "种草", template_name: str = None,
+    # Load auto-tune config
+    tune_config = _load_auto_tune_config()
+    has_optimizations = bool(tune_config.get("optimizations"))
+    
+               auto: bool = False, no_research: bool = False, theme: str = "default") -> dict:
+    print(f"\n📕 小红书创作流水线")
+    if has_optimizations:
+        print(f"   🚀 优化配置：已启用 {len(tune_config['optimizations'])} 项优化")
+    print(f"   主题: {topic}")
+    print(f"   风格: {style}")
+    print()
+
+    ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+    out_dir = OUTPUT_BASE / f"{ts}_{topic[:20].replace(' ', '_')}"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    start = time.monotonic()
+
+    # Step 1: Template selection with content structure optimization
+    tpl = _select_template(style, template_name)
+    
+    # Apply content structure optimization
+    if has_optimizations and tune_config["optimizations"].get("content_structure", {}).get("enabled"):
+        if style in ["种草", "干货"]:
+            prefer_templates = ["list", "tutorial", "pain-solution"]
+            if tpl["name"] not in [TEMPLATES[t]["name"] for t in prefer_templates]:
+                tpl = _select_template(style, "list")
+                print(f"  📋 模板优化：切换到清单汇总型 (提升互动率)")
+    tpl = _select_template(style, template_name)
+    print(f"  📋 模板: {tpl['name']} (⭐×{tpl['rating']})")
+    print(f"     结构: {tpl['structure']}")
+
+    # Step 2: Research
+    research_data = {"topic": topic, "sources": [], "timestamp": _now()}
+    if not no_research:
+        print(f"\n  🔍 调研中...")
+        research_data["method"] = "auto-researcher integration"
+        research_data["instructions"] = (
+            f"Agent: 使用 auto-researcher 搜索 '{topic} 小红书 热门'，"
+            f"提取 3-5 个竞品爆款的结构和高互动元素"
+        )
+        print(f"     → Agent 需执行搜索并填充 research.json")
+
+    research_file = out_dir / "research.json"
+    with open(research_file, "w", encoding="utf-8") as f:
+        json.dump(research_data, f, indent=2, ensure_ascii=False)
+
+    # Step 3: Draft creation
+    print(f"\n  ✍️  创作草稿...")
+    draft_file = out_dir / "draft.md"
+    with open(draft_file, "w", encoding="utf-8") as f:
+        f.write(f"---\n")
+        f.write(f'emoji: "📕"\n')
+        f.write(f'title: "{topic}"\n')
+        f.write(f'subtitle: ""\n')
+        f.write(f"style: {style}\n")
+        f.write(f"template: {tpl['name']}\n")
+        f.write(f"---\n\n")
+        f.write(f"# {topic}\n\n")
+        f.write(f"<!-- Agent: 按以下结构创作，风格={style} -->\n")
+        f.write(f"<!-- 结构: {tpl['structure']} -->\n")
+        f.write(f"<!-- 标题公式: {tpl['title_formula']} -->\n\n")
+
+        # Write structure skeleton
+        for i, section in enumerate(tpl["structure"].split("→"), 1):
+            section = section.strip()
+            f.write(f"## {i}. {section}\n\n")
+            f.write(f"[Agent 填充此部分]\n\n")
+
+        f.write(f"\n---\n\n")
+        f.write(f"#标签1 #标签2 #标签3 #标签4 #标签5\n")
+
+    print(f"     → draft.md 已生成")
+
+    # Step 4: Humanization instructions
+    humanize_file = out_dir / "humanize_instructions.md"
+    with open(humanize_file, "w", encoding="utf-8") as f:
+        f.write("# 人性化改写指引\n\n")
+        f.write("## 去 AI 味\n- 删除: 综上所述、总之、需要注意的是、值得一提的是\n\n")
+        f.write("## 加口语\n- 加入: 真香、绝了、yyds + 语气词 啊/呢/吧\n\n")
+        f.write("## 加情绪\n- 情绪词 + 感叹句 + 反问句\n\n")
+        f.write("## 加细节\n- 个人经历 + 具体场景 + 具体数字 + 感官描述\n\n")
+        f.write("## Agent 指令\n\n```bash\n")
+        f.write(f"python3 {HUMANIZE_SCRIPT} --input draft.md --output final.md --style casual\n")
+        f.write("```\n")
+
+    # Step 5: Quality check placeholder
+    print(f"  📊 质量检查...")
+    # Read draft content for checking
+    with open(draft_file, "r", encoding="utf-8") as f:
+        draft_content = f.read()
+    tags = [t.strip() for t in draft_content.split("#") if t.strip() and len(t.strip()) < 20][-5:]
+    qc = _quality_check(draft_content, topic, tags)
+    qc_file = out_dir / "quality_report.json"
+    with open(qc_file, "w", encoding="utf-8") as f:
+        json.dump(qc, f, indent=2, ensure_ascii=False)
+    print(f"     评分: {qc['total_score']}/10 — {qc['verdict']}")
+
+    # Step 6: Render instructions
+    render_file = out_dir / "render_instructions.md"
+    with open(render_file, "w", encoding="utf-8") as f:
+        f.write("# 渲染指引\n\n")
+        f.write(f"主题: {theme}\n")
+        f.write(f"尺寸: 1080×1440 (3:4)\n\n")
+        f.write("```bash\n")
+        if RENDER_SCRIPT.is_file():
+            f.write(f"python3 {RENDER_SCRIPT} final.md -t {theme} -m auto-split -o {out_dir}/\n")
+        else:
+            f.write("# render_xhs_v2.py 不可用，使用 xhs-creator 内置渲染\n")
+            f.write(f"# Agent: 使用 qwen-image 或 superdesign 生成封面\n")
+        f.write("```\n")
+
+    elapsed_ms = int((time.monotonic() - start) * 1000)
+    _track("create", "ok")
+
+    result = {
+        "topic": topic, "style": style, "template": tpl["name"],
+        "quality_score": qc["total_score"], "verdict": qc["verdict"],
+        "output_dir": str(out_dir), "elapsed_ms": elapsed_ms,
+        "files": {
+            "research": str(research_file),
+            "draft": str(draft_file),
+            "humanize": str(humanize_file),
+            "quality": str(qc_file),
+            "render": str(render_file),
+        },
+        "timestamp": _now(),
+    }
+
+    summary_file = out_dir / "summary.json"
+    with open(summary_file, "w", encoding="utf-8") as f:
+        json.dump(result, f, indent=2, ensure_ascii=False)
+
+    print(f"\n  ✅ 创作流水线完成! ({elapsed_ms}ms)")
+    print(f"  📂 {out_dir}")
+    return result
+
+
+def cmd_render_only(md_file: str, theme: str = "default") -> dict:
+    print(f"\n🎨 仅渲染: {md_file}")
+    if not os.path.isfile(md_file):
+        print(f"  ❌ 文件不存在: {md_file}")
+        return {"error": "file_not_found"}
+
+    out_dir = OUTPUT_BASE / f"render_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    if RENDER_SCRIPT.is_file():
+        print(f"  调用 render_xhs_v2.py...")
+        try:
+            result = subprocess.run(
+                [sys.executable, str(RENDER_SCRIPT), md_file,
+                 "-t", theme, "-m", "auto-split", "-o", str(out_dir)],
+                capture_output=True, text=True, timeout=60,
+            )
+            if result.returncode == 0:
+                print(f"  ✅ 渲染完成")
+            else:
+                print(f"  ⚠️ 渲染报错: {result.stderr[:200]}")
+        except Exception as e:
+            print(f"  ❌ 渲染失败: {e}")
+    else:
+        print(f"  ⚠️ 渲染脚本不可用，请用 qwen-image 替代")
+
+    _track("render", "ok")
+    return {"output_dir": str(out_dir), "theme": theme}
+
+
+def cmd_check_only(md_file: str) -> dict:
+    print(f"\n📊 仅质检: {md_file}")
+    if not os.path.isfile(md_file):
+        print(f"  ❌ 文件不存在: {md_file}")
+        return {"error": "file_not_found"}
+
+    with open(md_file, "r", encoding="utf-8") as f:
+        content = f.read()
+
+    # Extract title from frontmatter or first heading
+    title = ""
+    for line in content.split("\n"):
+        if line.startswith("# "):
+            title = line[2:].strip()
+            break
+        if line.startswith("title:"):
+            title = line.split(":", 1)[1].strip().strip('"')
+            break
+
+    tags = [t.strip() for t in content.split("#") if t.strip() and len(t.strip()) < 20][-10:]
+    qc = _quality_check(content, title, tags)
+
+    print(f"\n  评分: {qc['total_score']}/10")
+    print(f"  判定: {qc['verdict']}")
+    for k, v in qc["checks"].items():
+        print(f"  {k}: {v}")
+
+    _track("quality_check", "ok")
+    return qc
+
+
+def health_check() -> dict:
+    checks = []
+
+    deps = {
+        "humanize-ai-text": HUMANIZE_SCRIPT,
+        "render_xhs_v2": RENDER_SCRIPT,
+        "effect-tracker": TRACKER_SCRIPT,
+    }
+    for name, path in deps.items():
+        checks.append({"name": name, "status": "ok" if path.is_file() else "warn"})
+
+    # Check playwright
+    try:
+        import importlib
+        importlib.import_module("playwright")
+        checks.append({"name": "playwright", "status": "ok"})
+    except ImportError:
+        checks.append({"name": "playwright", "status": "warn", "message": "pip install playwright"})
+
+    checks.append({"name": "python3", "status": "ok"})
+
+    overall = "fail" if any(c["status"] == "fail" for c in checks) \
+        else "warn" if any(c["status"] == "warn" for c in checks) else "ok"
+
+    return {"skill": "xhs-creator", "version": "1.0.0", "status": overall,
+            "checks": checks, "timestamp": _now()}
+
+
+def main():
+    parser = argparse.ArgumentParser(description="小红书统一创作流水线")
+    parser.add_argument("--check", action="store_true", help="健康检查")
+    parser.add_argument("--json", action="store_true")
+    parser.add_argument("-t", "--topic", help="笔记主题")
+    parser.add_argument("-s", "--style", default="种草", choices=STYLES)
+    parser.add_argument("--template", choices=list(TEMPLATES.keys()))
+    parser.add_argument("-a", "--auto", action="store_true", help="自动模式")
+    parser.add_argument("--no-research", action="store_true")
+    parser.add_argument("--theme", default="default")
+    parser.add_argument("-o", "--output", help="输出目录")
+    parser.add_argument("--render-only", metavar="FILE", help="仅渲染")
+    parser.add_argument("--check-only", metavar="FILE", help="仅质检")
+
+    args = parser.parse_args()
+
+    if args.check:
+        result = health_check()
+        print(json.dumps(result, indent=2, ensure_ascii=False))
+        sys.exit(0 if result["status"] != "fail" else 1)
+
+    if args.render_only:
+        result = cmd_render_only(args.render_only, args.theme)
+    elif args.check_only:
+        result = cmd_check_only(args.check_only)
+    else:
+        topic = args.topic
+        if not topic:
+            if args.auto:
+                topic = "AI效率工具推荐"
+            else:
+                topic = input("📝 请输入笔记主题: ").strip()
+                if not topic:
+                    print("主题不能为空")
+                    sys.exit(1)
+        result = cmd_create(topic, args.style, args.template,
+                            args.auto, args.no_research, args.theme)
+
+    if args.json and result:
+        print(json.dumps(result, indent=2, ensure_ascii=False))
+
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,19 @@
+{
+  "lazy_loading": {
+    "enabled": true,
+    "common_skills": [
+      "quant-stock-screener",
+      "proactive-agent",
+      "self-improving-agent"
+    ],
+    "other_skills": "on_demand"
+  },
+  "cache_warming": {
+    "enabled": true,
+    "preload_on_startup": [
+      "quant-stock-screener/config",
+      "quant-stock-screener/output",
+      "quant-stock-screener/cache/tushare"
+    ]
+  }
+}
