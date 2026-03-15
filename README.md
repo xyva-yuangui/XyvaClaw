@@ -16,7 +16,7 @@
 
 **作者：圆规（Xyva-yuangui）**
 
-**交流讨论：Q群：1087471835**
+**交流讨论：[QQ群 1087471835](https://qm.qq.com/q/1087471835) · [Discord](https://discord.gg/QABg4Z2Mzu) · [X (Twitter)](https://x.com/dadoudou90)**
 
 
 [English](#-english) · [中文](#-中文) · [Quick Start](#-quick-start) · [Skills](#-skills-38) · [Docs](docs/)

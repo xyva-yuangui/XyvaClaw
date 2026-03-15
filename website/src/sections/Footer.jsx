@@ -1,5 +1,5 @@
 import React from 'react';
-import { Github, FileText, MessageSquare, Heart } from 'lucide-react';
+import { Github, FileText, MessageSquare, Heart, Twitter } from 'lucide-react';
 import { useLang, t } from '../i18n';
 
 export default function Footer() {
@@ -64,15 +64,21 @@ export default function Footer() {
         <div>
           <h4 className="font-semibold text-gray-300 mb-3">{t(lang, '联系我们', 'Contact')}</h4>
           <ul className="space-y-2">
-            <li className="text-gray-500">
-              <span className="text-gray-400 font-medium">{t(lang, 'QQ 群', 'QQ Group')}</span>
-              <br />
-              <span className="text-brand-400/80 font-mono text-xs select-all">1087471835</span>
+            <li>
+              <a href="https://qm.qq.com/q/1087471835" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-gray-300 transition">
+                {t(lang, 'QQ 群', 'QQ Group')}{' '}
+                <span className="text-brand-400/80 font-mono text-xs">1087471835</span>
+              </a>
             </li>
-            <li className="text-gray-500">
-              <span className="text-gray-400 font-medium">{t(lang, 'QQ 号', 'QQ')}</span>
-              <br />
-              <span className="text-brand-400/80 font-mono text-xs select-all">1693721627</span>
+            <li>
+              <a href="https://discord.gg/QABg4Z2Mzu" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-gray-300 transition">
+                Discord
+              </a>
+            </li>
+            <li>
+              <a href="https://x.com/dadoudou90" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-gray-300 transition">
+                X (Twitter)
+              </a>
             </li>
           </ul>
         </div>

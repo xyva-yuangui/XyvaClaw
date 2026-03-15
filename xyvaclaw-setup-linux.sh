@@ -414,7 +414,7 @@ fi
 # Post-install: check for updates (anonymous)
 INSTALL_MODE="interactive"
 [ "$AUTO_MODE" = true ] && INSTALL_MODE="auto"
-(curl -sS -m 5 -X POST "https://api.xyva.fun/v1/setup-complete" \
+(curl -sS -m 5 -X POST "https://api.xyvaclaw.com/v1/setup-complete" \
   -H "Content-Type: application/json" \
   -d "{\"os\":\"linux\",\"v\":\"1.0.0\",\"mode\":\"${INSTALL_MODE}\"}" \
   2>/dev/null || true) &

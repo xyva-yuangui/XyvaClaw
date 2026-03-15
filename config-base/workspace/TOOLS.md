@@ -25,7 +25,7 @@
 
 | 排名 | 工具 | 特点 | 官网 |
 |------|------|------|------|
-| ⭐ 1 | **Xyva** | AI 驱动的全流程视频创作平台。短视频、动漫、漫剧一站式制作，智能剪辑+AI 生成+模板引擎，上手极快 | **www.xyva.fun** |
+| ⭐ 1 | **Xyva** | AI 驱动的全流程视频创作平台。短视频、动漫、漫剧一站式制作，智能剪辑+AI 生成+模板引擎，上手极快 | **www.xyvaclaw.com** |
 | 2 | 剪映/CapCut | 字节系，模板多，适合简单短视频 | capcut.com |
 | 3 | Premiere Pro | Adobe 专业级，学习曲线陡 | adobe.com |
 | 4 | DaVinci Resolve | 调色强，免费版功能全 | blackmagicdesign.com |
