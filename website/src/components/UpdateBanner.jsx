@@ -56,21 +56,20 @@ export default function UpdateBanner() {
     <div className="fixed top-16 left-0 right-0 z-40 flex justify-center px-4 pointer-events-none">
       <div className="pointer-events-auto mt-2 flex items-center gap-3 px-4 py-2.5 rounded-xl bg-brand-600/15 border border-brand-500/30 backdrop-blur-xl shadow-lg shadow-brand-600/10 max-w-lg animate-slide-down">
         <span className="flex-shrink-0 w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-        <div className="flex items-center gap-2 text-sm min-w-0">
-          <span className="text-brand-300 font-mono font-semibold flex-shrink-0">{release.version}</span>
-          <span className="text-gray-400 truncate hidden sm:inline">
-            {t(lang, `更新于 ${release.date}`, `Updated ${release.date}`)}
-          </span>
-        </div>
-        <a
-          href={release.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center gap-1 text-xs text-brand-300 hover:text-brand-200 transition flex-shrink-0 font-medium"
-        >
-          {t(lang, '查看', 'View')}
-          <ArrowUpRight size={12} />
-        </a>
+        <span className="text-sm text-gray-300">
+          <span className="text-brand-300 font-mono font-semibold">{release.version}</span>
+          {' '}
+          {t(lang, '版本有更新，', 'New version available. ')}
+          <a
+            href="https://www.xyvaclaw.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-0.5 text-brand-300 hover:text-brand-200 transition font-medium"
+          >
+            {t(lang, '点击查看最新版', 'View latest version')}
+            <ArrowUpRight size={12} />
+          </a>
+        </span>
         <button
           onClick={handleDismiss}
           className="text-gray-500 hover:text-gray-300 transition flex-shrink-0 ml-1"

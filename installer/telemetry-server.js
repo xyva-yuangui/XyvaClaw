@@ -22,7 +22,7 @@ const fs = require('fs');
 const path = require('path');
 
 const PORT = parseInt(process.env.PORT || '9600', 10);
-const ADMIN_KEY = process.env.ADMIN_KEY || 'xyvaclaw-admin-2024';
+const ADMIN_KEY = process.env.ADMIN_KEY || '';
 const DATA_FILE = path.join(__dirname, 'telemetry-data.json');
 
 function loadData() {
@@ -133,5 +133,5 @@ const server = http.createServer((req, res) => {
 
 server.listen(PORT, () => {
   console.log(`Telemetry collector running on port ${PORT}`);
-  console.log(`Stats: curl -H "Authorization: Bearer ${ADMIN_KEY}" http://localhost:${PORT}/v1/stats`);
+  if (ADMIN_KEY) console.log(`Stats endpoint: http://localhost:${PORT}/v1/stats (use ADMIN_KEY env var)`);
 });
