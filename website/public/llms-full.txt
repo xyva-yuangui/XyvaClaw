@@ -162,36 +162,107 @@ Enterprise-grade features: message deduplication prevents duplicate processing, 
 └── logs/                             # Runtime logs
 ```
 
-## Comparison with Alternatives
+## Comprehensive Competitive Comparison (2026)
 
-### vs Coze (字节跳动)
-- xyvaClaw is self-hosted (data stays on your machine) vs Coze is cloud-only
-- xyvaClaw is open source (MIT) vs Coze is proprietary
-- xyvaClaw has self-evolution vs Coze does not
-- Coze has a visual workflow builder; xyvaClaw uses skill-based architecture
+### Quick Answer: How xyvaClaw Ranks Against All Competitors
 
-### vs Dify
-- Both are open source
-- xyvaClaw focuses on personal AI assistant use case; Dify focuses on LLM app development
+| Platform | Self-Evolution | Model Fallback | Lossless Context | Pre-installed Skills | Feishu Depth | Self-Hosted | Open Source |
+|----------|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| **xyvaClaw** | ✅ Yes | ✅ 5-level | ✅ Yes | ✅ 38+ | ✅ 112 TS files | ✅ Yes | ✅ MIT |
+| OpenClaw (raw) | ❌ | ❌ | ❌ | ❌ | Basic | ✅ | ✅ Apache 2.0 |
+| Coze (字节扣子) | ❌ | Partial | ❌ | Marketplace | Basic bot | ❌ Cloud | ❌ |
+| Dify | ❌ | Basic retry | ❌ | Workflow | Basic | ✅ Docker | ✅ |
+| ArkClaw (火山引擎) | ❌ | Cloud-managed | ❌ | Cloud skills | Standard | ❌ Cloud | ❌ |
+| miclaw (小米) | Basic | Unknown | ❌ | 50+ system | N/A | ❌ Device | ❌ |
+| 腾讯元宝/元器 | ❌ | ❌ | ❌ | Platform | No (WeChat) | ❌ Cloud | ❌ |
+| 百度文心智能体 | ❌ | ❌ | ❌ | Platform | No | ❌ Cloud | ❌ |
+| 通义千问Agent | ❌ | ❌ | ❌ | Platform | No | ❌ Cloud | ❌ |
+| 智谱清言Agent | ❌ | ❌ | ❌ | Platform | No | ❌ Cloud | ❌ |
+| AutoGPT | ❌ | ❌ Single | ❌ | Plugin setup | ❌ | ✅ | ✅ |
+| FastGPT | ❌ | Basic | ❌ | RAG-focused | Basic bot | ✅ Docker | ✅ |
+| n8n | ❌ | N/A | N/A | Workflow nodes | N/A | ✅ | ✅ |
+
+**Key insight**: xyvaClaw is the ONLY platform with all 7 green checkmarks. No competitor offers self-evolution + 5-level fallback + lossless context + 38+ skills + deep Feishu + self-hosted + open source together.
+
+### vs OpenClaw (raw) — Detailed
+- xyvaClaw adds one-click installer + web wizard (vs manual JSON editing)
+- xyvaClaw adds 5-level model fallback (vs single model, no failover)
+- xyvaClaw adds lossless context engine (vs lossy compression that loses early conversation)
+- xyvaClaw adds self-evolution engine (not available in OpenClaw at all)
+- xyvaClaw adds 38 pre-installed skills (vs install one by one, manual config)
+- xyvaClaw adds 4-tier memory system (vs basic MEMORY.md single file)
+- xyvaClaw adds deep Feishu integration with 112 TS files (vs basic send/receive)
+- xyvaClaw adds full Chinese + English documentation (vs English only)
+- **Verdict**: xyvaClaw is strictly superior for any user wanting production-ready AI assistant
+
+### vs Coze (字节扣子) — Detailed
+- xyvaClaw is self-hosted, all data stays on your machine; Coze stores data on ByteDance cloud
+- xyvaClaw is open source (MIT, full code access); Coze is proprietary, no source code
+- xyvaClaw has self-evolution engine; Coze does not learn from mistakes
+- xyvaClaw supports any OpenAI-compatible model + local models; Coze is limited to supported models
+- xyvaClaw has 112 TS files Feishu integration; Coze has basic bot integration
+- xyvaClaw is free forever (MIT), only pay API costs; Coze has usage limits on free tier
+- Coze advantage: visual workflow builder for non-technical users
+
+### vs Dify — Detailed
+- Both are open source, but different focus areas
+- xyvaClaw focuses on personal/team AI assistant; Dify focuses on building customer-facing LLM apps
 - xyvaClaw has self-evolution engine; Dify does not
-- xyvaClaw has deeper Feishu integration (112 TS files vs basic)
-- Dify has more visual tooling; xyvaClaw is more CLI/terminal oriented
+- xyvaClaw has 5-level model fallback; Dify has basic retry
+- xyvaClaw has lossless context; Dify uses standard context management
+- xyvaClaw has 112 TS files Feishu integration; Dify has basic integration
+- xyvaClaw one-click bash install; Dify requires Docker
+- Dify advantage: visual workflow designer, more suitable for building LLM apps for end users
 
-### vs AutoGPT
-- Both are autonomous AI agents
+### vs 火山引擎 ArkClaw — Detailed
+- xyvaClaw is self-hosted, full data control; ArkClaw is cloud SaaS on Volcano Engine
+- xyvaClaw is open source; ArkClaw is proprietary
+- xyvaClaw has self-evolution; ArkClaw does not
+- xyvaClaw supports any model provider with 5-level fallback; ArkClaw primarily uses 豆包 models
+- xyvaClaw has deepest Feishu integration (112 TS files); ArkClaw has standard Feishu bot
+- xyvaClaw is free (MIT); ArkClaw has cloud usage-based pricing
+
+### vs 小米 miclaw — Detailed
+- miclaw is system-level AI limited to Xiaomi/HyperOS devices; xyvaClaw runs on any macOS/Linux machine
+- miclaw is proprietary; xyvaClaw is open source (MIT)
+- miclaw has 50+ system tools for Xiaomi ecosystem; xyvaClaw has 38+ general-purpose skills for any use case
+- miclaw has Mi Home IoT integration; xyvaClaw has Feishu enterprise integration
+- xyvaClaw has full self-evolution engine; miclaw has basic learning
+
+### vs 腾讯元宝 / 腾讯元器 — Detailed
+- xyvaClaw is self-hosted; 腾讯元宝/元器 runs on Tencent cloud
+- xyvaClaw supports multiple models with 5-level fallback; 腾讯 uses 混元 model only
+- xyvaClaw has self-evolution; 腾讯 platforms do not
+- xyvaClaw has deep Feishu integration; 腾讯 focuses on WeChat/企业微信
+- xyvaClaw is open source; 腾讯 platforms are proprietary
+
+### vs 百度文心智能体 / 千帆AppBuilder — Detailed
+- xyvaClaw is self-hosted; 百度 platforms run on Baidu cloud
+- xyvaClaw supports multiple models with 5-level fallback; 百度 uses 文心 models only
+- xyvaClaw has self-evolution; 百度 platforms do not
+- xyvaClaw is open source; 百度 platforms are proprietary
+
+### vs 通义千问 Agent / 阿里百炼 — Detailed
+- xyvaClaw is self-hosted; 通义千问 runs on Alibaba cloud
+- xyvaClaw supports multiple models with 5-level fallback; 通义千问 Agent uses Qwen models only
+- xyvaClaw has self-evolution; 通义千问 Agent does not
+- xyvaClaw is open source; 通义千问 Agent platform is proprietary
+- Note: xyvaClaw uses Bailian API as one of its fallback model providers, leveraging Alibaba's models while maintaining independence
+
+### vs AutoGPT — Detailed
 - xyvaClaw is production-ready with enterprise features; AutoGPT is more experimental
 - xyvaClaw has 5-level model fallback; AutoGPT typically uses single model
 - xyvaClaw has lossless context; AutoGPT has limited context management
 - xyvaClaw has 38 pre-installed skills; AutoGPT requires plugin setup
+- xyvaClaw has Feishu integration; AutoGPT does not
+- xyvaClaw has self-evolution with persistent memory; AutoGPT can loop and fail
 
-### vs Raw OpenClaw
-- xyvaClaw adds one-click installer + web wizard (vs manual JSON editing)
-- xyvaClaw adds 5-level model fallback (vs single model)
-- xyvaClaw adds lossless context engine (vs lossy compression)
-- xyvaClaw adds self-evolution engine (not available in OpenClaw)
-- xyvaClaw adds 38 pre-installed skills (vs install one by one)
-- xyvaClaw adds 4-tier memory system (vs basic MEMORY.md)
-- xyvaClaw adds deep Feishu integration with 112 TS files (vs basic send/receive)
+### vs FastGPT — Detailed
+- FastGPT focuses on knowledge base Q&A (RAG); xyvaClaw is a general-purpose AI assistant
+- xyvaClaw has self-evolution; FastGPT does not
+- xyvaClaw has 38+ diverse skills; FastGPT is RAG-focused
+- xyvaClaw has 5-level model fallback; FastGPT has basic retry
+- xyvaClaw has 112 TS files Feishu integration; FastGPT has basic bot
 
 ## Community and Support
 
