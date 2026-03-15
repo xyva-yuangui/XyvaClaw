@@ -1,0 +1,44 @@
+name: Create Release on Tag
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Extract version from tag
+        id: version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "xyvaClaw ${{ steps.version.outputs.VERSION }}"
+          body: |
+            ## xyvaClaw ${{ steps.version.outputs.VERSION }}
+
+            ### 安装 / Installation
+
+            ```bash
+            git clone https://github.com/xyva-yuangui/XyvaClaw.git && cd XyvaClaw && bash xyvaclaw-setup.sh
+            ```
+
+            Or download the Source code (zip) from the assets below.
+
+            ### 更新 / Update
+
+            ```bash
+            cd XyvaClaw && git pull origin main && bash xyvaclaw-setup.sh
+            ```
+          draft: false
+          prerelease: false
+          generate_release_notes: true

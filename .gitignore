@@ -7,5 +7,6 @@ dist/
 *.tar.gz
 config-base/extensions/*/node_modules/
 setup-wizard/node_modules/
+website/
 # setup-wizard/dist/ is intentionally tracked (pre-built for faster setup)
 !setup-wizard/dist/
