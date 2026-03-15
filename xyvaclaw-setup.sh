@@ -95,7 +95,7 @@ banner
 # ============================================
 # Step 1: Check system dependencies
 # ============================================
-log_step "1/7" "检查系统环境..."
+log_step "1/8" "检查系统环境..."
 
 MISSING=()
 
@@ -165,9 +165,96 @@ if [ ${#MISSING[@]} -gt 0 ]; then
 fi
 
 # ============================================
+# Step 1.5: Detect existing Claw installations
+# ============================================
+# This step only warns — it never deletes or modifies anything.
+# Wrapped in a subshell so any error here cannot break the install.
+detect_existing_claws() {
+    local FOUND_ISSUES=false
+
+    # --- Check for existing OpenClaw config directory ---
+    local OPENCLAW_DIR="${OPENCLAW_STATE_DIR:-$HOME/.openclaw}"
+    if [ -d "$OPENCLAW_DIR" ] && [ "$OPENCLAW_DIR" != "$XYVACLAW_HOME" ]; then
+        FOUND_ISSUES=true
+        log_warn "检测到已有 OpenClaw 配置目录: $OPENCLAW_DIR"
+        echo ""
+        echo -e "  ${BOLD}xyvaClaw 使用独立目录 $XYVACLAW_HOME，不会影响现有配置。${NC}"
+        echo -e "  如果你不再需要原版 OpenClaw，可以稍后手动清理："
+        echo ""
+        echo -e "  ${CYAN}# 停止原有 OpenClaw 服务${NC}"
+        echo "  openclaw gateway stop 2>/dev/null"
+        echo "  openclaw gateway uninstall 2>/dev/null"
+        echo ""
+        echo -e "  ${CYAN}# 删除原有配置（请先确认不需要）${NC}"
+        echo "  rm -rf $OPENCLAW_DIR"
+        echo ""
+    fi
+
+    # --- Check for existing OpenClaw launchd service (macOS) ---
+    if [ "$(uname)" = "Darwin" ]; then
+        if launchctl list 2>/dev/null | grep -q "ai.openclaw" 2>/dev/null; then
+            FOUND_ISSUES=true
+            log_warn "检测到原版 OpenClaw 自启动服务正在运行"
+            echo -e "  xyvaClaw 会创建自己的服务 (ai.xyvaclaw.gateway)，两者可以共存。"
+            echo -e "  如需停止原有服务："
+            echo "  launchctl bootout gui/\$UID/ai.openclaw.gateway 2>/dev/null"
+            echo "  rm -f ~/Library/LaunchAgents/ai.openclaw.gateway.plist"
+            echo ""
+        fi
+    fi
+
+    # --- Check for other Claw desktop apps (macOS) ---
+    local OTHER_CLAWS=()
+    for app_name in "QClaw" "AutoClaw" "WorkBuddy" "CoPaw"; do
+        if [ -d "/Applications/${app_name}.app" ] || [ -d "$HOME/Applications/${app_name}.app" ]; then
+            OTHER_CLAWS+=("$app_name")
+        fi
+    done
+    if [ ${#OTHER_CLAWS[@]} -gt 0 ]; then
+        FOUND_ISSUES=true
+        log_warn "检测到其他 Claw 产品: ${OTHER_CLAWS[*]}"
+        echo -e "  这些产品可能使用同一端口 (18789)，建议安装 xyvaClaw 前先关闭它们。"
+        echo -e "  xyvaClaw 使用完全独立的数据目录，不会影响这些产品的数据。"
+        echo ""
+    fi
+
+    # --- Check if default port 18789 is in use ---
+    if command -v lsof &>/dev/null; then
+        local PORT_PID
+        PORT_PID=$(lsof -ti:18789 2>/dev/null | head -1)
+        if [ -n "$PORT_PID" ]; then
+            local PORT_PROC
+            PORT_PROC=$(ps -p "$PORT_PID" -o comm= 2>/dev/null || echo "unknown")
+            FOUND_ISSUES=true
+            log_warn "端口 18789 已被占用 (PID: $PORT_PID, 进程: $PORT_PROC)"
+            echo -e "  xyvaClaw gateway 启动时也使用此端口。"
+            echo -e "  建议先关闭占用进程，或安装完成后修改端口配置。"
+            echo ""
+        fi
+    fi
+
+    if [ "$FOUND_ISSUES" = true ]; then
+        echo -e "  ${YELLOW}────────────────────────────────────────${NC}"
+        echo -e "  ${BOLD}以上仅为提示，不影响安装。xyvaClaw 使用独立目录，可以与其他 Claw 共存。${NC}"
+        echo -e "  ${YELLOW}────────────────────────────────────────${NC}"
+        echo ""
+        if [ "$AUTO_MODE" != true ]; then
+            auto_confirm "  按回车继续安装，或按 q 退出: " ""
+            if [[ $REPLY =~ ^[Qq]$ ]]; then
+                echo "退出安装"
+                exit 0
+            fi
+        fi
+    fi
+}
+
+# Run detection in a safe wrapper — any error here must not break install
+detect_existing_claws 2>/dev/null || true
+
+# ============================================
 # Step 2: Install OpenClaw runtime
 # ============================================
-log_step "2/7" "安装 OpenClaw 运行时..."
+log_step "2/8" "安装 OpenClaw 运行时..."
 
 if command -v openclaw &>/dev/null; then
     CURRENT_VER=$(openclaw --version 2>/dev/null || echo "unknown")
@@ -181,7 +268,7 @@ fi
 # ============================================
 # Step 3: Create xyvaClaw home directory
 # ============================================
-log_step "3/7" "创建 $BRAND 数据目录..."
+log_step "3/8" "创建 $BRAND 数据目录..."
 
 if [ -d "$XYVACLAW_HOME" ]; then
     log_warn "$XYVACLAW_HOME 已存在"
@@ -221,7 +308,7 @@ log_ok "运行时目录"
 # ============================================
 # Step 4: Setup wizard or manual config
 # ============================================
-log_step "4/7" "配置 $BRAND..."
+log_step "4/8" "配置 $BRAND..."
 
 WIZARD_DIR="$SCRIPT_DIR/setup-wizard"
 USE_WIZARD=false
@@ -389,7 +476,7 @@ fi
 # ============================================
 # Step 5: Generate identity files from templates
 # ============================================
-log_step "5/7" "生成身份文件..."
+log_step "5/8" "生成身份文件..."
 
 # SOUL.md (universal)
 if [ ! -f "$XYVACLAW_HOME/workspace/SOUL.md" ]; then
@@ -458,7 +545,7 @@ fi
 # ============================================
 # Step 6: Install dependencies
 # ============================================
-log_step "6/7" "安装依赖..."
+log_step "6/8" "安装依赖..."
 
 # Feishu extension npm deps
 if [ -d "$XYVACLAW_HOME/extensions/feishu" ] && [ -f "$XYVACLAW_HOME/extensions/feishu/package.json" ]; then
@@ -491,7 +578,7 @@ pip3 install --user edge-tts 2>/dev/null && log_ok "edge-tts (Python)" || log_wa
 # ============================================
 # Step 7: Configure environment + startup
 # ============================================
-log_step "7/7" "配置环境..."
+log_step "7/8" "配置环境..."
 
 # Write OPENCLAW_HOME to shell profile
 SHELL_RC=""
