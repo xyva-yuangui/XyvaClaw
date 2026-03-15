@@ -165,6 +165,34 @@ tar -czf xyvaclaw-backup.tar.gz -C ~ .xyvaclaw
 
 ---
 
+## 网络问题（中国大陆用户）
+
+### Q: GitHub 下载/clone 很慢？
+推荐以下方式：
+- 直接 [下载 ZIP 压缩包](https://github.com/xyva-yuangui/XyvaClaw/archive/refs/heads/main.zip)
+- 使用 GitHub 镜像：`git clone https://ghproxy.com/https://github.com/xyva-yuangui/XyvaClaw.git`
+- 使用代理工具加速
+
+### Q: npm install 很慢？
+切换到国内镜像：
+```bash
+npm config set registry https://registry.npmmirror.com
+```
+
+### Q: Homebrew 安装很慢？（macOS）
+使用国内一键安装脚本：
+```bash
+/bin/zsh -c "$(curl -fsSL https://gitee.com/cunkai/HomebrewCN/raw/master/Homebrew.sh)"
+```
+
+### Q: pip install 很慢？
+切换到国内镜像：
+```bash
+pip3 config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
+```
+
+---
+
 ## 故障排除
 
 ### Q: gateway 无法启动？
