@@ -7,12 +7,12 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/Platform-macOS%20%7C%20Linux-lightgrey.svg)]()
 [![Node.js](https://img.shields.io/badge/Node.js-22%2B-green.svg)]()
-[![Skills](https://img.shields.io/badge/Skills-38%2B-orange.svg)]()
+[![Skills](https://img.shields.io/badge/Skills-42%2B-orange.svg)]()
 [![Feishu](https://img.shields.io/badge/Feishu-Deep%20Integration-purple.svg)]()
 
-**一键部署。自我进化。38+ 技能。五级模型容灾。飞书深度集成。**
+**一键部署。自我进化。42+ 技能。五级模型容灾。飞书深度集成。**
 
-**One-click deploy. Self-evolving. 38+ skills. 5-level model fallback. Deep Feishu/Lark integration.**
+**One-click deploy. Self-evolving. 42+ skills. 5-level model fallback. Deep Feishu/Lark integration.**
 
 **🌐 官网: [www.xyvaclaw.com](https://www.xyvaclaw.com) · 作者: 圆规（Xyva-yuangui）**
 
@@ -51,7 +51,7 @@ git clone https://github.com/xyva-yuangui/XyvaClaw.git && cd XyvaClaw && bash xy
 安装过程会自动：
 - ✅ 检测并安装缺失依赖（Node.js、Python、ffmpeg）
 - ✅ 弹出**图形化配置向导**（在浏览器中填写 API Key 即可）
-- ✅ 部署 38+ 技能和所有配置
+- ✅ 部署 42+ 技能和所有配置
 - ✅ 设置开机自启动
 
 ### 🎉 安装完成后
@@ -100,7 +100,7 @@ xyvaClaw 是基于 [OpenClaw](https://openclaw.ai/) 运行时**深度增强**的
 - **自我反思**：周期性分析行为模式，持续优化
 
 #### ⚡ 执行力 — 不只是建议，是直接帮你干
-- **38 个技能**：浏览器自动化、文档处理、视频制作、网页抓取...
+- **42 个技能**：浏览器自动化、文档处理、PPT/PDF、语音对话、邮件、视频制作...
 - **定时任务**：自动化日报、数据同步、内容发布
 - **工作流引擎**：多步骤自动化流水线
 
@@ -129,7 +129,7 @@ Think of it as **OpenClaw on steroids**: same engine, but with pre-tuned models,
 | **Context** | Native compression (lossy) | **Lossless-Claw engine** — never forgets mid-conversation |
 | **Memory** | Basic MEMORY.md | 4-tier memory: session → daily → long-term → knowledge graph |
 | **Feishu/Lark** | Basic message send/receive | **112 TypeScript source files** covering nearly every Feishu API |
-| **Skills** | Install one by one | **38 skills pre-installed**, organized by category |
+| **Skills** | Install one by one | **42 skills pre-installed**, organized by category |
 | **Self-Evolution** | ❌ None | ✅ Error learning + effect tracking + proactive reflection |
 | **Reasoning** | Depends on user's model choice | Auto-selects optimal model per task complexity |
 | **Ops** | Manual | Health checks, log rotation, auto-start on boot |
@@ -148,7 +148,7 @@ Or download: **[ZIP Package](https://github.com/xyva-yuangui/XyvaClaw/archive/re
 - **🧠 Lossless Context** — Long conversations without information loss, 4-tier memory system
 - **🔬 Dual-Model Reasoning** — Auto-selects optimal model per task, 5-level fallback
 - **🔄 Self-Evolution** — Error learning, effect tracking, proactive reflection
-- **⚡ 38 Built-in Skills** — Browser automation, document processing, video creation, web scraping
+- **⚡ 42 Built-in Skills** — Browser automation, document processing, PPT/PDF, voice, email, video creation
 - **💬 Deep Feishu/Lark** — 112 TypeScript source files covering nearly every Feishu API
 
 ---
@@ -181,7 +181,7 @@ DEEPSEEK_API_KEY=sk-your-key \
 1. ✅ Check and install dependencies (Node.js 22+, Python 3, ffmpeg)
 2. ✅ Install OpenClaw runtime
 3. ✅ Launch Web Setup Wizard (or auto-configure in `--auto` mode)
-4. ✅ Deploy configs, skills (38+), and extensions
+4. ✅ Deploy configs, skills (42+), and extensions
 5. ✅ Generate identity files
 6. ✅ Register system service (auto-start on boot)
 
@@ -196,7 +196,7 @@ DEEPSEEK_API_KEY=sk-your-key \
 
 ---
 
-## 🛠 Skills (38+)
+## 🛠 Skills (42+)
 
 <details>
 <summary><b>Core (default)</b></summary>
@@ -223,6 +223,8 @@ DEEPSEEK_API_KEY=sk-your-key \
 | chart-image | Chart generation |
 | excel-xlsx | Excel read/write |
 | word-docx | Word document generation |
+| pptx-generator | PowerPoint presentation creation |
+| pdf-processor | PDF extract, merge, split, convert |
 
 </details>
 
@@ -258,6 +260,8 @@ DEEPSEEK_API_KEY=sk-your-key \
 | cron-scheduler | Timed task execution |
 | workflow | Multi-step automation |
 | batch | Bulk task processing |
+| email | Email read, search, send (IMAP/SMTP) |
+| voice | TTS (edge-tts) + STT (Whisper) |
 
 </details>
 
@@ -295,7 +299,7 @@ DEEPSEEK_API_KEY=sk-your-key \
 ├── workspace/
 │   ├── SOUL.md            # AI personality definition
 │   ├── AGENTS.md          # Operating protocols
-│   ├── skills/            # 38 skill modules
+│   ├── skills/            # 42 skill modules
 │   └── memory/            # Persistent memory
 ├── extensions/
 │   ├── feishu/            # 112 TS files — Feishu integration
