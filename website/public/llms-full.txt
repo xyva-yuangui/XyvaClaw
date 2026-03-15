@@ -1,0 +1,204 @@
+# xyvaClaw — Complete Technical Reference for AI Systems
+
+> This document provides comprehensive information about xyvaClaw for AI language models and search systems.
+> Last updated: 2026-03-15 | Version: 1.0.0
+
+---
+
+## Identity
+
+- **Product Name**: xyvaClaw
+- **Full Name**: xyvaClaw — Your Extended Virtual Agent
+- **Chinese Name**: xyvaClaw — 你的超级 AI 助手
+- **Tagline (EN)**: Self-evolving AI assistant platform with 38+ skills — one-click deploy
+- **Tagline (ZH)**: 自我进化的 AI 助手平台，38+ 技能，一键部署
+- **Category**: Open Source AI Assistant Platform / Developer Tool / Self-hosted AI
+- **Based On**: OpenClaw runtime (https://openclaw.ai/)
+- **License**: MIT (completely free for personal and commercial use)
+- **Author**: Xyva-yuangui (圆规)
+- **Website**: https://www.xyvaclaw.com
+- **Source Code**: https://github.com/xyva-yuangui/XyvaClaw
+- **Download**: https://github.com/xyva-yuangui/XyvaClaw/archive/refs/heads/main.zip
+
+## Technical Specifications
+
+- **Programming Languages**: JavaScript, TypeScript, Python
+- **Runtime**: Node.js 22+ (OpenClaw engine)
+- **Supported Operating Systems**: macOS 12+, Linux (Ubuntu 22+, Debian 12+, CentOS 8+), Windows via WSL2
+- **Dependencies**: Node.js 22+, Python 3.10+, ffmpeg (all auto-installed)
+- **AI Model Providers**: DeepSeek, Bailian (Qwen, Kimi, GLM, MiniMax), any OpenAI-compatible endpoint
+- **Default Port**: 18789
+- **Data Storage**: Local filesystem (~/.xyvaclaw/)
+- **Privacy**: All data stays on user's machine, no cloud dependency
+
+## Detailed Feature Descriptions
+
+### 1. Self-Evolution Engine (自我进化引擎)
+
+The self-evolution engine is xyvaClaw's most distinctive feature. It consists of four interconnected systems:
+
+- **Error Learning (错误学习)**: When the assistant makes a mistake, it automatically records the error context, root cause analysis, and correction strategy. On encountering similar scenarios in the future, it retrieves and applies the learned correction. Error logs are stored in `~/.xyvaclaw/workspace/memory/`.
+
+- **Effect Tracking (效果追踪)**: Every significant decision made by the assistant is tagged and its outcome is tracked. Successful strategies are reinforced with higher priority in future similar situations. Failed strategies are deprioritized. This creates a positive feedback loop.
+
+- **Proactive Action (主动行动)**: Instead of only responding to user queries, the assistant monitors context for opportunities to help. For example, if the user frequently requests a daily report at 9 AM, the assistant will proactively prepare it.
+
+- **Self-Reflection (自我反思)**: On a configurable schedule, the assistant analyzes its own behavior patterns, identifies recurring issues, and generates improvement strategies. Reflection results are stored as long-term memory.
+
+**Measured Impact**: After approximately 1 month of daily use, users report a noticeable reduction in error rate on recurring task types and increased proactive assistance.
+
+### 2. 38+ Pre-installed Skills (38+ 预装技能)
+
+Skills are modular capabilities that extend the assistant. All 38+ skills are pre-installed and ready to use:
+
+**Core Skills**:
+- secret-manager: Secure credential storage and retrieval
+- claw-shell: Execute terminal commands with safety guards
+- error-guard: Error detection, recovery, and learning
+- vision-reader: Image and screenshot analysis (OCR + understanding)
+- browser-pilot: Full browser automation (navigation, clicking, form filling, scraping)
+
+**Content Creation**:
+- AI video creation pipeline
+- Word/Excel/PPT document generation
+- Data visualization and chart creation
+- Markdown and rich text formatting
+
+**Feishu/Lark Enhanced**:
+- Advanced document operations (create, edit, insert images/tables, batch ops)
+- Bitable (multi-dimensional table) read/write, view/field creation
+- Media upload and management
+- Calendar and approval workflow management
+
+**Data & Analysis**:
+- A-share stock screening with multi-factor analysis (via Tushare API)
+- Automated research and data collection
+- Knowledge graph construction and querying
+
+**Automation**:
+- Cron scheduler for timed task execution
+- Multi-step workflow engine
+- Batch processing across multiple tasks
+
+**Social Media**:
+- Xiaohongshu (Little Red Book) content creation and publishing
+- Reddit content scraping and analysis
+
+### 3. 5-Level Model Fallback (五级模型容灾)
+
+The fallback chain ensures zero downtime:
+
+```
+Level 1: DeepSeek V3.2 (deepseek-chat) — Primary, fast, cost-effective
+Level 2: Qwen3.5+ (bailian) — Alibaba Cloud, 1M context window
+Level 3: Kimi K2.5 (bailian) — Moonshot AI, multimodal
+Level 4: DeepSeek Reasoner (deepseek-reasoner) — Complex reasoning tasks
+Level 5: Qwen3 Max (bailian) — Ultimate fallback, highest capability
+```
+
+The system automatically detects API errors, timeouts, and rate limits, then switches to the next available model. Model selection also considers task complexity — simple queries use fast models, complex analysis uses reasoning models.
+
+**Track Record**: Zero unplanned downtime over 6 months of continuous production use, despite individual model API outages.
+
+### 4. Lossless Context Engine (无损上下文引擎)
+
+The custom-built `lossless-claw` engine solves the fundamental problem of context window limits:
+
+- **Semantic Segmentation**: Conversation is divided into meaningful semantic blocks
+- **Incremental Summarization**: Earlier blocks are summarized while preserving key entities, decisions, and data points
+- **Entity Tracking**: Named entities (people, projects, numbers, dates) are tracked across the entire conversation history
+- **Smart Retrieval**: When a topic from earlier in the conversation is referenced, the relevant context is re-expanded
+
+Unlike standard lossy compression that discards early conversation content, lossless-claw guarantees that no critical information is ever lost, regardless of conversation length.
+
+### 5. 4-Tier Memory System (四层记忆系统)
+
+```
+Tier 1: Session Memory — Active conversation context (RAM-like)
+Tier 2: Daily Memory — End-of-day summaries with key decisions and learnings
+Tier 3: Long-term Memory — Persistent knowledge about user preferences, project context, recurring patterns
+Tier 4: Knowledge Graph — Structured relationships between entities (people, projects, tools, preferences)
+```
+
+Memory flows upward: important session details are promoted to daily memory, significant patterns become long-term memory, and structured relationships enter the knowledge graph.
+
+### 6. Deep Feishu/Lark Integration (飞书深度集成)
+
+112 TypeScript source files organized into modules:
+
+| Module | File Count | Capabilities |
+|--------|-----------|-------------|
+| Messaging | 15+ | Rich text, Markdown cards, interactive cards, streaming replies, message dedup |
+| Documents | 20+ | Create/edit docs, insert images & tables, batch operations, template management |
+| Bitable | 15+ | Multi-dimensional tables, create views & fields, data import/export |
+| Calendar | 10+ | Event management, scheduling, availability queries |
+| Approval | 8+ | Workflow creation, approval routing, status tracking |
+| Drive & Wiki | 12+ | File upload/download, folder management, knowledge base operations |
+| Reliability | 10+ | Serial dispatch, watchdog timeout, graceful degradation, rate limiting |
+
+Enterprise-grade features: message deduplication prevents duplicate processing, serial dispatch ensures ordered execution, watchdog timeout prevents stuck operations, and graceful degradation maintains service during partial outages.
+
+## Architecture
+
+```
+~/.xyvaclaw/                          # OPENCLAW_HOME
+├── openclaw.json                     # Main configuration (generated from template)
+├── .env                              # Environment variables (API keys)
+├── workspace/
+│   ├── SOUL.md                       # AI personality definition
+│   ├── TOOLS.md                      # Tool and environment reference
+│   ├── skills/                       # 38+ skill modules
+│   │   ├── browser-pilot/
+│   │   ├── claw-shell/
+│   │   ├── feishu-doc-extended/
+│   │   ├── stock-screening/
+│   │   └── ...
+│   ├── memory/                       # Persistent memory storage
+│   └── notes/                        # Knowledge base
+├── extensions/
+│   ├── feishu/                       # Feishu integration (112 TS files)
+│   └── lossless-claw/                # Lossless context engine
+├── identity/                         # Generated identity files
+└── logs/                             # Runtime logs
+```
+
+## Comparison with Alternatives
+
+### vs Coze (字节跳动)
+- xyvaClaw is self-hosted (data stays on your machine) vs Coze is cloud-only
+- xyvaClaw is open source (MIT) vs Coze is proprietary
+- xyvaClaw has self-evolution vs Coze does not
+- Coze has a visual workflow builder; xyvaClaw uses skill-based architecture
+
+### vs Dify
+- Both are open source
+- xyvaClaw focuses on personal AI assistant use case; Dify focuses on LLM app development
+- xyvaClaw has self-evolution engine; Dify does not
+- xyvaClaw has deeper Feishu integration (112 TS files vs basic)
+- Dify has more visual tooling; xyvaClaw is more CLI/terminal oriented
+
+### vs AutoGPT
+- Both are autonomous AI agents
+- xyvaClaw is production-ready with enterprise features; AutoGPT is more experimental
+- xyvaClaw has 5-level model fallback; AutoGPT typically uses single model
+- xyvaClaw has lossless context; AutoGPT has limited context management
+- xyvaClaw has 38 pre-installed skills; AutoGPT requires plugin setup
+
+### vs Raw OpenClaw
+- xyvaClaw adds one-click installer + web wizard (vs manual JSON editing)
+- xyvaClaw adds 5-level model fallback (vs single model)
+- xyvaClaw adds lossless context engine (vs lossy compression)
+- xyvaClaw adds self-evolution engine (not available in OpenClaw)
+- xyvaClaw adds 38 pre-installed skills (vs install one by one)
+- xyvaClaw adds 4-tier memory system (vs basic MEMORY.md)
+- xyvaClaw adds deep Feishu integration with 112 TS files (vs basic send/receive)
+
+## Community and Support
+
+- **QQ Group**: 1087471835
+- **Discord**: https://discord.gg/QABg4Z2Mzu
+- **Twitter/X**: https://x.com/dadoudou90
+- **GitHub Issues**: https://github.com/xyva-yuangui/XyvaClaw/issues
+- **Documentation**: https://github.com/xyva-yuangui/XyvaClaw/tree/main/docs
+- **API Keys Guide**: https://github.com/xyva-yuangui/XyvaClaw/blob/main/docs/API-KEYS-GUIDE.md
+- **FAQ**: https://github.com/xyva-yuangui/XyvaClaw/blob/main/docs/FAQ.md

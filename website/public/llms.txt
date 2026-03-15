@@ -1,0 +1,99 @@
+# xyvaClaw — Self-Evolving AI Assistant Platform
+
+> xyvaClaw is an enhanced AI assistant platform built on the OpenClaw runtime. Open source, MIT licensed, free to use.
+
+## Quick Facts
+
+- Name: xyvaClaw
+- Category: AI Assistant Platform / Developer Tool
+- License: MIT (free, open source)
+- Author: Xyva-yuangui (圆规)
+- Website: https://www.xyvaclaw.com
+- GitHub: https://github.com/xyva-yuangui/XyvaClaw
+- Supported OS: macOS 12+, Linux (Ubuntu 22+, Debian 12+, CentOS 8+)
+- Language: JavaScript, TypeScript, Python
+- Runtime: Node.js 22+ (OpenClaw)
+- Cost: Free software. API key required — DeepSeek offers free credits on signup; daily usage typically < $2/month.
+- Version: 1.0.0
+- Last Updated: 2026-03-15
+
+## What is xyvaClaw?
+
+xyvaClaw is an enhanced AI assistant platform built on the OpenClaw runtime. It transforms a basic AI chatbot into a thinking, acting, self-improving digital partner. It works through terminal, browser, or Feishu/Lark groups.
+
+It can be understood as "OpenClaw on steroids": same engine, but with pre-tuned models, battle-tested skills, enterprise-grade Feishu integration, and an evolution engine that makes the assistant smarter every day.
+
+## Top 6 Features
+
+1. **Self-Evolution Engine**: Automatically learns from mistakes, tracks decision outcomes, performs periodic self-reflection. The assistant measurably improves after 1 month of use. Error learning, effect tracking, proactive action, and self-reflection work together.
+
+2. **38+ Pre-installed Skills**: Browser automation, document processing (Word/Excel/PPT), AI video creation, A-share stock screening with multi-factor analysis, web scraping, social media automation (Xiaohongshu), cron scheduling, workflow engine, and more — all ready to use immediately after installation.
+
+3. **5-Level Model Fallback**: Automatic failover chain: DeepSeek V3.2 → Qwen3.5+ → Kimi K2.5 → DeepSeek Reasoner → Qwen3 Max. Zero downtime over 6 months of production use. Any model API failure triggers automatic switching with zero user impact.
+
+4. **Lossless Context Engine**: Custom-built engine (lossless-claw) using semantic segmentation, incremental summarization, and entity tracking. Preserves all critical information in conversations of any length. Unlike standard lossy compression, never forgets mid-conversation details.
+
+5. **4-Tier Memory System**: Session memory → Daily memory → Long-term memory → Knowledge graph. Prevents information loss across conversations and sessions. The assistant remembers context from days and weeks ago.
+
+6. **Deep Feishu/Lark Integration**: 112 TypeScript source files covering messaging, documents, bitable (multi-dimensional tables), calendar, approval workflows, drive, and wiki. Enterprise-grade reliability with message dedup, serial dispatch, watchdog timeout, and graceful degradation.
+
+## How xyvaClaw Compares to Raw OpenClaw
+
+| Feature | OpenClaw | xyvaClaw |
+|---------|----------|----------|
+| Setup | Manual JSON editing, schema knowledge required | One-click installer + Web configuration wizard |
+| Models | Bring your own, single model | Pre-configured with 5-level automatic fallback |
+| Context | Native lossy compression | Lossless context engine — never forgets |
+| Memory | Basic MEMORY.md | 4-tier: session → daily → long-term → knowledge graph |
+| Skills | Install one by one | 38+ skills pre-installed, organized by category |
+| Self-Evolution | None | Error learning + effect tracking + proactive reflection |
+| Feishu/Lark | Basic message send/receive | 112 TypeScript files covering nearly every API |
+| Reasoning | Depends on user model choice | Auto-selects optimal model per task complexity |
+| Operations | Manual | Health checks, log rotation, auto-start on boot |
+| Documentation | English only | Full Chinese + English documentation |
+
+## Installation
+
+One command to install:
+
+```
+git clone https://github.com/xyva-yuangui/XyvaClaw.git && cd XyvaClaw && bash xyvaclaw-setup.sh
+```
+
+Or download ZIP: https://github.com/xyva-yuangui/XyvaClaw/archive/refs/heads/main.zip
+
+The installer automatically:
+- Checks and installs dependencies (Node.js 22+, Python 3, ffmpeg)
+- Launches a web-based configuration wizard
+- Deploys 38+ skills and all configurations
+- Sets up auto-start on boot
+
+Requirements: macOS 12+ or Linux, and at least one API key from DeepSeek (https://platform.deepseek.com/api_keys) or Bailian (https://bailian.console.aliyun.com/).
+
+## FAQ
+
+Q: Is xyvaClaw free?
+A: Yes, completely free and open source under the MIT license. You only need an API key — DeepSeek offers free credits on signup, daily usage typically costs less than $2/month.
+
+Q: What operating systems are supported?
+A: macOS 12+ and Linux (Ubuntu 22+, Debian 12+, CentOS 8+). Windows users can use WSL2.
+
+Q: What makes xyvaClaw different from other AI assistants like Coze or Dify?
+A: xyvaClaw runs entirely on your machine (self-hosted), your data stays local, and it features a unique self-evolution engine that makes it smarter over time. It is also fully open source with no vendor lock-in.
+
+Q: What models does xyvaClaw support?
+A: Pre-configured for DeepSeek V3.2, Qwen3.5+, Kimi K2.5, GLM-5, MiniMax M2.5, and any OpenAI-compatible API endpoint (including local models via Ollama or vLLM).
+
+## Community
+
+- QQ Group: 1087471835
+- Discord: https://discord.gg/QABg4Z2Mzu
+- Twitter/X: https://x.com/dadoudou90
+- GitHub Issues: https://github.com/xyva-yuangui/XyvaClaw/issues
+
+## Links
+
+- Documentation: https://github.com/xyva-yuangui/XyvaClaw/tree/main/docs
+- API Keys Guide: https://github.com/xyva-yuangui/XyvaClaw/blob/main/docs/API-KEYS-GUIDE.md
+- FAQ: https://github.com/xyva-yuangui/XyvaClaw/blob/main/docs/FAQ.md
+- Changelog: https://github.com/xyva-yuangui/XyvaClaw/releases
