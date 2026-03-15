@@ -21,8 +21,8 @@ git --version
 
 ### 3. 配置 Git 身份
 ```bash
-git config --global user.name "你的名字"
-git config --global user.email "你的邮箱@example.com"
+git config --global user.name "xyva-yuangui"
+git config --global user.email "yuhw1990@gmail.com"
 ```
 
 ### 4. 配置 GitHub 认证
@@ -31,7 +31,7 @@ git config --global user.email "你的邮箱@example.com"
 
 ```bash
 # 生成 SSH Key（如果没有）
-ssh-keygen -t ed25519 -C "你的邮箱@example.com"
+ssh-keygen -t ed25519 -C "yuhw1990@gmail.com"
 # 一路回车即可
 
 # 复制公钥到剪贴板
@@ -81,7 +81,7 @@ ssh -T git@github.com
 cd ~/Desktop/xyvaclaw
 
 # 添加 GitHub 远程仓库（用你自己的用户名替换 YOUR_USERNAME）
-git remote add origin git@github.com:xyva-yuangui/XyvaClaw.git
+git remote add origin git@github.com:YOUR_USERNAME/xyvaclaw.git
 
 # 推送到 GitHub
 git push -u origin main
@@ -89,7 +89,7 @@ git push -u origin main
 
 如果用 HTTPS 而非 SSH：
 ```bash
-git remote add origin https://github.com/xyva-yuangui/XyvaClaw.git
+git remote add origin https://github.com/YOUR_USERNAME/xyvaclaw.git
 git push -u origin main
 # 会弹窗要求登录 GitHub
 ```
@@ -161,7 +161,7 @@ git push origin v1.0.0
 ## 📦 安装
 
 \```bash
-git clone https://github.com/xyva-yuangui/XyvaClaw.git
+git clone https://github.com/YOUR_USERNAME/xyvaclaw.git
 cd xyvaclaw
 bash xyvaclaw-setup.sh    # macOS
 bash xyvaclaw-setup-linux.sh  # Linux
@@ -246,7 +246,7 @@ git push origin v1.1.0
 ### Q: 推送时报错 "remote already exists"
 ```bash
 git remote remove origin
-git remote add origin git@github.com:xyva-yuangui/XyvaClaw.git
+git remote add origin git@github.com:YOUR_USERNAME/xyvaclaw.git
 ```
 
 ### Q: 如何删除已推送的 commit

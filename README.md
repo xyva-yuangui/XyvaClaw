@@ -138,34 +138,61 @@ xyvaClaw 是基于 [OpenClaw](https://github.com/nicepkg/openclaw) 运行时**�
 
 ## 🚀 Quick Start
 
-### macOS
+### Interactive Install (with Web Wizard)
+
 ```bash
+# macOS
 git clone https://github.com/xyva-yuangui/XyvaClaw.git
-cd xyvaclaw
-bash xyvaclaw-setup.sh
+cd XyvaClaw && bash xyvaclaw-setup.sh
+
+# Linux
+git clone https://github.com/xyva-yuangui/XyvaClaw.git
+cd XyvaClaw && bash xyvaclaw-setup-linux.sh
 ```
 
-### Linux (Ubuntu/Debian/CentOS)
+### One-Liner Unattended Install (zero interaction)
+
 ```bash
-git clone https://github.com/xyva-yuangui/XyvaClaw.git
-cd xyvaclaw
-bash xyvaclaw-setup-linux.sh
+# macOS — fully automatic, no prompts
+DEEPSEEK_API_KEY=sk-your-key \
+  bash -c 'git clone https://github.com/xyva-yuangui/XyvaClaw.git && cd XyvaClaw && bash xyvaclaw-setup.sh --auto'
+
+# Linux — fully automatic, no prompts
+DEEPSEEK_API_KEY=sk-your-key \
+  bash -c 'git clone https://github.com/xyva-yuangui/XyvaClaw.git && cd XyvaClaw && bash xyvaclaw-setup-linux.sh --auto'
 ```
 
-The installer will:
+The `--auto` flag enables **unattended mode** — all prompts are auto-answered with sensible defaults:
+- ✅ Missing dependencies installed automatically
+- ✅ Existing config merged (not overwritten)
+- ✅ API keys injected from environment variables
+- ✅ System service registered and started in background
+
+**Environment variables supported in `--auto` mode:**
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `DEEPSEEK_API_KEY` | One of these | [DeepSeek API Key](https://platform.deepseek.com/api_keys) |
+| `BAILIAN_API_KEY` | required | [百炼 API Key](https://bailian.console.aliyun.com/) |
+| `FEISHU_APP_ID` | Optional | Feishu Bot App ID |
+| `FEISHU_APP_SECRET` | Optional | Feishu Bot App Secret |
+| `ASSISTANT_NAME` | Optional | Custom assistant name |
+
+### What the installer does:
 1. ✅ Check and install dependencies (Node.js 22+, Python 3, ffmpeg)
 2. ✅ Install OpenClaw runtime
-3. ✅ Launch Web Setup Wizard (configure API keys in browser)
-4. ✅ Deploy configs, skills, and extensions
-5. ✅ Register system service (auto-start on boot)
+3. ✅ Launch Web Setup Wizard (or auto-configure in `--auto` mode)
+4. ✅ Deploy configs, skills (38+), and extensions
+5. ✅ Generate identity files
+6. ✅ Register system service (auto-start on boot)
 
 ### Requirements
 
 | Requirement | Details |
-|-------------|---------|
+|-------------|----------|
 | **OS** | macOS 12+ or Linux (Ubuntu 22+, Debian 12+, CentOS 8+) |
-| **Node.js** | 22+ |
-| **Python** | 3.10+ |
+| **Node.js** | 22+ (auto-installed if missing) |
+| **Python** | 3.10+ (auto-installed if missing) |
 | **API Key** | At least one: [DeepSeek](https://platform.deepseek.com/api_keys) or [Bailian](https://bailian.console.aliyun.com/) |
 
 ---

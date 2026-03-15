@@ -5,13 +5,20 @@ import { useLang, t } from '../i18n';
 export default function Install() {
   const { lang } = useLang();
   const [tab, setTab] = useState('mac');
+  const [mode, setMode] = useState('interactive');
   const [copied, setCopied] = useState(false);
 
   const commands = {
-    mac: `git clone https://github.com/xyva-yuangui/XyvaClaw.git
+    mac: mode === 'auto'
+      ? `DEEPSEEK_API_KEY=sk-your-key \\
+  bash -c 'git clone https://github.com/xyva-yuangui/XyvaClaw.git && cd XyvaClaw && bash xyvaclaw-setup.sh --auto'`
+      : `git clone https://github.com/xyva-yuangui/XyvaClaw.git
 cd XyvaClaw
 bash xyvaclaw-setup.sh`,
-    linux: `git clone https://github.com/xyva-yuangui/XyvaClaw.git
+    linux: mode === 'auto'
+      ? `DEEPSEEK_API_KEY=sk-your-key \\
+  bash -c 'git clone https://github.com/xyva-yuangui/XyvaClaw.git && cd XyvaClaw && bash xyvaclaw-setup-linux.sh --auto'`
+      : `git clone https://github.com/xyva-yuangui/XyvaClaw.git
 cd XyvaClaw
 bash xyvaclaw-setup-linux.sh`,
   };
@@ -22,11 +29,18 @@ bash xyvaclaw-setup-linux.sh`,
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const steps = [
+  const steps = mode === 'auto' ? [
+    { icon: '✅', en: 'Auto-install all dependencies (Node.js, Python, ffmpeg)', zh: '自动安装所有依赖（Node.js、Python、ffmpeg）' },
+    { icon: '📦', en: 'Install OpenClaw runtime', zh: '安装 OpenClaw 运行时' },
+    { icon: '🔑', en: 'Inject API keys from environment variables', zh: '从环境变量注入 API Key' },
+    { icon: '🚀', en: 'Deploy configs, skills (38+), extensions', zh: '部署配置、技能（38+）、扩展' },
+    { icon: '⚙️', en: 'Register system service + auto-start gateway', zh: '注册系统服务 + 自动启动 Gateway' },
+    { icon: '🎉', en: 'Done! Zero interaction required', zh: '完成！全程零交互' },
+  ] : [
     { icon: '✅', en: 'Check & install dependencies (Node.js 22+, Python 3, ffmpeg)', zh: '检测并安装依赖（Node.js 22+、Python 3、ffmpeg）' },
     { icon: '📦', en: 'Install OpenClaw runtime via npm', zh: '通过 npm 安装 OpenClaw 运行时' },
     { icon: '🌐', en: 'Launch Web Setup Wizard — configure API keys in browser', zh: '启动 Web 配置向导 — 在浏览器中配置 API Key' },
-    { icon: '🚀', en: 'Deploy configs, skills (38), and extensions (Feishu + Lossless-Claw)', zh: '部署配置、技能（38 个）和扩展（飞书 + 无损引擎）' },
+    { icon: '🚀', en: 'Deploy configs, skills (38+), and extensions', zh: '部署配置、技能（38+）和扩展' },
     { icon: '🔧', en: 'Generate identity files from templates', zh: '从模板生成身份文件' },
     { icon: '⚙️', en: 'Register system service — auto-start on boot', zh: '注册系统服务 — 开机自启' },
   ];
@@ -41,6 +55,22 @@ bash xyvaclaw-setup-linux.sh`,
           <p className="text-gray-400 text-lg">
             {t(lang, '一条命令部署，浏览器中完成配置', 'One command to deploy, configure in browser')}
           </p>
+        </div>
+
+        {/* Mode Toggle */}
+        <div className="flex justify-center gap-3 mb-4">
+          <button
+            onClick={() => setMode('interactive')}
+            className={`px-4 py-2 rounded-lg text-xs font-medium transition ${mode === 'interactive' ? 'bg-white/10 text-white' : 'text-gray-500 hover:text-gray-300'}`}
+          >
+            {t(lang, '🌐 交互式安装', '🌐 Interactive')}
+          </button>
+          <button
+            onClick={() => setMode('auto')}
+            className={`px-4 py-2 rounded-lg text-xs font-medium transition ${mode === 'auto' ? 'bg-brand-600/20 text-brand-400 ring-1 ring-brand-500/30' : 'text-gray-500 hover:text-gray-300'}`}
+          >
+            {t(lang, '⚡ 一键无人值守', '⚡ One-Liner Auto')}
+          </button>
         </div>
 
         {/* OS Tabs */}
@@ -128,6 +158,14 @@ bash xyvaclaw-setup-linux.sh`,
             <a href="https://bailian.console.aliyun.com/" target="_blank" rel="noopener noreferrer" className="text-brand-400 hover:text-brand-300">{t(lang, '百炼', 'Bailian')}</a>
             )
           </p>
+          {mode === 'auto' && (
+            <p className="text-xs text-gray-600 mt-2">
+              {t(lang,
+                '💡 小窃门：缺少依赖也不用担心，--auto 模式会自动安装 Node.js、Python、ffmpeg。只需提前准备好 API Key 即可。',
+                '💡 Tip: Even if you have nothing installed, --auto mode handles everything. Just have your API key ready.'
+              )}
+            </p>
+          )}
         </div>
       </div>
     </section>

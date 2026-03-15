@@ -2,6 +2,11 @@
 # ============================================
 # xyvaClaw 一键安装脚本 (macOS)
 # 基于 OpenClaw 运行时的品牌化 AI 助手平台
+#
+# Usage:
+#   bash xyvaclaw-setup.sh              # 交互式安装
+#   bash xyvaclaw-setup.sh --auto       # 无人值守安装（自动应答所有提示）
+#   DEEPSEEK_API_KEY=sk-xxx bash xyvaclaw-setup.sh --auto  # 全自动安装+配置
 # ============================================
 set -euo pipefail
 
@@ -9,6 +14,37 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 XYVACLAW_HOME="${XYVACLAW_HOME:-$HOME/.xyvaclaw}"
 WIZARD_PORT=19090
 BRAND="xyvaClaw"
+
+# Auto mode: --auto or -y or AUTO_INSTALL=1
+AUTO_MODE=false
+for arg in "$@"; do
+    case "$arg" in
+        --auto|-y|--yes) AUTO_MODE=true ;;
+    esac
+done
+[ "${AUTO_INSTALL:-}" = "1" ] && AUTO_MODE=true
+
+auto_confirm() {
+    # In auto mode, return the default answer; otherwise read from user
+    local prompt="$1" default="${2:-y}"
+    if [ "$AUTO_MODE" = true ]; then
+        REPLY="$default"
+        echo -e "$prompt $default (auto)"
+        return 0
+    fi
+    read -p "$prompt" -n 1 -r
+    echo ""
+}
+
+auto_confirm_line() {
+    local prompt="$1" default="${2:-}"
+    if [ "$AUTO_MODE" = true ]; then
+        REPLY="$default"
+        echo -e "$prompt (auto)"
+        return 0
+    fi
+    read -p "$prompt" -r
+}
 
 # Colors
 RED='\033[0;31m'
@@ -105,8 +141,7 @@ if [ ${#MISSING[@]} -gt 0 ]; then
         echo "   - $dep"
     done
     echo ""
-    read -p "是否自动安装？(y/n) " -n 1 -r
-    echo ""
+    auto_confirm "是否自动安装？(y/n) " y
     if [[ $REPLY =~ ^[Yy]$ ]]; then
         if ! command -v brew &>/dev/null; then
             echo "📦 安装 Homebrew..."
@@ -146,8 +181,7 @@ log_step "3/7" "创建 $BRAND 数据目录..."
 
 if [ -d "$XYVACLAW_HOME" ]; then
     log_warn "$XYVACLAW_HOME 已存在"
-    read -p "  是否备份并重新部署？(y=备份覆盖 / n=合并 / q=退出) " -n 1 -r
-    echo ""
+    auto_confirm "  是否备份并重新部署？(y=备份覆盖 / n=合并 / q=退出) " n
     if [[ $REPLY =~ ^[Yy]$ ]]; then
         BACKUP="$HOME/.xyvaclaw.backup.$(date '+%Y%m%d_%H%M%S')"
         log_info "备份到 $BACKUP"
@@ -189,27 +223,65 @@ WIZARD_DIR="$SCRIPT_DIR/setup-wizard"
 USE_WIZARD=false
 
 if [ -d "$WIZARD_DIR" ] && [ -f "$WIZARD_DIR/package.json" ]; then
-    echo ""
-    echo -e "  ${BOLD}选择配置方式:${NC}"
-    echo "    1) 🌐 Web 配置向导 (推荐，图形界面)"
-    echo "    2) 📝 手动编辑 .env 文件"
-    echo ""
-    read -p "  请选择 (1/2): " -n 1 -r
-    echo ""
+    if [ "$AUTO_MODE" = true ]; then
+        # Auto mode: skip wizard, use env vars or .env template directly
+        log_info "无人值守模式：跳过 Web 向导，使用环境变量/模板配置"
+        USE_WIZARD=false
+    else
+        echo ""
+        echo -e "  ${BOLD}选择配置方式:${NC}"
+        echo "    1) 🌐 Web 配置向导 (推荐，图形界面)"
+        echo "    2) 📝 手动编辑 .env 文件"
+        echo ""
+        read -p "  请选择 (1/2): " -n 1 -r
+        echo ""
 
-    if [[ $REPLY == "1" ]]; then
-        USE_WIZARD=true
+        if [[ $REPLY == "1" ]]; then
+            USE_WIZARD=true
+        fi
     fi
 fi
 
 if [ "$USE_WIZARD" = true ]; then
     log_info "启动配置向导..."
 
-    # Install wizard deps if needed
-    if [ ! -d "$WIZARD_DIR/node_modules" ]; then
-        (cd "$WIZARD_DIR" && npm install --production 2>/dev/null) || true
+    # Check if frontend is built (dist/ may be absent after git clone)
+    NEED_BUILD=false
+    if [ ! -f "$WIZARD_DIR/dist/index.html" ]; then
+        NEED_BUILD=true
+        log_info "前端未构建，正在安装依赖并构建..."
     fi
 
+    # Install wizard deps if needed
+    if [ ! -d "$WIZARD_DIR/node_modules" ] || [ "$(ls -A "$WIZARD_DIR/node_modules" 2>/dev/null | head -1)" = "" ]; then
+        if [ "$NEED_BUILD" = true ]; then
+            # Full install needed (includes vite for building)
+            (cd "$WIZARD_DIR" && npm install 2>/dev/null) || {
+                log_warn "npm install 失败，将使用手动配置"
+                USE_WIZARD=false
+            }
+        else
+            # Distribution mode: only server deps needed
+            (cd "$WIZARD_DIR" && npm install --production 2>/dev/null) || {
+                log_warn "npm install 失败，将使用手动配置"
+                USE_WIZARD=false
+            }
+        fi
+    fi
+
+    # Build frontend if needed
+    if [ "$USE_WIZARD" = true ] && [ "$NEED_BUILD" = true ]; then
+        (cd "$WIZARD_DIR" && npx vite build 2>/dev/null) || {
+            log_warn "前端构建失败，将使用手动配置"
+            USE_WIZARD=false
+        }
+        if [ "$USE_WIZARD" = true ] && [ -f "$WIZARD_DIR/dist/index.html" ]; then
+            log_ok "前端构建完成"
+        fi
+    fi
+fi
+
+if [ "$USE_WIZARD" = true ]; then
     # Start wizard server
     WIZARD_CONFIG="$XYVACLAW_HOME/.wizard-config.json"
     export XYVACLAW_HOME
@@ -240,11 +312,14 @@ if [ "$USE_WIZARD" = true ]; then
     # Apply wizard config
     if [ -f "$WIZARD_CONFIG" ]; then
         log_info "应用向导配置..."
+        cd "$XYVACLAW_HOME"
         python3 "$SCRIPT_DIR/installer/restore-config.py" \
             "$XYVACLAW_HOME/openclaw.json.template" \
             "$XYVACLAW_HOME/.env" \
             "$WIZARD_CONFIG"
-        mv openclaw.json "$XYVACLAW_HOME/openclaw.json"
+        if [ -f "openclaw.json" ] && [ "$(pwd)" != "$XYVACLAW_HOME" ]; then
+            mv openclaw.json "$XYVACLAW_HOME/openclaw.json"
+        fi
         log_ok "配置已生成"
     fi
 else
@@ -267,16 +342,34 @@ else
     echo "    FEISHU_APP_SECRET=你的飞书应用密钥"
     echo ""
 
-    # Try to open editor
-    if command -v code &>/dev/null; then
-        read -p "  是否用 VS Code 打开？(y/n) " -n 1 -r
-        echo ""
-        if [[ $REPLY =~ ^[Yy]$ ]]; then
-            code "$ENV_FILE"
+    # In auto mode, write env vars from environment into .env if provided
+    if [ "$AUTO_MODE" = true ]; then
+        log_info "无人值守模式：从环境变量写入配置..."
+        # Write any provided API keys from env into the .env file
+        [ -n "${DEEPSEEK_API_KEY:-}" ] && sed -i.bak "s/^DEEPSEEK_API_KEY=.*/DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY}/" "$ENV_FILE" 2>/dev/null || true
+        [ -n "${BAILIAN_API_KEY:-}" ] && sed -i.bak "s/^BAILIAN_API_KEY=.*/BAILIAN_API_KEY=${BAILIAN_API_KEY}/" "$ENV_FILE" 2>/dev/null || true
+        [ -n "${FEISHU_APP_ID:-}" ] && sed -i.bak "s/^FEISHU_APP_ID=.*/FEISHU_APP_ID=${FEISHU_APP_ID}/" "$ENV_FILE" 2>/dev/null || true
+        [ -n "${FEISHU_APP_SECRET:-}" ] && sed -i.bak "s/^FEISHU_APP_SECRET=.*/FEISHU_APP_SECRET=${FEISHU_APP_SECRET}/" "$ENV_FILE" 2>/dev/null || true
+        [ -n "${ASSISTANT_NAME:-}" ] && sed -i.bak "s/^ASSISTANT_NAME=.*/ASSISTANT_NAME=${ASSISTANT_NAME}/" "$ENV_FILE" 2>/dev/null || true
+        rm -f "${ENV_FILE}.bak"
+        # Check if at least one key is configured
+        if grep -qE '^(DEEPSEEK_API_KEY|BAILIAN_API_KEY)=.+' "$ENV_FILE" 2>/dev/null; then
+            log_ok "API Key 已从环境变量写入"
+        else
+            log_warn "未检测到 API Key 环境变量，安装后请手动编辑 $ENV_FILE"
         fi
-    fi
+    else
+        # Try to open editor
+        if command -v code &>/dev/null; then
+            read -p "  是否用 VS Code 打开？(y/n) " -n 1 -r
+            echo ""
+            if [[ $REPLY =~ ^[Yy]$ ]]; then
+                code "$ENV_FILE"
+            fi
+        fi
 
-    read -p "  填写完成后按回车继续..." -r
+        read -p "  填写完成后按回车继续..." -r
+    fi
 
     # Generate config from .env
     if [ -f "$XYVACLAW_HOME/openclaw.json.template" ]; then
@@ -422,8 +515,7 @@ WRAPPER_PATH="/usr/local/bin/xyvaclaw"
 if [ ! -f "$WRAPPER_PATH" ] || [ ! -x "$WRAPPER_PATH" ]; then
     echo ""
     log_info "创建 xyvaclaw 命令..."
-    read -p "  需要 sudo 权限写入 /usr/local/bin/xyvaclaw，继续？(y/n) " -n 1 -r
-    echo ""
+    auto_confirm "  需要 sudo 权限写入 /usr/local/bin/xyvaclaw，继续？(y/n) " y
     if [[ $REPLY =~ ^[Yy]$ ]]; then
         sudo tee "$WRAPPER_PATH" > /dev/null << 'WRAPPER_EOF'
 #!/bin/bash
@@ -447,8 +539,7 @@ fi
 
 # LaunchAgent (auto-start)
 echo ""
-read -p "  是否配置开机自启动？(y/n) " -n 1 -r
-echo ""
+auto_confirm "  是否配置开机自启动？(y/n) " y
 
 PLIST_DIR="$HOME/Library/LaunchAgents"
 PLIST_FILE="$PLIST_DIR/ai.xyvaclaw.gateway.plist"
@@ -516,11 +607,17 @@ echo "    - 飞书需在开放平台配置 webhook 回调地址"
 echo ""
 
 # Ask to start now
-read -p "  是否现在启动 gateway？(y/n) " -n 1 -r
-echo ""
+auto_confirm "  是否现在启动 gateway？(y/n) " y
 if [[ $REPLY =~ ^[Yy]$ ]]; then
     echo ""
     log_info "启动 gateway..."
     export OPENCLAW_HOME="$XYVACLAW_HOME"
-    openclaw gateway
+    if [ "$AUTO_MODE" = true ]; then
+        # In auto mode, start in background so script can exit
+        nohup openclaw gateway > "$XYVACLAW_HOME/logs/gateway.log" 2>&1 &
+        sleep 2
+        log_ok "Gateway 已在后台启动 (PID: $!)"
+    else
+        openclaw gateway
+    fi
 fi
