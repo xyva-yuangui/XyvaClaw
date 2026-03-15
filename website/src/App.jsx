@@ -8,6 +8,7 @@ import Install from './sections/Install';
 import Architecture from './sections/Architecture';
 import Footer from './sections/Footer';
 import Navbar from './components/Navbar';
+import UpdateBanner from './components/UpdateBanner';
 
 const fadeUp = {
   hidden: { opacity: 0, y: 40 },
@@ -18,6 +19,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-gray-950 text-white overflow-x-hidden">
       <Navbar />
+      <UpdateBanner />
       <Hero />
       <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-100px' }} variants={fadeUp}>
         <Features />

@@ -31,7 +31,7 @@ export default function Navbar() {
     >
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
         <a href="#" className="flex items-center gap-2 group">
-          <span className="text-2xl">🐾</span>
+          <img src="./logo.png" alt="xyvaClaw" className="h-8 w-auto" />
           <span className="text-lg font-bold">
             <span className="text-brand-400 group-hover:text-brand-300 transition">xyva</span>
             <span className="text-white">Claw</span>

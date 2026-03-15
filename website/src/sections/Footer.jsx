@@ -85,7 +85,7 @@ export default function Footer() {
         <div>
           <h4 className="font-semibold text-gray-300 mb-3">{t(lang, '技术驱动', 'Powered By')}</h4>
           <ul className="space-y-2">
-            <li><a href="https://github.com/nicepkg/openclaw" className="text-gray-500 hover:text-gray-300 transition">OpenClaw</a></li>
+            <li><a href="https://openclaw.ai/" className="text-gray-500 hover:text-gray-300 transition">OpenClaw</a></li>
             <li><a href="https://platform.deepseek.com/" className="text-gray-500 hover:text-gray-300 transition">DeepSeek</a></li>
             <li><a href="https://bailian.console.aliyun.com/" className="text-gray-500 hover:text-gray-300 transition">{t(lang, '百炼', 'Bailian')}</a></li>
           </ul>
