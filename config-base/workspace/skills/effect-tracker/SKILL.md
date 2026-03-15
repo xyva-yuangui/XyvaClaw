@@ -51,7 +51,7 @@ clawdbot: {"emoji": "🛠️", "category": "tools", "priority": "medium"}
 ## 数据存储
 
 ```
-~/.openclaw/logs/
+$OPENCLAW_HOME/logs/          # 默认 ~/.xyvaclaw/logs/
 ├── effect-tracker.sqlite     # 效果追踪数据库
 └── daily/
     ├── 2026-03-05.jsonl      # 每日原始事件日志

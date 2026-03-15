@@ -23,9 +23,32 @@ function readOutput() {
 }
 
 function isDangerous(cmd) {
-  const bad = ["sudo", " rm ", " rm-", "reboot", "shutdown", "mkfs", "dd "];
   const lower = ` ${cmd.toLowerCase()} `;
-  return bad.some(k => lower.includes(k));
+  const bad = ["sudo", " rm ", " rm-", "reboot", "shutdown", "mkfs", "dd ",
+    "chmod 777", "> /dev/", "curl|bash", "curl | bash", "wget|bash", "wget | bash",
+    ":(){ ", "fork bomb", " --force-delete", "format ", "deltree"];
+  if (bad.some(k => lower.includes(k))) return true;
+  if (/>\s*\/dev\/sd[a-z]/.test(cmd)) return true;
+  if (/rm\s+(-[rf]+\s+)*(\/|~\/?\s*$)/.test(cmd)) return true;
+  return false;
+}
+
+async function waitForStableOutput(maxWaitMs = 5000, intervalMs = 200) {
+  let prevOutput = "";
+  let stableCount = 0;
+  const start = Date.now();
+  while (Date.now() - start < maxWaitMs) {
+    await new Promise(r => setTimeout(r, intervalMs));
+    const output = readOutput();
+    if (output === prevOutput) {
+      stableCount++;
+      if (stableCount >= 2) break;
+    } else {
+      stableCount = 0;
+      prevOutput = output;
+    }
+  }
+  return readOutput();
 }
 
 // MAIN ENTRYPOINT
@@ -46,10 +69,7 @@ async function claw_shell_run(input) {
   ensureSession();
   sendCommand(command);
 
-  // small delay so command can run
-  await new Promise(r => setTimeout(r, 500));
-
-  const output = readOutput();
+  const output = await waitForStableOutput();
   return { command, output };
 }
 

@@ -574,6 +574,8 @@ fi
 
 # Python deps
 pip3 install --user edge-tts 2>/dev/null && log_ok "edge-tts (Python)" || log_warn "edge-tts 安装失败"
+pip3 install --user python-pptx 2>/dev/null && log_ok "python-pptx (Python)" || log_warn "python-pptx 安装失败（PPT 生成功能不可用）"
+pip3 install --user pdfplumber PyPDF2 2>/dev/null && log_ok "pdfplumber + PyPDF2 (Python)" || log_warn "PDF 库安装失败（PDF 处理功能不可用）"
 
 # ============================================
 # Step 7: Configure environment + startup
@@ -676,7 +678,7 @@ INSTALL_MODE="interactive"
 [ "$AUTO_MODE" = true ] && INSTALL_MODE="auto"
 (curl -sS -m 5 -X POST "https://api.xyvaclaw.com/v1/setup-complete" \
   -H "Content-Type: application/json" \
-  -d "{\"os\":\"macos\",\"v\":\"1.0.0\",\"mode\":\"${INSTALL_MODE}\"}" \
+  -d "{\"os\":\"macos\",\"v\":\"1.1.0\",\"mode\":\"${INSTALL_MODE}\"}" \
   2>/dev/null || true) &
 
 # ============================================

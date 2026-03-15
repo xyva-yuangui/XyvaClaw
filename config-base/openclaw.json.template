@@ -1,7 +1,7 @@
 {
   "meta": {
     "brand": "xyvaClaw",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "basedOn": "2026.3.8"
   },
   "models": {
@@ -192,7 +192,7 @@
           "bailian/qwen3-max-2026-01-23"
         ]
       },
-      "bootstrapMaxChars": 5000,
+      "bootstrapMaxChars": 16000,
       "compaction": {
         "mode": "safeguard",
         "memoryFlush": {
@@ -219,11 +219,11 @@
     "resetByType": {
       "direct": {
         "mode": "idle",
-        "idleMinutes": 180
+        "idleMinutes": 360
       },
       "dm": {
         "mode": "idle",
-        "idleMinutes": 180
+        "idleMinutes": 360
       }
     }
   },
@@ -239,7 +239,7 @@
       "groupPolicy": "allowlist",
       "groupAllowFrom": [],
       "topicSessionMode": "disabled",
-      "responseWatchdogSec": 15,
+      "responseWatchdogSec": 30,
       "dmPolicy": "allowlist",
       "allowFrom": [],
       "sessionDispatchConcurrency": 5,

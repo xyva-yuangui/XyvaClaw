@@ -2,9 +2,14 @@
   "lazy_loading": {
     "enabled": true,
     "common_skills": [
-      "quant-stock-screener",
       "proactive-agent",
-      "self-improving-agent"
+      "self-improving-agent",
+      "claw-shell",
+      "browser-pilot",
+      "web-scraper",
+      "error-guard",
+      "effect-tracker",
+      "smart-messenger"
     ],
     "other_skills": "on_demand"
   },

@@ -53,5 +53,5 @@
 | `bootstrapMaxChars` | 16000 |
 | `reserveTokensFloor` | 80000 |
 | `maxConcurrent` | 6 |
-| `sessionDispatchConcurrency` | 2 |
-| `responseWatchdogSec` | 20 |
+| `sessionDispatchConcurrency` | 5 |
+| `responseWatchdogSec` | 30 |

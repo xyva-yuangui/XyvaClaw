@@ -41,7 +41,13 @@ from html.parser import HTMLParser
 def _config_path() -> str:
     xdg = os.environ.get("XDG_CONFIG_HOME")
     base = xdg if xdg else os.path.join(os.path.expanduser("~"), ".config")
-    return os.path.join(base, "clawdbot", "miniflux-news.json")
+    new_path = os.path.join(base, "xyvaclaw", "miniflux-news.json")
+    if os.path.exists(new_path):
+        return new_path
+    old_path = os.path.join(base, "clawdbot", "miniflux-news.json")
+    if os.path.exists(old_path):
+        return old_path
+    return new_path
 
 
 def _read_config() -> dict:
