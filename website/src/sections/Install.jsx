@@ -161,7 +161,7 @@ bash xyvaclaw-setup-linux.sh`,
           {mode === 'auto' && (
             <p className="text-xs text-gray-600 mt-2">
               {t(lang,
-                '💡 小窃门：缺少依赖也不用担心，--auto 模式会自动安装 Node.js、Python、ffmpeg。只需提前准备好 API Key 即可。',
+                '💡 小窍门：缺少依赖也不用担心，--auto 模式会自动安装 Node.js、Python、ffmpeg。只需提前准备好 API Key 即可。',
                 '💡 Tip: Even if you have nothing installed, --auto mode handles everything. Just have your API key ready.'
               )}
             </p>

@@ -23,7 +23,11 @@
 
 ---
 
-<img src="https://raw.githubusercontent.com/xyva-yuangui/XyvaClaw/main/docs/assets/wizard-preview.png" alt="xyvaClaw Setup Wizard" width="700">
+<img src="https://raw.githubusercontent.com/xyva-yuangui/XyvaClaw/main/docs/assets/wizard-preview.svg" alt="xyvaClaw Setup Wizard" width="700">
+
+<br/>
+
+<img src="https://raw.githubusercontent.com/xyva-yuangui/XyvaClaw/main/docs/assets/terminal-install.svg" alt="xyvaClaw Terminal Install" width="700">
 
 </div>
 
