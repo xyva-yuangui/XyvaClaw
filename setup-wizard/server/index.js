@@ -122,6 +122,56 @@ app.post('/api/validate-key', async (req, res) => {
 });
 
 // ============================================
+// API: Detect models from custom provider
+// ============================================
+app.post('/api/detect-models', async (req, res) => {
+  const { baseUrl, apiKey } = req.body;
+
+  if (!baseUrl || !apiKey) {
+    return res.json({ models: [], error: 'Missing baseUrl or apiKey' });
+  }
+
+  try {
+    const url = baseUrl.replace(/\/+$/, '') + '/models';
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15000);
+
+    const response = await fetch(url, {
+      headers: { Authorization: `Bearer ${apiKey}` },
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeout);
+
+    if (!response.ok) {
+      return res.json({ models: [], error: `HTTP ${response.status}: ${response.statusText}` });
+    }
+
+    const data = await response.json();
+    const rawModels = data.data || data.models || [];
+
+    const models = rawModels
+      .filter((m) => m.id && typeof m.id === 'string')
+      .map((m) => ({
+        id: m.id,
+        name: m.id,
+        reasoning: false,
+        input: ['text'],
+        contextWindow: m.context_length || m.context_window || 128000,
+        maxTokens: m.max_tokens || m.max_output_tokens || 4096,
+      }))
+      .sort((a, b) => a.id.localeCompare(b.id));
+
+    res.json({ models });
+  } catch (err) {
+    res.json({
+      models: [],
+      error: err.name === 'AbortError' ? 'Timeout (15s)' : err.message,
+    });
+  }
+});
+
+// ============================================
 // API: Save Config
 // ============================================
 app.post('/api/save-config', (req, res) => {
@@ -157,6 +207,20 @@ app.post('/api/save-config', (req, res) => {
     }
     if (config.assistantName) {
       envLines.push(`ASSISTANT_NAME=${config.assistantName}`);
+    }
+
+    // Custom providers
+    if (config.providers?.custom?.length > 0) {
+      envLines.push('');
+      envLines.push('# Custom Providers');
+      envLines.push(`CUSTOM_PROVIDER_COUNT=${config.providers.custom.length}`);
+      config.providers.custom.forEach((cp, i) => {
+        envLines.push(`CUSTOM_PROVIDER_${i}_NAME=${cp.name || ''}`);
+        envLines.push(`CUSTOM_PROVIDER_${i}_URL=${cp.baseUrl || ''}`);
+        envLines.push(`CUSTOM_PROVIDER_${i}_KEY=${cp.apiKey || ''}`);
+        const modelIds = (cp.models || []).map((m) => (typeof m === 'string' ? m : m.id)).join(',');
+        envLines.push(`CUSTOM_PROVIDER_${i}_MODELS=${modelIds}`);
+      });
     }
 
     envLines.push('');

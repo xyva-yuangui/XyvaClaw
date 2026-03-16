@@ -86,6 +86,37 @@ def apply_env(data, env):
         if 'bailian' in providers:
             providers['bailian']['apiKey'] = bailian_key
 
+    # Custom providers from .env
+    custom_count = int(env.get('CUSTOM_PROVIDER_COUNT', '0') or '0')
+    if custom_count > 0:
+        if 'models' not in data:
+            data['models'] = {'mode': 'merge', 'providers': {}}
+        for i in range(custom_count):
+            cp_name = env.get(f'CUSTOM_PROVIDER_{i}_NAME', '')
+            cp_url = env.get(f'CUSTOM_PROVIDER_{i}_URL', '')
+            cp_key = env.get(f'CUSTOM_PROVIDER_{i}_KEY', '')
+            cp_models_str = env.get(f'CUSTOM_PROVIDER_{i}_MODELS', '')
+            if cp_name and cp_key:
+                models = []
+                if cp_models_str:
+                    for mid in cp_models_str.split(','):
+                        mid = mid.strip()
+                        if mid:
+                            models.append({
+                                'id': mid,
+                                'name': mid,
+                                'reasoning': False,
+                                'input': ['text'],
+                                'contextWindow': 128000,
+                                'maxTokens': 4096,
+                            })
+                data['models']['providers'][cp_name] = {
+                    'baseUrl': cp_url,
+                    'apiKey': cp_key,
+                    'api': 'openai-completions',
+                    'models': models,
+                }
+
     # Remove providers with no key
     if 'models' in data and 'providers' in data['models']:
         to_remove = []
@@ -121,10 +152,7 @@ def apply_env(data, env):
         data['channels']['feishu'] = data.get('channels', {}).get('feishu', {})
         data['channels']['feishu']['enabled'] = True
         data['channels']['feishu']['appId'] = feishu_id
-        data['channels']['feishu']['appSecret'] = {
-            'source': 'env',
-            'id': 'FEISHU_APP_SECRET',
-        }
+        data['channels']['feishu']['appSecret'] = feishu_secret
         data['channels']['feishu'].setdefault('domain', 'feishu')
         data['channels']['feishu'].setdefault('groupPolicy', 'allowlist')
         data['channels']['feishu'].setdefault('dmPolicy', 'allowlist')
@@ -146,9 +174,29 @@ def apply_env(data, env):
     # Restore paths
     data = restore_paths(data, home_dir)
 
-    # Update meta
-    if 'meta' in data:
-        data['meta']['brand'] = 'xyvaClaw'
+    # Fix meta: OpenClaw 2026.3.x only accepts lastTouchedVersion/lastTouchedAt
+    import datetime
+    now_utc = datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.000Z')
+    data['meta'] = {
+        'lastTouchedVersion': '2026.3.13',
+        'lastTouchedAt': now_utc,
+    }
+
+    # Ensure wizard section exists (required for gateway to not show 'Missing config')
+    if 'wizard' not in data:
+        data['wizard'] = {
+            'lastRunAt': now_utc,
+            'lastRunVersion': '2026.3.13',
+            'lastRunCommand': 'setup',
+            'lastRunMode': 'local',
+        }
+
+    # Strip plugins for fresh install (they get auto-detected at runtime)
+    data['plugins'] = {
+        'allow': [],
+        'slots': {},
+        'entries': {},
+    }
 
     return data
 
@@ -226,12 +274,21 @@ def apply_wizard(data, wizard):
 
 def main():
     if len(sys.argv) < 2:
-        print("Usage: python3 restore-config.py <template.json> [.env] [wizard.json]")
+        print("Usage: python3 restore-config.py <template.json> [.env] [wizard.json] [--output-dir <dir>]")
         sys.exit(1)
 
-    template_path = Path(sys.argv[1])
-    env_path = sys.argv[2] if len(sys.argv) > 2 else '.env'
-    wizard_path = sys.argv[3] if len(sys.argv) > 3 else ''
+    # Parse --output-dir from argv
+    output_dir = None
+    args = list(sys.argv[1:])
+    if '--output-dir' in args:
+        idx = args.index('--output-dir')
+        if idx + 1 < len(args):
+            output_dir = args[idx + 1]
+            args = args[:idx] + args[idx + 2:]
+
+    template_path = Path(args[0])
+    env_path = args[1] if len(args) > 1 else '.env'
+    wizard_path = args[2] if len(args) > 2 else ''
 
     if not template_path.exists():
         print(f"Error: template not found: {template_path}")
@@ -244,7 +301,13 @@ def main():
     data = apply_env(data, env)
     data = apply_wizard(data, wizard)
 
-    output = Path('openclaw.json')
+    # Output to .openclaw/ nested directory (OpenClaw 2026.3.x convention)
+    if output_dir:
+        out_base = Path(output_dir)
+    else:
+        out_base = Path('.openclaw')
+    out_base.mkdir(parents=True, exist_ok=True)
+    output = out_base / 'openclaw.json'
     output.write_text(json.dumps(data, indent=2, ensure_ascii=False) + '\n')
     print(f"Config generated: {output}")
 

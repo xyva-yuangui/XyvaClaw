@@ -25,19 +25,63 @@ export default function ModelKeys({ config, updateConfig }) {
   const [customName, setCustomName] = useState('');
   const [customUrl, setCustomUrl] = useState('');
   const [customKey, setCustomKey] = useState('');
+  const [customModels, setCustomModels] = useState('');
+  const [detecting, setDetecting] = useState(false);
+  const [detectError, setDetectError] = useState('');
+  const [detectedModels, setDetectedModels] = useState([]);
 
   const hasAnyProvider =
     config.providers.deepseek.enabled ||
     config.providers.bailian.enabled ||
     config.providers.custom.length > 0;
 
+  const detectModels = async () => {
+    if (!customUrl || !customKey) return;
+    setDetecting(true);
+    setDetectError('');
+    setDetectedModels([]);
+    try {
+      const res = await fetch('/api/detect-models', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ baseUrl: customUrl, apiKey: customKey }),
+      });
+      const data = await res.json();
+      if (data.models && data.models.length > 0) {
+        setDetectedModels(data.models);
+        setCustomModels(data.models.map((m) => m.id).join(', '));
+      } else {
+        setDetectError(data.error || '未检测到模型，请手动输入模型 ID');
+      }
+    } catch {
+      setDetectError('检测失败，请手动输入模型 ID');
+    } finally {
+      setDetecting(false);
+    }
+  };
+
+  const parseModelsFromInput = (input) => {
+    return input
+      .split(/[,，\n]+/)
+      .map((s) => s.trim())
+      .filter(Boolean)
+      .map((id) => {
+        const detected = detectedModels.find((m) => m.id === id);
+        return detected || { id, name: id, reasoning: false, input: ['text'], contextWindow: 128000, maxTokens: 4096 };
+      });
+  };
+
   const addCustomProvider = () => {
     if (!customName || !customUrl || !customKey) return;
-    const customs = [...config.providers.custom, { name: customName, baseUrl: customUrl, apiKey: customKey }];
+    const models = parseModelsFromInput(customModels);
+    const customs = [...config.providers.custom, { name: customName, baseUrl: customUrl, apiKey: customKey, models }];
     updateConfig('providers.custom', customs);
     setCustomName('');
     setCustomUrl('');
     setCustomKey('');
+    setCustomModels('');
+    setDetectedModels([]);
+    setDetectError('');
     setShowCustom(false);
   };
 
@@ -113,8 +157,8 @@ export default function ModelKeys({ config, updateConfig }) {
 
       {/* Custom providers */}
       {config.providers.custom.map((cp, i) => (
-        <div key={i} className="border-2 border-gray-200 rounded-xl p-4">
-          <div className="flex items-center justify-between">
+        <div key={i} className="border-2 border-green-200 bg-green-50/30 rounded-xl p-4">
+          <div className="flex items-center justify-between mb-2">
             <div>
               <span className="font-medium">{cp.name}</span>
               <span className="text-sm text-gray-400 ml-2">{cp.baseUrl}</span>
@@ -129,6 +173,21 @@ export default function ModelKeys({ config, updateConfig }) {
               删除
             </button>
           </div>
+          {cp.models && cp.models.length > 0 && (
+            <div className="flex flex-wrap gap-1.5">
+              {cp.models.map((m) => (
+                <span
+                  key={typeof m === 'string' ? m : m.id}
+                  className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded"
+                >
+                  {typeof m === 'string' ? m : m.id}
+                </span>
+              ))}
+            </div>
+          )}
+          {(!cp.models || cp.models.length === 0) && (
+            <p className="text-xs text-amber-600">⚠️ 未配置模型列表，Gateway 将无法使用此 Provider</p>
+          )}
         </div>
       ))}
 
@@ -158,13 +217,40 @@ export default function ModelKeys({ config, updateConfig }) {
               className="px-3 py-2 border rounded-lg text-sm outline-none focus:ring-2 focus:ring-brand-400"
             />
           </div>
-          <input
-            type="password"
-            value={customKey}
-            onChange={(e) => setCustomKey(e.target.value)}
-            placeholder="API Key"
-            className="w-full px-3 py-2 border rounded-lg text-sm font-mono outline-none focus:ring-2 focus:ring-brand-400"
-          />
+          <div className="flex gap-2">
+            <input
+              type="password"
+              value={customKey}
+              onChange={(e) => setCustomKey(e.target.value)}
+              placeholder="API Key"
+              className="flex-1 px-3 py-2 border rounded-lg text-sm font-mono outline-none focus:ring-2 focus:ring-brand-400"
+            />
+            <button
+              onClick={detectModels}
+              disabled={!customUrl || !customKey || detecting}
+              className="px-4 py-2 text-sm border border-brand-300 text-brand-600 rounded-lg hover:bg-brand-50 disabled:opacity-40 disabled:cursor-not-allowed transition whitespace-nowrap"
+            >
+              {detecting ? '检测中...' : '🔍 检测模型'}
+            </button>
+          </div>
+          {detectError && (
+            <p className="text-xs text-amber-600">{detectError}</p>
+          )}
+          {detectedModels.length > 0 && (
+            <div>
+              <p className="text-xs text-green-600 mb-1">✅ 检测到 {detectedModels.length} 个模型（可编辑）</p>
+            </div>
+          )}
+          <div>
+            <label className="text-xs text-gray-500 mb-1 block">模型 ID（逗号分隔，或点击「检测模型」自动获取）</label>
+            <textarea
+              value={customModels}
+              onChange={(e) => setCustomModels(e.target.value)}
+              placeholder="如: gpt-4o, gpt-4o-mini, claude-3-5-sonnet"
+              rows={2}
+              className="w-full px-3 py-2 border rounded-lg text-sm font-mono outline-none focus:ring-2 focus:ring-brand-400 resize-none"
+            />
+          </div>
           <div className="flex gap-2 justify-end">
             <button
               onClick={() => setShowCustom(false)}
@@ -174,7 +260,7 @@ export default function ModelKeys({ config, updateConfig }) {
             </button>
             <button
               onClick={addCustomProvider}
-              disabled={!customName || !customUrl || !customKey}
+              disabled={!customName || !customUrl || !customKey || !customModels.trim()}
               className="px-4 py-2 text-sm bg-brand-600 text-white rounded-lg hover:bg-brand-700 disabled:opacity-40"
             >
               添加

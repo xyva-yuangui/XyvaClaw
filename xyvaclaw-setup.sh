@@ -408,10 +408,7 @@ if [ "$USE_WIZARD" = true ]; then
             "$XYVACLAW_HOME/openclaw.json.template" \
             "$XYVACLAW_HOME/.env" \
             "$WIZARD_CONFIG"
-        if [ -f "openclaw.json" ] && [ "$(pwd)" != "$XYVACLAW_HOME" ]; then
-            mv openclaw.json "$XYVACLAW_HOME/openclaw.json"
-        fi
-        log_ok "配置已生成"
+        log_ok "配置已生成 (.openclaw/openclaw.json)"
     fi
 else
     # Manual .env config
@@ -469,7 +466,7 @@ else
         python3 "$SCRIPT_DIR/installer/restore-config.py" \
             "$XYVACLAW_HOME/openclaw.json.template" \
             "$ENV_FILE"
-        log_ok "openclaw.json 已生成"
+        log_ok ".openclaw/openclaw.json 已生成"
     fi
 fi
 
@@ -678,7 +675,7 @@ INSTALL_MODE="interactive"
 [ "$AUTO_MODE" = true ] && INSTALL_MODE="auto"
 (curl -sS -m 5 -X POST "https://api.xyvaclaw.com/v1/setup-complete" \
   -H "Content-Type: application/json" \
-  -d "{\"os\":\"macos\",\"v\":\"1.1.0\",\"mode\":\"${INSTALL_MODE}\"}" \
+  -d "{\"os\":\"macos\",\"v\":\"1.1.1\",\"mode\":\"${INSTALL_MODE}\"}" \
   2>/dev/null || true) &
 
 # ============================================

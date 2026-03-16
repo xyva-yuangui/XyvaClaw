@@ -1,8 +1,7 @@
 {
   "meta": {
-    "brand": "xyvaClaw",
-    "version": "1.1.0",
-    "basedOn": "2026.3.8"
+    "lastTouchedVersion": "2026.3.13",
+    "lastTouchedAt": "2026-03-16T00:00:00.000Z"
   },
   "models": {
     "mode": "merge",
@@ -231,10 +230,7 @@
     "feishu": {
       "enabled": true,
       "appId": "__APP_ID__",
-      "appSecret": {
-        "source": "env",
-        "id": "FEISHU_APP_SECRET"
-      },
+      "appSecret": "__APP_SECRET__",
       "domain": "feishu",
       "groupPolicy": "allowlist",
       "groupAllowFrom": [],

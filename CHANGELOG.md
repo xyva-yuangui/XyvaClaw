@@ -2,6 +2,20 @@
 
 All notable changes to xyvaClaw will be documented in this file.
 
+## [1.1.1] - 2026-03-16
+
+### Bug Fixes
+- **Gateway "Missing config" on startup**: OpenClaw 2026.3.13 reads config from `$OPENCLAW_HOME/.openclaw/openclaw.json` (nested path). `restore-config.py` now outputs to the correct `.openclaw/` directory. Fixed `meta` section (removed unrecognized keys `brand`/`version`/`basedOn`), added required `wizard` section, and stripped stale `plugins` entries for fresh installs.
+- **Custom Provider models not showing**: Setup Wizard now collects model IDs when adding a custom provider — via manual input or auto-detect (`🔍 检测模型` button calls `/api/detect-models` on OpenAI-compatible `/models` endpoint). Models are persisted through `.env` (`CUSTOM_PROVIDER_{i}_MODELS`) and correctly written into `openclaw.json`.
+- **Feishu appSecret SecretRef error**: Changed `channels.feishu.appSecret` from SecretRef object `{source:"env", id:"..."}` to plain string — SecretRef requires runtime gateway snapshot resolution which fails on fresh installs.
+
+### Changed
+- `config-base/openclaw.json.template`: fixed `meta` format and `appSecret` to plain placeholder
+- `installer/restore-config.py`: outputs to `.openclaw/openclaw.json`, supports `--output-dir`, adds `wizard` section, strips plugins, reads custom providers from `.env`
+- `setup-wizard/src/pages/ModelKeys.jsx`: added model ID textarea, auto-detect button, model tags on provider cards, empty-models warning
+- `setup-wizard/server/index.js`: added `POST /api/detect-models` endpoint, custom provider env vars in `save-config`
+- `xyvaclaw-setup.sh`: updated config output path references
+
 ## [1.1.0] - 2026-03-15
 
 ### Performance
