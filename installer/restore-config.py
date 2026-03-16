@@ -160,27 +160,64 @@ def apply_wizard(data, wizard):
 
     # Assistant name (stored separately, not in openclaw.json)
     # Model providers from wizard
-    if 'providers' in wizard:
+    # wizard['providers'] is a dict: {deepseek: {enabled, apiKey, ...}, bailian: {...}, custom: [...]}
+    if 'providers' in wizard and isinstance(wizard['providers'], dict):
         if 'models' not in data:
             data['models'] = {'mode': 'merge', 'providers': {}}
-        for prov in wizard['providers']:
-            name = prov.get('name', '')
-            if name and prov.get('apiKey'):
+        wp = wizard['providers']
+
+        # Built-in providers (deepseek, bailian, etc.)
+        BUILTIN_PROVIDER_META = {
+            'deepseek': {
+                'baseUrl': 'https://api.deepseek.com/v1',
+                'api': 'openai-completions',
+                'models': [
+                    {'id': 'deepseek-chat', 'name': 'DeepSeek V3.2', 'reasoning': False,
+                     'input': ['text'], 'contextWindow': 128000, 'maxTokens': 65536},
+                    {'id': 'deepseek-reasoner', 'name': 'DeepSeek Reasoner', 'reasoning': True,
+                     'input': ['text'], 'contextWindow': 128000, 'maxTokens': 65536},
+                ],
+            },
+            'bailian': {
+                'baseUrl': 'https://dashscope.aliyuncs.com/compatible-mode/v1',
+                'api': 'openai-completions',
+                'models': [],
+            },
+        }
+
+        for name, meta in BUILTIN_PROVIDER_META.items():
+            prov_conf = wp.get(name)
+            if isinstance(prov_conf, dict) and prov_conf.get('enabled') and prov_conf.get('apiKey'):
+                existing = data['models']['providers'].get(name, {})
                 data['models']['providers'][name] = {
-                    'baseUrl': prov['baseUrl'],
-                    'apiKey': prov['apiKey'],
-                    'api': prov.get('api', 'openai-completions'),
-                    'models': prov.get('models', []),
+                    'baseUrl': existing.get('baseUrl', meta['baseUrl']),
+                    'apiKey': prov_conf['apiKey'],
+                    'api': existing.get('api', meta['api']),
+                    'models': existing.get('models', meta['models']),
                 }
 
+        # Custom providers (list of {name, baseUrl, apiKey})
+        for cp in wp.get('custom', []):
+            if isinstance(cp, dict):
+                name = cp.get('name', '')
+                if name and cp.get('apiKey'):
+                    data['models']['providers'][name] = {
+                        'baseUrl': cp.get('baseUrl', ''),
+                        'apiKey': cp['apiKey'],
+                        'api': cp.get('api', 'openai-completions'),
+                        'models': cp.get('models', []),
+                    }
+
     # Channels from wizard
-    if 'channels' in wizard:
+    # wizard['channels'] is a dict: {feishu: {enabled, appId, ...}, dingtalk: {...}, webchat: {...}}
+    if 'channels' in wizard and isinstance(wizard['channels'], dict):
         if 'channels' not in data:
             data['channels'] = {}
-        for ch in wizard['channels']:
-            ch_name = ch.get('type', '')
-            if ch_name:
-                data['channels'][ch_name] = ch.get('config', {})
+        for ch_name, ch_conf in wizard['channels'].items():
+            if isinstance(ch_conf, dict) and ch_conf.get('enabled'):
+                existing = data['channels'].get(ch_name, {})
+                existing.update(ch_conf)
+                data['channels'][ch_name] = existing
 
     # Skills selection (used by installer, not stored in openclaw.json)
 
