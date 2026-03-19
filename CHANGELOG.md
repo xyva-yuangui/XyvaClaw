@@ -2,6 +2,23 @@
 
 All notable changes to xyvaClaw will be documented in this file.
 
+## [1.1.3] - 2026-03-19
+
+### Bug Fixes
+- **Installer appears stuck with no output**: Removed silent `2>/dev/null` suppression for `npm install` and `vite build`, added progress prompts and actionable failure diagnostics so users can see what step is running and why it failed.
+- **Bailian API key validation false negatives**: Updated the validation probe model from deprecated `qwen-turbo` to `qwen3.5-plus` and now surfaces the provider's actual error message in the wizard UI.
+- **Feishu App ID / App Secret validation failure**: Fixed the wizard so Feishu validation submits both `appId` and `appSecret` to the backend instead of only the secret.
+- **Users accidentally close terminal after wizard completion**: Added prominent warnings in both the shell installer and the Web wizard completion screen to keep the terminal open until all post-config install steps finish.
+- **Node.js version confusion on first launch**: Added clearer Node.js 22+ prerequisite messaging in both setup scripts and the README, including `nvm` upgrade hints when available.
+
+### Changed
+- `xyvaclaw-setup.sh`: improved dependency/install messaging, post-wizard UX, and Node.js guidance
+- `xyvaclaw-setup-linux.sh`: aligned Linux installer behavior with macOS installer improvements
+- `setup-wizard/server/index.js`: improved Bailian validation behavior and error reporting
+- `setup-wizard/src/components/ApiKeyInput.jsx`: now displays backend validation errors in the UI
+- `setup-wizard/src/pages/Channels.jsx`: passes Feishu `appId` during validation
+- `setup-wizard/src/App.jsx`: warns users not to close the terminal before install completion
+
 ## [1.1.2] - 2026-03-19
 
 ### Bug Fixes
