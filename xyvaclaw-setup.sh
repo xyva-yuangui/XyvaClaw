@@ -332,6 +332,38 @@ if [ -f "$SCRIPT_DIR/config-base/openclaw.json.template" ]; then
     log_ok "openclaw.json.template"
 fi
 
+# Clean up __API_KEY__ placeholders in agent configs
+# Agent-level models.json with __API_KEY__ would override real keys from openclaw.json
+PLACEHOLDER_FILES=$(grep -rl '"__API_KEY__"\|"__APP_ID__"\|"__APP_SECRET__"' "$XYVACLAW_HOME/agents" 2>/dev/null || true)
+if [ -n "$PLACEHOLDER_FILES" ]; then
+    log_info "清理 agent 配置中的占位符..."
+    for pf in $PLACEHOLDER_FILES; do
+        python3 -c "
+import json, sys
+p = sys.argv[1]
+with open(p) as f: d = json.load(f)
+changed = False
+def clean(obj):
+    global changed
+    if isinstance(obj, dict):
+        for k in list(obj.keys()):
+            if isinstance(obj[k], str) and obj[k].startswith('__') and obj[k].endswith('__'):
+                del obj[k]
+                changed = True
+            else:
+                clean(obj[k])
+    elif isinstance(obj, list):
+        for item in obj:
+            clean(item)
+clean(d)
+if changed:
+    with open(p, 'w') as f: json.dump(d, f, indent=2, ensure_ascii=False)
+    print(f'  cleaned: {p}')
+" "$pf"
+    done
+    log_ok "占位符已清理"
+fi
+
 # Create runtime directories
 mkdir -p "$XYVACLAW_HOME"/{workspace/memory,workspace/output/{audio,video,temp},workspace/.reasoning,workspace/state,logs,memory,sessions,cache,secrets,identity,cron,delivery-queue}
 log_ok "运行时目录"
