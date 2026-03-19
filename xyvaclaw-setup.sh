@@ -172,20 +172,28 @@ cleanup_existing_claws() {
     set +eo pipefail
     local FOUND_ISSUES=false
 
-    # --- Stop and remove existing OpenClaw launchd services (macOS) ---
+    # --- Stop and remove ALL OpenClaw/xyvaClaw launchd services (macOS) ---
     if [ "$(uname)" = "Darwin" ]; then
-        local LAUNCHD_MATCH
-        LAUNCHD_MATCH=$(launchctl list 2>/dev/null | grep "ai.openclaw" 2>/dev/null || true)
-        if [ -n "$LAUNCHD_MATCH" ]; then
-            FOUND_ISSUES=true
-            log_info "检测到原版 OpenClaw 自启动服务，正在卸载..."
-            launchctl bootout gui/$(id -u)/ai.openclaw.gateway 2>/dev/null || true
-            rm -f "$HOME/Library/LaunchAgents/ai.openclaw.gateway.plist" 2>/dev/null || true
-            log_ok "原版 OpenClaw 服务已卸载"
-        fi
+        for svc_label in "ai.openclaw.gateway" "ai.xyvaclaw.gateway"; do
+            local SVC_MATCH
+            SVC_MATCH=$(launchctl list 2>/dev/null | grep "$svc_label" 2>/dev/null || true)
+            if [ -n "$SVC_MATCH" ]; then
+                FOUND_ISSUES=true
+                log_info "检测到已有服务 $svc_label，正在停止..."
+                launchctl bootout gui/$(id -u)/$svc_label 2>/dev/null || true
+                log_ok "服务 $svc_label 已停止"
+            fi
+        done
+        # Remove all related plist files
+        for plist in "$HOME/Library/LaunchAgents/ai.openclaw.gateway.plist" \
+                     "$HOME/Library/LaunchAgents/ai.xyvaclaw.gateway.plist"; do
+            if [ -f "$plist" ]; then
+                rm -f "$plist" 2>/dev/null || true
+            fi
+        done
     fi
 
-    # --- Remove existing OpenClaw config directory ---
+    # --- Remove existing OpenClaw config directory (~/.openclaw) ---
     local OPENCLAW_DIR="${OPENCLAW_STATE_DIR:-$HOME/.openclaw}"
     if [ -d "$OPENCLAW_DIR" ] && [ "$OPENCLAW_DIR" != "$XYVACLAW_HOME" ]; then
         FOUND_ISSUES=true
@@ -209,9 +217,29 @@ cleanup_existing_claws() {
         fi
     fi
 
+    # --- Remove previous xyvaClaw installation (~/.xyvaclaw) ---
+    if [ -d "$XYVACLAW_HOME" ]; then
+        FOUND_ISSUES=true
+        log_info "检测到已有 xyvaClaw 安装: $XYVACLAW_HOME"
+        if [ "$AUTO_MODE" = true ]; then
+            rm -rf "$XYVACLAW_HOME"
+            log_ok "旧版 xyvaClaw 已清理"
+        else
+            echo ""
+            read -p "  是否删除旧版 xyvaClaw 并全新安装？(y=全新安装 / n=保留合并) " -n 1 -r
+            echo ""
+            if [[ $REPLY =~ ^[Yy]$ ]]; then
+                rm -rf "$XYVACLAW_HOME"
+                log_ok "旧版 xyvaClaw 已清理"
+            else
+                log_info "保留现有数据，合并安装"
+            fi
+        fi
+    fi
+
     # --- Detect and remove other Claw desktop apps (macOS) ---
     local OTHER_CLAWS=()
-    for app_name in "QClaw" "AutoClaw" "WorkBuddy" "CoPaw"; do
+    for app_name in "QClaw" "AutoClaw" "WorkBuddy" "CoPaw" "OpenClaw" "MoltBot" "ClawdBot"; do
         if [ -d "/Applications/${app_name}.app" ]; then
             OTHER_CLAWS+=("/Applications/${app_name}.app")
         elif [ -d "$HOME/Applications/${app_name}.app" ]; then
@@ -255,14 +283,14 @@ cleanup_existing_claws() {
 
     if [ "$FOUND_ISSUES" = true ]; then
         echo ""
-        log_ok "环境清理完成，开始安装 xyvaClaw"
+        log_ok "环境清理完成，开始全新安装 xyvaClaw"
         echo ""
     fi
     set -eo pipefail
 }
 
-# Run cleanup — any error here must not break install
-cleanup_existing_claws 2>/dev/null || true
+# Run cleanup (do NOT suppress output — user needs to see what's being cleaned)
+cleanup_existing_claws || true
 
 # ============================================
 # Step 2: Install OpenClaw runtime
@@ -284,17 +312,7 @@ fi
 log_step "3/8" "创建 $BRAND 数据目录..."
 
 if [ -d "$XYVACLAW_HOME" ]; then
-    log_warn "$XYVACLAW_HOME 已存在"
-    auto_confirm "  是否备份并重新部署？(y=备份覆盖 / n=合并 / q=退出) " n
-    if [[ $REPLY =~ ^[Yy]$ ]]; then
-        BACKUP="$HOME/.xyvaclaw.backup.$(date '+%Y%m%d_%H%M%S')"
-        log_info "备份到 $BACKUP"
-        mv "$XYVACLAW_HOME" "$BACKUP"
-        mkdir -p "$XYVACLAW_HOME"
-    elif [[ $REPLY =~ ^[Qq]$ ]]; then
-        echo "退出安装"
-        exit 0
-    fi
+    log_info "$XYVACLAW_HOME 已存在，将合并部署新文件"
 else
     mkdir -p "$XYVACLAW_HOME"
 fi
@@ -365,15 +383,16 @@ if [ "$USE_WIZARD" = true ]; then
 
     # Install wizard deps if needed
     if [ ! -d "$WIZARD_DIR/node_modules" ] || [ "$(ls -A "$WIZARD_DIR/node_modules" 2>/dev/null | head -1)" = "" ]; then
+        log_info "安装配置向导依赖 (npm install)..."
         if [ "$NEED_BUILD" = true ]; then
             # Full install needed (includes vite for building)
-            (cd "$WIZARD_DIR" && npm install 2>/dev/null) || {
+            (cd "$WIZARD_DIR" && npm install) || {
                 log_warn "npm install 失败，将使用手动配置"
                 USE_WIZARD=false
             }
         else
             # Distribution mode: only server deps needed
-            (cd "$WIZARD_DIR" && npm install --production 2>/dev/null) || {
+            (cd "$WIZARD_DIR" && npm install --production) || {
                 log_warn "npm install 失败，将使用手动配置"
                 USE_WIZARD=false
             }
@@ -382,7 +401,8 @@ if [ "$USE_WIZARD" = true ]; then
 
     # Build frontend if needed
     if [ "$USE_WIZARD" = true ] && [ "$NEED_BUILD" = true ]; then
-        (cd "$WIZARD_DIR" && npx --yes vite build 2>/dev/null) || {
+        log_info "构建前端页面 (vite build)..."
+        (cd "$WIZARD_DIR" && npx --yes vite build) || {
             log_warn "前端构建失败，将使用手动配置"
             USE_WIZARD=false
         }
@@ -402,14 +422,27 @@ if [ "$USE_WIZARD" = true ]; then
     node "$WIZARD_DIR/server/index.js" &
     WIZARD_PID=$!
 
-    sleep 2
+    # Wait for server to start
+    sleep 3
 
+    # Verify wizard server is running
+    if ! kill -0 $WIZARD_PID 2>/dev/null; then
+        log_warn "配置向导服务启动失败，将使用手动配置"
+        USE_WIZARD=false
+    fi
+fi
+
+if [ "$USE_WIZARD" = true ]; then
     echo ""
-    echo -e "  ${BOLD}${CYAN}配置向导已启动!${NC}"
-    echo -e "  请在浏览器中打开: ${BOLD}http://localhost:${WIZARD_PORT}${NC}"
+    echo -e "  ${BOLD}${CYAN}════════════════════════════════════════${NC}"
+    echo -e "  ${BOLD}${CYAN}  🌐 配置向导已启动!${NC}"
+    echo -e "  ${BOLD}${CYAN}════════════════════════════════════════${NC}"
     echo ""
-    echo -e "  ${YELLOW}完成配置后，向导会自动关闭。${NC}"
-    echo -e "  ${YELLOW}或按 Ctrl+C 跳过向导，稍后手动配置。${NC}"
+    echo -e "  请在浏览器中完成配置: ${BOLD}http://localhost:${WIZARD_PORT}${NC}"
+    echo ""
+    echo -e "  ${YELLOW}• 在浏览器中填写 API Key、选择模型、配置飞书等${NC}"
+    echo -e "  ${YELLOW}• 点击“保存配置”后向导会自动关闭，安装继续${NC}"
+    echo -e "  ${YELLOW}• 或按 Ctrl+C 跳过向导，稍后手动编辑 .env 文件${NC}"
     echo ""
 
     # Open browser
@@ -417,7 +450,8 @@ if [ "$USE_WIZARD" = true ]; then
         open "http://localhost:${WIZARD_PORT}" 2>/dev/null || true
     fi
 
-    # Wait for wizard to finish
+    # Wait for wizard to finish (it calls process.exit(0) after save)
+    log_info "等待配置完成..."
     wait $WIZARD_PID 2>/dev/null || true
 
     # Apply wizard config
@@ -768,7 +802,7 @@ INSTALL_MODE="interactive"
 [ "$AUTO_MODE" = true ] && INSTALL_MODE="auto"
 (curl -sS -m 5 -X POST "https://api.xyvaclaw.com/v1/setup-complete" \
   -H "Content-Type: application/json" \
-  -d "{\"os\":\"macos\",\"v\":\"1.1.2\",\"mode\":\"${INSTALL_MODE}\"}" \
+  -d "{\"os\":\"macos\",\"v\":\"1.1.4\",\"mode\":\"${INSTALL_MODE}\"}" \
   2>/dev/null || true) &
 
 # ============================================
@@ -812,12 +846,26 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
     echo ""
     log_info "启动 gateway..."
     export OPENCLAW_HOME="$XYVACLAW_HOME"
-    if [ "$AUTO_MODE" = true ]; then
-        # In auto mode, start in background so script can exit
-        nohup openclaw gateway > "$XYVACLAW_HOME/logs/gateway.log" 2>&1 &
-        sleep 2
-        log_ok "Gateway 已在后台启动 (PID: $!)"
+
+    # Always start gateway in background so the script can finish cleanly
+    nohup openclaw gateway > "$XYVACLAW_HOME/logs/gateway.log" 2>&1 &
+    GATEWAY_PID=$!
+    sleep 3
+
+    # Verify gateway is actually running
+    if kill -0 $GATEWAY_PID 2>/dev/null; then
+        log_ok "Gateway 已在后台启动 (PID: $GATEWAY_PID)"
+        echo ""
+        echo -e "  ${BOLD}查看日志:${NC} tail -f $XYVACLAW_HOME/logs/gateway.log"
+        echo -e "  ${BOLD}停止服务:${NC} kill $GATEWAY_PID"
+        echo ""
+
+        # Open browser for the user
+        if [ "$AUTO_MODE" != true ] && command -v open &>/dev/null; then
+            log_info "正在打开浏览器..."
+            open "http://localhost:18789" 2>/dev/null || true
+        fi
     else
-        openclaw gateway
+        log_warn "Gateway 启动可能失败，请检查日志: $XYVACLAW_HOME/logs/gateway.log"
     fi
 fi
