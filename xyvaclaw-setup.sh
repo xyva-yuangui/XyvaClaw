@@ -341,6 +341,13 @@ if [ "$USE_WIZARD" = true ]; then
     if [ ! -f "$WIZARD_DIR/dist/index.html" ]; then
         NEED_BUILD=true
         log_info "前端未构建，正在安装依赖并构建..."
+    elif [ -d "$WIZARD_DIR/src" ]; then
+        # Rebuild if any source file is newer than the built output
+        NEWEST_SRC=$(find "$WIZARD_DIR/src" -type f -newer "$WIZARD_DIR/dist/index.html" 2>/dev/null | head -1)
+        if [ -n "$NEWEST_SRC" ]; then
+            NEED_BUILD=true
+            log_info "检测到前端源码更新，重新构建..."
+        fi
     fi
 
     # Install wizard deps if needed
@@ -675,7 +682,7 @@ INSTALL_MODE="interactive"
 [ "$AUTO_MODE" = true ] && INSTALL_MODE="auto"
 (curl -sS -m 5 -X POST "https://api.xyvaclaw.com/v1/setup-complete" \
   -H "Content-Type: application/json" \
-  -d "{\"os\":\"macos\",\"v\":\"1.1.1\",\"mode\":\"${INSTALL_MODE}\"}" \
+  -d "{\"os\":\"macos\",\"v\":\"1.1.2\",\"mode\":\"${INSTALL_MODE}\"}" \
   2>/dev/null || true) &
 
 # ============================================

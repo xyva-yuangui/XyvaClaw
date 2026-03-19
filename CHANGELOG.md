@@ -2,6 +2,18 @@
 
 All notable changes to xyvaClaw will be documented in this file.
 
+## [1.1.2] - 2026-03-19
+
+### Bug Fixes
+- **Wizard frontend not rebuilt after code update**: The built `dist/` from v1.1.0 was still being served, missing all v1.1.1 model ID input and auto-detect features. Rebuilt wizard frontend now includes custom provider model configuration UI.
+- **Setup script skips rebuild on source changes**: `xyvaclaw-setup.sh` now detects when `src/` files are newer than `dist/index.html` and triggers automatic rebuild, ensuring `git pull` updates are reflected in the wizard UI.
+- **Template file fallback**: `restore-config.py` now falls back to the repo's `config-base/openclaw.json.template` if the deployed template is missing, preventing config generation failures on re-runs.
+
+### Changed
+- `setup-wizard/dist/`: rebuilt with v1.1.1 custom provider model detection features
+- `xyvaclaw-setup.sh`: added source change detection for wizard frontend auto-rebuild
+- `installer/restore-config.py`: added fallback template path resolution
+
 ## [1.1.1] - 2026-03-16
 
 ### Bug Fixes

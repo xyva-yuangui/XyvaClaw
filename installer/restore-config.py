@@ -291,8 +291,16 @@ def main():
     wizard_path = args[2] if len(args) > 2 else ''
 
     if not template_path.exists():
-        print(f"Error: template not found: {template_path}")
-        sys.exit(1)
+        # Fallback: try config-base/ relative to this script's repo location
+        script_dir = Path(__file__).resolve().parent
+        fallback = script_dir.parent / 'config-base' / 'openclaw.json.template'
+        if fallback.exists():
+            print(f"Template not found at {template_path}, using fallback: {fallback}")
+            template_path = fallback
+        else:
+            print(f"Error: template not found: {template_path}")
+            print(f"  (also checked fallback: {fallback})")
+            sys.exit(1)
 
     data = json.loads(template_path.read_text())
     env = load_env(env_path)
