@@ -381,28 +381,34 @@ if [ "$USE_WIZARD" = true ]; then
         fi
     fi
 
-    # Install wizard deps if needed
-    if [ ! -d "$WIZARD_DIR/node_modules" ] || [ "$(ls -A "$WIZARD_DIR/node_modules" 2>/dev/null | head -1)" = "" ]; then
-        log_info "安装配置向导依赖 (npm install)..."
-        if [ "$NEED_BUILD" = true ]; then
-            # Full install needed (includes vite for building)
-            (cd "$WIZARD_DIR" && npm install) || {
-                log_warn "npm install 失败，将使用手动配置"
-                USE_WIZARD=false
-            }
-        else
-            # Distribution mode: only server deps needed
-            (cd "$WIZARD_DIR" && npm install --production) || {
-                log_warn "npm install 失败，将使用手动配置"
-                USE_WIZARD=false
-            }
-        fi
+    # Install wizard deps
+    # When NEED_BUILD=true, always run full `npm install` (dev deps like vite are required).
+    # A stale node_modules from a previous --production install won't have vite/react.
+    MODULES_EXIST=false
+    if [ -d "$WIZARD_DIR/node_modules" ] && [ -n "$(ls -A "$WIZARD_DIR/node_modules" 2>/dev/null | head -1)" ]; then
+        MODULES_EXIST=true
+    fi
+
+    if [ "$NEED_BUILD" = true ]; then
+        # Full install needed (includes vite + @vitejs/plugin-react for building)
+        log_info "安装配置向导依赖 (npm install, 含构建工具)..."
+        (cd "$WIZARD_DIR" && npm install) || {
+            log_warn "npm install 失败，将使用手动配置"
+            USE_WIZARD=false
+        }
+    elif [ "$MODULES_EXIST" = false ]; then
+        # No build needed, just server deps
+        log_info "安装配置向导依赖 (npm install --production)..."
+        (cd "$WIZARD_DIR" && npm install --production) || {
+            log_warn "npm install 失败，将使用手动配置"
+            USE_WIZARD=false
+        }
     fi
 
     # Build frontend if needed
     if [ "$USE_WIZARD" = true ] && [ "$NEED_BUILD" = true ]; then
         log_info "构建前端页面 (vite build)..."
-        (cd "$WIZARD_DIR" && npx --yes vite build) || {
+        (cd "$WIZARD_DIR" && npm run build) || {
             log_warn "前端构建失败，将使用手动配置"
             USE_WIZARD=false
         }
@@ -847,7 +853,14 @@ echo "    xyvaclaw agents list      # 查看 agent 列表"
 echo ""
 echo -e "  ${BOLD}首次启动注意:${NC}"
 echo "    - 会下载本地 embedding 模型（约 70MB），请耐心等待约 1 分钟"
-echo "    - 飞书集成需在开放平台配置 webhook 回调地址"
+echo ""
+echo -e "  ${BOLD}飞书机器人配置（必须在飞书开放平台完成）:${NC}"
+echo "    1. open.feishu.cn → 你的应用 → 事件与回调"
+echo "    2. 订阅方式：选择「使用长连接接收事件」(WebSocket)"
+echo "    3. 添加事件：im.message.receive_v1（接收消息）"
+echo "    4. 权限管理：开通「获取与发送单聊/群组消息」"
+echo "    5. 版本管理与发布 → 创建版本并发布上线"
+echo "    6. 将机器人拉入群 → @机器人名字 即可对话"
 echo ""
 echo -e "  ${BOLD}遇到问题？${NC}"
 echo "    - 常见问题: https://github.com/xyva-yuangui/XyvaClaw/blob/main/docs/FAQ.md"

@@ -15,10 +15,13 @@ const CHANNEL_LIST = [
     helpUrl: 'https://open.feishu.cn/',
     helpText: '如何创建飞书应用？',
     setupSteps: [
-      '登录飞书开放平台 → 创建企业自建应用',
-      '添加机器人能力 → 获取 App ID 和 App Secret',
-      '配置事件订阅 → 回调地址填写 http://你的IP:18789/feishu/webhook',
-      '添加权限 → 消息读写、群组管理等',
+      '登录飞书开放平台 (open.feishu.cn) → 创建企业自建应用',
+      '添加「机器人」能力 → 获取 App ID 和 App Secret',
+      '事件与回调 → 订阅方式选择「使用长连接接收事件」(WebSocket)',
+      '事件与回调 → 添加事件：接收消息 (im.message.receive_v1)',
+      '权限管理 → 开通：获取与发送单聊/群组消息、读取群信息',
+      '版本管理与发布 → 创建版本并发布上线',
+      '将机器人拉入飞书群 → @机器人 即可对话',
     ],
   },
   {
