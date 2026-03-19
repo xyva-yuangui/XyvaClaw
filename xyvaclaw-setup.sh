@@ -167,93 +167,102 @@ fi
 # ============================================
 # Step 1.5: Detect existing Claw installations
 # ============================================
-# This step only warns — it never deletes or modifies anything.
-# Wrapped in a subshell so any error here cannot break the install.
-detect_existing_claws() {
+# Detect and auto-clean existing Claw installations to avoid conflicts.
+cleanup_existing_claws() {
     set +eo pipefail
     local FOUND_ISSUES=false
 
-    # --- Check for existing OpenClaw config directory ---
-    local OPENCLAW_DIR="${OPENCLAW_STATE_DIR:-$HOME/.openclaw}"
-    if [ -d "$OPENCLAW_DIR" ] && [ "$OPENCLAW_DIR" != "$XYVACLAW_HOME" ]; then
-        FOUND_ISSUES=true
-        log_warn "检测到已有 OpenClaw 配置目录: $OPENCLAW_DIR"
-        echo ""
-        echo -e "  ${BOLD}xyvaClaw 使用独立目录 ${XYVACLAW_HOME}，不会影响现有配置。${NC}"
-        echo -e "  如果你不再需要原版 OpenClaw，可以稍后手动清理："
-        echo ""
-        echo -e "  ${CYAN}# 停止原有 OpenClaw 服务${NC}"
-        echo "  openclaw gateway stop 2>/dev/null"
-        echo "  openclaw gateway uninstall 2>/dev/null"
-        echo ""
-        echo -e "  ${CYAN}# 删除原有配置（请先确认不需要）${NC}"
-        echo "  rm -rf $OPENCLAW_DIR"
-        echo ""
-    fi
-
-    # --- Check for existing OpenClaw launchd service (macOS) ---
+    # --- Stop and remove existing OpenClaw launchd services (macOS) ---
     if [ "$(uname)" = "Darwin" ]; then
         local LAUNCHD_MATCH
         LAUNCHD_MATCH=$(launchctl list 2>/dev/null | grep "ai.openclaw" 2>/dev/null || true)
         if [ -n "$LAUNCHD_MATCH" ]; then
             FOUND_ISSUES=true
-            log_warn "检测到原版 OpenClaw 自启动服务正在运行"
-            echo -e "  xyvaClaw 会创建自己的服务 (ai.xyvaclaw.gateway)，两者可以共存。"
-            echo -e "  如需停止原有服务："
-            echo "  launchctl bootout gui/\$UID/ai.openclaw.gateway 2>/dev/null"
-            echo "  rm -f ~/Library/LaunchAgents/ai.openclaw.gateway.plist"
-            echo ""
+            log_info "检测到原版 OpenClaw 自启动服务，正在卸载..."
+            launchctl bootout gui/$(id -u)/ai.openclaw.gateway 2>/dev/null || true
+            rm -f "$HOME/Library/LaunchAgents/ai.openclaw.gateway.plist" 2>/dev/null || true
+            log_ok "原版 OpenClaw 服务已卸载"
         fi
     fi
 
-    # --- Check for other Claw desktop apps (macOS) ---
+    # --- Remove existing OpenClaw config directory ---
+    local OPENCLAW_DIR="${OPENCLAW_STATE_DIR:-$HOME/.openclaw}"
+    if [ -d "$OPENCLAW_DIR" ] && [ "$OPENCLAW_DIR" != "$XYVACLAW_HOME" ]; then
+        FOUND_ISSUES=true
+        log_info "检测到原版 OpenClaw 配置目录: $OPENCLAW_DIR"
+        if [ "$AUTO_MODE" = true ]; then
+            rm -rf "$OPENCLAW_DIR"
+            log_ok "原版 OpenClaw 配置已清理"
+        else
+            echo ""
+            echo -e "  ${BOLD}xyvaClaw 使用独立目录 ${XYVACLAW_HOME}${NC}"
+            echo -e "  原版 OpenClaw 配置目录: ${OPENCLAW_DIR}"
+            echo ""
+            read -p "  是否删除原版 OpenClaw 配置？(y/n) " -n 1 -r
+            echo ""
+            if [[ $REPLY =~ ^[Yy]$ ]]; then
+                rm -rf "$OPENCLAW_DIR"
+                log_ok "原版 OpenClaw 配置已清理"
+            else
+                log_info "保留原版配置，继续安装"
+            fi
+        fi
+    fi
+
+    # --- Detect and remove other Claw desktop apps (macOS) ---
     local OTHER_CLAWS=()
     for app_name in "QClaw" "AutoClaw" "WorkBuddy" "CoPaw"; do
-        if [ -d "/Applications/${app_name}.app" ] || [ -d "$HOME/Applications/${app_name}.app" ]; then
-            OTHER_CLAWS+=("$app_name")
+        if [ -d "/Applications/${app_name}.app" ]; then
+            OTHER_CLAWS+=("/Applications/${app_name}.app")
+        elif [ -d "$HOME/Applications/${app_name}.app" ]; then
+            OTHER_CLAWS+=("$HOME/Applications/${app_name}.app")
         fi
     done
     if [ ${#OTHER_CLAWS[@]} -gt 0 ]; then
         FOUND_ISSUES=true
-        log_warn "检测到其他 Claw 产品: ${OTHER_CLAWS[*]}"
-        echo -e "  这些产品可能使用同一端口 (18789)，建议安装 xyvaClaw 前先关闭它们。"
-        echo -e "  xyvaClaw 使用完全独立的数据目录，不会影响这些产品的数据。"
-        echo ""
+        log_info "检测到其他 Claw 产品: ${OTHER_CLAWS[*]}"
+        for app_path in "${OTHER_CLAWS[@]}"; do
+            local app_base
+            app_base=$(basename "$app_path")
+            # Kill running processes
+            pkill -f "$app_base" 2>/dev/null || true
+            if [ "$AUTO_MODE" = true ]; then
+                rm -rf "$app_path"
+                log_ok "已删除: $app_base"
+            else
+                read -p "  是否删除 ${app_base}？(y/n) " -n 1 -r
+                echo ""
+                if [[ $REPLY =~ ^[Yy]$ ]]; then
+                    rm -rf "$app_path"
+                    log_ok "已删除: $app_base"
+                fi
+            fi
+        done
     fi
 
-    # --- Check if default port 18789 is in use ---
+    # --- Kill processes on port 18789 ---
     if command -v lsof &>/dev/null; then
-        local PORT_PID
-        PORT_PID=$(lsof -ti:18789 2>/dev/null | head -1 || true)
-        if [ -n "$PORT_PID" ]; then
-            local PORT_PROC
-            PORT_PROC=$(ps -p "$PORT_PID" -o comm= 2>/dev/null || echo "unknown")
+        local PORT_PIDS
+        PORT_PIDS=$(lsof -ti:18789 2>/dev/null || true)
+        if [ -n "$PORT_PIDS" ]; then
             FOUND_ISSUES=true
-            log_warn "端口 18789 已被占用 (PID: $PORT_PID, 进程: $PORT_PROC)"
-            echo -e "  xyvaClaw gateway 启动时也使用此端口。"
-            echo -e "  建议先关闭占用进程，或安装完成后修改端口配置。"
-            echo ""
+            log_info "端口 18789 被占用，正在释放..."
+            echo "$PORT_PIDS" | xargs kill -9 2>/dev/null || true
+            sleep 1
+            log_ok "端口 18789 已释放"
         fi
     fi
 
     if [ "$FOUND_ISSUES" = true ]; then
-        echo -e "  ${YELLOW}────────────────────────────────────────${NC}"
-        echo -e "  ${BOLD}以上仅为提示，不影响安装。xyvaClaw 使用独立目录，可以与其他 Claw 共存。${NC}"
-        echo -e "  ${YELLOW}────────────────────────────────────────${NC}"
         echo ""
-        if [ "$AUTO_MODE" != true ]; then
-            auto_confirm "  按回车继续安装，或按 q 退出: " ""
-            if [[ $REPLY =~ ^[Qq]$ ]]; then
-                echo "退出安装"
-                exit 0
-            fi
-        fi
+        log_ok "环境清理完成，开始安装 xyvaClaw"
+        echo ""
     fi
     set -eo pipefail
 }
 
-# Run detection in a safe wrapper — any error here must not break install
-detect_existing_claws 2>/dev/null || true
+# Run cleanup — any error here must not break install
+cleanup_existing_claws 2>/dev/null || true
 
 # ============================================
 # Step 2: Install OpenClaw runtime
@@ -373,7 +382,7 @@ if [ "$USE_WIZARD" = true ]; then
 
     # Build frontend if needed
     if [ "$USE_WIZARD" = true ] && [ "$NEED_BUILD" = true ]; then
-        (cd "$WIZARD_DIR" && npx vite build 2>/dev/null) || {
+        (cd "$WIZARD_DIR" && npx --yes vite build 2>/dev/null) || {
             log_warn "前端构建失败，将使用手动配置"
             USE_WIZARD=false
         }

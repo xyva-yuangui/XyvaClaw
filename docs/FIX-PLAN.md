@@ -2,9 +2,10 @@
 
 > **审查日期**: 2026-03-19
 > **修复日期**: 2026-03-19
-> **状态**: ✅ 全部修复完成
-> **审查范围**: 全部代码 + 百炼 Coding Plan 官方文档 + OpenClaw 飞书官方文档
-> **涉及文件**: 6 个核心文件，约 100 行代码修改
+> **版本**: v1.1.4
+> **状态**: ✅ 全部修复完成，本地安装验证通过
+> **审查范围**: 全部代码 + 百炼 Coding Plan 官方文档 + OpenClaw 飞书官方文档 + 本地安装全流程测试
+> **涉及文件**: 8 个核心文件，约 200 行代码修改
 
 ---
 
@@ -14,10 +15,11 @@
 - [二、百炼 Coding Plan 问题（3 个 Bug）](#二百炼-coding-plan-问题3-个-bug)
 - [三、飞书集成问题（3 个 Bug）](#三飞书集成问题3-个-bug)
 - [四、OpenClaw Dashboard 问题（1 个 Bug）](#四openclaw-dashboard-问题1-个-bug)
-- [五、其他问题（2 个）](#五其他问题2-个)
-- [六、问题关联图](#六问题关联图)
-- [七、逐文件修复方案](#七逐文件修复方案)
-- [八、修复优先级与实施顺序](#八修复优先级与实施顺序)
+- [五、安装脚本问题（5 个 Bug）](#五安装脚本问题5-个-bug)
+- [六、其他问题（2 个）](#六其他问题2-个)
+- [七、问题关联图](#七问题关联图)
+- [八、逐文件修复方案](#八逐文件修复方案)
+- [九、修复优先级与实施顺序](#九修复优先级与实施顺序)
 
 ---
 
@@ -32,6 +34,11 @@
 | F2 | 🟡 中等 | 飞书 | 飞书配置结构与 OpenClaw 官方 accounts 格式不匹配 | ✅ 已修复 |
 | F3 | 🟡 中等 | 飞书 | Setup Wizard 飞书验证缺少 appId 参数 → 验证永远失败 | ✅ 已修复 |
 | D1 | 🔴 致命 | Dashboard | 由 B1+B2+F1 联合导致 — Gateway 启动异常或功能缺失 | ✅ 已修复(上游) |
+| S1 | 🔴 致命 | 安装脚本 | `set -euo pipefail` + 中文字符导致安装脚本崩溃 | ✅ 已修复 |
+| S2 | 🔴 致命 | 安装脚本 | 插件未注册到 OpenClaw registry → Gateway 报 "plugin not found" | ✅ 已修复 |
+| S3 | 🟡 中等 | 安装脚本 | `npx vite build` 弹出交互确认提示阻塞安装 | ✅ 已修复 |
+| S4 | 🟡 中等 | 安装脚本 | 检测到其他 Claw 仅警告不清理，用户需手动卸载 | ✅ 已修复 |
+| S5 | 🟡 中等 | 飞书插件 | `feishu/package.json` 缺少运行时依赖导致插件加载失败 | ✅ 已修复 |
 | M1 | 🟢 低 | 技能 | `skill_loading.json` 引用不存在的技能名 | ✅ 已修复 |
 | M2 | 🟢 低 | Wizard | `cors` 包引入但未使用 | ⏭ 跳过(无影响) |
 
@@ -294,7 +301,76 @@ openclaw dashboard
 
 ---
 
-## 五、其他问题（2 个）
+## 五、安装脚本问题（5 个 Bug）
+
+### S1: `set -euo pipefail` + 中文字符导致安装脚本崩溃（🔴 致命）
+
+`xyvaclaw-setup.sh` 第 182 行：
+```bash
+echo -e "  ${BOLD}xyvaClaw 使用独立目录 $XYVACLAW_HOME，不会影响现有配置。${NC}"
+```
+
+`$XYVACLAW_HOME` 后紧跟中文逗号 `，`（UTF-8: `\xef\xbc\x8c`），bash 将首字节 `\xef` 解析为变量名的一部分，在 `set -u` 下触发 `unbound variable` 错误，安装脚本立即崩溃退出。
+
+同时 `detect_existing_claws` 函数中 `launchctl list | grep -q` 管道在 `pipefail` 下，grep 无匹配时返回 1 也触发脚本退出。
+
+**修复**: 
+1. 使用 `${XYVACLAW_HOME}` 显式大括号分隔变量名
+2. 函数内 `set +eo pipefail`，函数末尾恢复
+3. 管道命令使用 `|| true` 吞掉非零退出码
+
+---
+
+### S2: 插件未注册到 OpenClaw registry（🔴 致命）
+
+安装脚本将 `lossless-claw` 和 `feishu_local` 插件文件复制到 `~/.xyvaclaw/extensions/`，但 OpenClaw 运行时需要通过 `openclaw plugins install --link` 正式注册插件。未注册的插件在 `plugins.allow` 中引用会导致 config 校验失败：
+
+```
+plugins.allow: plugin not found: lossless-claw
+plugins.allow: plugin not found: feishu_local
+```
+
+**修复**: 在安装脚本 Step 4 和 Step 5 之间新增 **Step 4.5**：
+1. 临时清空 `openclaw.json` 中的 `plugins` 配置（绕过 config 校验鸡生蛋问题）
+2. 执行 `openclaw plugins install --link` 注册两个本地插件
+3. 将原始 plugins 配置**合并**（而非覆盖）回 `openclaw.json`，保留 OpenClaw 写入的 `load.paths` 和 `installs` 注册表
+
+---
+
+### S3: `npx vite build` 弹出交互确认提示（🟡 中等）
+
+当用户选择 Web 配置向导且前端需要重新构建时，`npx vite build` 会提示 "Need to install the following packages: vite@x.x.x — Ok to proceed? (y)"，阻塞脚本等待输入。
+
+**修复**: 改为 `npx --yes vite build`，自动确认安装。
+
+---
+
+### S4: 其他 Claw 产品仅警告不清理（🟡 中等）
+
+检测到原版 OpenClaw 配置目录、自启动服务、其他 Claw 桌面应用时，脚本仅打印警告信息和手动清理命令，不执行清理。用户需要手动操作后才能干净安装。
+
+**修复**: 将 `detect_existing_claws` 重写为 `cleanup_existing_claws`：
+- 自动卸载原版 OpenClaw LaunchAgent 服务
+- 交互模式下提示是否删除原版配置目录和其他 Claw 应用，auto 模式直接清理
+- 自动 kill 占用端口 18789 的进程
+
+---
+
+### S5: feishu 插件 `package.json` 缺少运行时依赖（🟡 中等）
+
+`config-base/extensions/feishu/package.json` 无 `dependencies` 字段，但插件源码直接 import 了 4 个外部包：
+- `@sinclair/typebox` — 工具参数 schema 定义
+- `@larksuiteoapi/node-sdk` — 飞书 SDK
+- `https-proxy-agent` — HTTP 代理
+- `zod` — 配置校验
+
+安装脚本 Step 6 运行 `npm install --production` 时因无依赖声明而跳过安装，导致 Gateway 启动时 feishu_local 插件 `Cannot find module` 加载失败。
+
+**修复**: 在 `package.json` 中添加完整的 `dependencies` 声明。
+
+---
+
+## 六、其他问题（2 个）
 
 ### M1: skill_loading.json 引用不存在的技能名（🟢 低）
 
@@ -312,7 +388,7 @@ openclaw dashboard
 
 ---
 
-## 六、问题关联图
+## 七、问题关联图
 
 ```
 用户报告: "百炼大模型平台不支持"
@@ -335,7 +411,7 @@ openclaw dashboard
 
 ---
 
-## 七、逐文件修复方案
+## 八、逐文件修复方案
 
 ### 文件 1: `config-base/openclaw.json.template`
 
@@ -626,7 +702,7 @@ openclaw dashboard
 
 ---
 
-## 八、修复优先级与实施顺序
+## 九、修复优先级与实施顺序
 
 | 步骤 | 修复 | 文件 | 影响 |
 |------|------|------|------|
@@ -637,8 +713,13 @@ openclaw dashboard
 | **5** | F2: 飞书 accounts 格式 | `openclaw.json.template` + `restore-config.py` | 飞书配置规范化 |
 | **6** | F3: 飞书验证传 appId | `ApiKeyInput.jsx` + `Channels.jsx` | 飞书验证可用 |
 | **7** | M1: 技能名修正 | `skill_loading.json` | 技能预加载正常 |
+| **8** | S1: 修复脚本 pipefail+中文崩溃 | `xyvaclaw-setup.sh` | 安装脚本不再崩溃 |
+| **9** | S2: 自动注册插件到 OpenClaw | `xyvaclaw-setup.sh` | Gateway 正常加载插件 |
+| **10** | S3: `npx --yes` 自动确认 | `xyvaclaw-setup.sh` | 前端构建不阻塞 |
+| **11** | S4: 自动清理其他 Claw | `xyvaclaw-setup.sh` | 一键干净安装 |
+| **12** | S5: feishu 插件依赖声明 | `feishu/package.json` | 飞书插件正常加载 |
 
-**预计工作量**: 修改 6 个文件，约 100 行代码变更。
+**实际工作量**: 修改 8 个文件，约 200 行代码变更。全部修复已通过本地完整安装测试验证。
 
 ---
 
