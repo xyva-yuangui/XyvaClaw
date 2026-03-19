@@ -2,6 +2,55 @@
 
 All notable changes to xyvaClaw will be documented in this file.
 
+## [1.1.5] - 2026-03-19
+
+### Breaking Changes
+- **Gateway auth mode**: Local mode (`bind: loopback`) now defaults to `auth.mode: none`. Users no longer need to enter a gateway token to access Dashboard. Non-loopback mode still uses token auth.
+
+### New Features
+- **API Key smart input**: Interactive terminal prompt during install — auto-detects key type (`sk-sp-` → Bailian Coding Plan, `sk-` → Bailian Standard / DeepSeek) and validates via HTTP request.
+- **Zero-confirmation install**: Removed all y/n prompts (sudo wrapper, auto-start, gateway launch). Install completes fully automatically after entering API Key.
+- **Auto-start gateway**: Gateway starts automatically after install and opens browser to Dashboard.
+
+### Bug Fixes
+- **Gateway won't start — `plugins.allow: plugin not found`**: `openclaw plugins install --link` was silently failing (stderr suppressed). Added error output + fallback manual `load.paths` injection.
+- **Gateway won't start — `channels.webchat: unknown channel id`**: OpenClaw doctor injects `webchat` channel, but it wasn't in the known channels whitelist. Added `webchat` to `KNOWN_CHANNELS`.
+- **Feishu group messages silently dropped**: `groupPolicy` was `allowlist` with empty `allowFrom`. Fixed to `open` with `allowFrom: ["*"]`.
+- **Feishu placeholder config leaks**: When no Feishu credentials are provided, the feishu channel is now completely removed from config instead of being disabled with `__APP_ID__` placeholders.
+
+### Changed
+- `config-base/openclaw.json.template`: `auth.mode` changed from `token` to `none`
+- `installer/restore-config.py`: loopback → `auth: none`; no feishu creds → remove channel entirely
+- `xyvaclaw-setup.sh`: replaced Web wizard / manual .env choice with direct API Key prompt; added plugin registration fallback; removed all confirmation prompts
+
+## [1.1.4] - 2026-03-19
+
+### Bug Fixes
+- **`__API_KEY__` placeholder overrides real API key**: Agent-level `models.json` files contained `__API_KEY__` placeholders for `bailian` and `deepseek` providers, which overwrote the real key from global `openclaw.json` during config merge. Removed all agent-level `__API_KEY__` placeholders.
+- **Hardcoded tokens in `auth-profiles.json`**: Cleared leaked OAuth tokens for `qwen-portal`, hardcoded key for `minimax-cn`, and `__API_KEY__` placeholders for `deepseek`/`bailian`.
+- **Bailian baseUrl wrong for Coding Plan keys**: `sk-sp-` keys require `coding.dashscope.aliyuncs.com` but config had `compatible-mode`. Added auto-detection in `restore-config.py` and `setup-wizard/server/index.js`.
+- **Setup script doesn't clean placeholders**: Added post-rsync cleanup step to remove `__API_KEY__` placeholders from deployed agent configs.
+
+### Changed
+- `config-base/agents/main/agent/models.json`: removed `apiKey` fields from `bailian` and `deepseek`
+- `config-base/agents/main/agent/auth-profiles.json`: cleared all hardcoded credentials
+- `config-base/agents/quant-analyst/agent/models.json`: removed `apiKey` field from `bailian`
+- `installer/restore-config.py`: added `detect_bailian_base_url()` helper
+- `setup-wizard/server/index.js`: added dynamic baseUrl detection in validation endpoint
+- `xyvaclaw-setup.sh`: added placeholder cleanup step after config deployment
+
+## [1.1.3] - 2026-03-19
+
+### Bug Fixes
+- **Feishu WebSocket connected but no messages received**: Confirmed root cause was missing event subscription (`im.message.receive_v1`) on Feishu Open Platform. Documented the required 5-step configuration.
+- **Feishu `accounts.main` → `accounts.default`**: OpenClaw expects `accounts.default` but template used `accounts.main`. Fixed template and `restore-config.py`.
+- **Feishu DM policy too restrictive**: Changed `dmPolicy` from `allowlist` to `open` and set `allowFrom: ["*"]`.
+- **Webchat channel validation error**: `channels.webchat` is not a recognized channel ID in OpenClaw. Added filtering in the plugin registration restore step.
+- **Vite build failure in setup wizard**: Fixed missing dev dependencies detection and rebuild trigger.
+
+### Documentation
+- `docs/FULL-AUDIT.md`: comprehensive audit report covering all fixes, Feishu debugging, and DingTalk integration plan
+
 ## [1.1.2] - 2026-03-19
 
 ### Bug Fixes

@@ -499,6 +499,9 @@ v5-orchestrator.py --daily
 | V5.1 | 2026-03-16 | Message Analyzer 合并、V5 Orchestrator、Cron 清理 |
 | V5.0 | 2026-03-15 | 五阶段认知管道、Bootstrap Bundle、API Fallback、推理链 |
 | V4.0 | 2026-03-09 | 对抗性推理、记忆分区、上下文压缩 |
+| v1.1.5 | 2026-03-19 | 安装体验大幅简化：Gateway 本机免认证、API Key 智能输入、零确认安装、插件注册修复 |
+| v1.1.4 | 2026-03-19 | 修复 __API_KEY__ 占位符覆盖、百炼 baseUrl 动态选择、清除泄露 token |
+| v1.1.3 | 2026-03-19 | 飞书 WebSocket 事件订阅修复、accounts.default 修正、DM/群策略修复 |
 | v1.1.2 | 2026-03-19 | Setup Wizard 自定义 Provider 模型配置修复 |
 | v1.1.1 | 2026-03-16 | Gateway 配置路径修复、meta/wizard/plugins 修复 |
 | v1.1.0 | 2026-03-15 | 性能优化（bootstrap 16K、watchdog 30s）、4 个新技能 |
