@@ -1,0 +1,6 @@
+{
+  "slug": "screenshot-sender",
+  "name": "Screenshot Sender",
+  "version": "1.0.0",
+  "description": "Capture screenshots on macOS and optionally send them to Feishu chats. Use when the user asks to take a screenshot, capture the screen, send a screenshot, or needs visual evidence of something on screen. Supports full screen, window, and region capture modes."
+}

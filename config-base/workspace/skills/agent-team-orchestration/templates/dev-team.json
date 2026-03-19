@@ -1,0 +1,106 @@
+{
+  "name": "开发团队",
+  "description": "开发者 + 审核员，用于代码开发和质量保证",
+  "version": "1.0.0",
+  "roles": [
+    {
+      "name": "开发者",
+      "description": "负责需求分析、代码实现、单元测试",
+      "skills": [
+        "qwen3-coder-next",
+        "full-stack-dev-agent",
+        "test-runner",
+        "git"
+      ],
+      "responsibilities": [
+        "需求理解和技术方案设计",
+        "代码编写和实现",
+        "单元测试编写",
+        "文档编写"
+      ],
+      "model": "qwen3-coder-next",
+      "temperature": 0.5
+    },
+    {
+      "name": "审核员",
+      "description": "负责代码审查、安全审计、性能优化",
+      "skills": [
+        "code-review",
+        "security-auditor",
+        "vercel-react-best-practices",
+        "vercel-composition-patterns"
+      ],
+      "responsibilities": [
+        "代码审查（逻辑、风格、可维护性）",
+        "安全漏洞扫描",
+        "性能分析和优化建议",
+        "最佳实践检查"
+      ],
+      "model": "qwen3-max",
+      "temperature": 0.3
+    }
+  ],
+  "workflow": {
+    "steps": [
+      {
+        "step": 1,
+        "role": "开发者",
+        "task": "需求分析和技术设计",
+        "output": "技术方案文档"
+      },
+      {
+        "step": 2,
+        "role": "审核员",
+        "task": "方案评审",
+        "output": "评审意见 + 修改建议"
+      },
+      {
+        "step": 3,
+        "role": "开发者",
+        "task": "代码实现",
+        "output": "代码 + 单元测试"
+      },
+      {
+        "step": 4,
+        "role": "审核员",
+        "task": "代码审查 + 安全审计",
+        "output": "审查报告 + 批准/修改意见"
+      },
+      {
+        "step": 5,
+        "role": "开发者",
+        "task": "根据审查意见修改",
+        "output": "最终代码"
+      }
+    ],
+    "handoff_protocol": {
+      "format": "json",
+      "required_fields": [
+        "task_id",
+        "from_role",
+        "to_role",
+        "code_changes",
+        "test_results",
+        "notes"
+      ]
+    }
+  },
+  "communication": {
+    "channel": "team_chat",
+    "notification": "on_pr_ready",
+    "escalation": "on_security_issue"
+  },
+  "quality_gates": {
+    "min_test_coverage": 0.8,
+    "require_security_scan": true,
+    "require_code_review": true,
+    "block_on_security_issues": true
+  },
+  "example_tasks": [
+    "新功能开发",
+    "Bug 修复",
+    "性能优化",
+    "代码重构",
+    "安全漏洞修复"
+  ]
+}

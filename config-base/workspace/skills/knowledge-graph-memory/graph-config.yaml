@@ -1,0 +1,46 @@
+# Knowledge Graph Memory Configuration
+
+storage:
+  path: "~/.openclaw/memory/knowledge-graph.sqlite"
+  max_entities: 100000
+  max_relations: 500000
+
+extraction:
+  mode: "hybrid"  # "regex" | "llm" | "hybrid"
+  auto_ingest: true  # 会话结束自动摄入（需 OpenClaw 集成）
+  auto_query: true   # 会话开始自动查询相关知识
+  min_confidence: 0.6
+  entity_types:
+    - person
+    - company
+    - concept
+    - tool
+    - stock
+    - event
+    - location
+    - document
+
+# 实体类型关键词（用于自动推断）
+type_keywords:
+  person: ["是", "叫", "名", "作者", "用户", "开发者", "创始人", "CEO", "经理"]
+  company: ["公司", "企业", "团队", "组织", "机构", "OpenClaw"]
+  tool: ["工具", "软件", "框架", "库", "API", "语言", "Python", "Java", "JavaScript"]
+  concept: ["策略", "方法", "技术", "概念", "理论", "模式", "系统"]
+  stock: ["股票", "股份", "板块", "SH", "SZ"]
+  event: ["会议", "活动", "事件", "发布"]
+  location: ["城市", "省", "地区", "地址", "北京", "上海", "成都"]
+
+llm:
+  model: "bailian/qwen3-max"
+  max_tokens: 2000
+  timeout_seconds: 30
+
+decay:
+  enabled: true
+  lambda: 0.01  # ~230 天半衰期
+  schedule: "daily"
+  prune_threshold: 0.05
+
+integration:
+  session_hook: false  # OpenClaw 会话钩子
+  reasoning_hook: false  # 推理时自动查询

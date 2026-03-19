@@ -1,0 +1,8 @@
+{
+  "ownerId": "kn73vp5rarc3b14rc7wjcw8f8580t5d1",
+  "slug": "workflow",
+  "version": "1.0.0",
+  "publishedAt": 1771191381492,
+  "name": "Workflow",
+  "description": "Build automated pipelines with reusable components, data flow between nodes, and state management."
+}

@@ -1,0 +1,6 @@
+{
+  "slug": "commerce-travel-shopper",
+  "name": "Commerce Travel Shopper",
+  "version": "1.0.0",
+  "description": "Screenshot-driven cross-platform comparison assistant for flights, hotels, and shopping. Supports controlled agent execution with human confirmations."
+}

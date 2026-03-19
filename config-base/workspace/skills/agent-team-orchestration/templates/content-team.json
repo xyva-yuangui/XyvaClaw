@@ -1,0 +1,113 @@
+{
+  "name": "内容团队",
+  "description": "创作者 + 编辑，用于内容生产和发布",
+  "version": "1.0.0",
+  "roles": [
+    {
+      "name": "创作者",
+      "description": "负责选题、调研、内容创作",
+      "skills": [
+        "xhs-creator",
+        "auto-researcher",
+        "content-creator",
+        "qwen-image"
+      ],
+      "responsibilities": [
+        "选题策划",
+        "资料调研",
+        "内容撰写",
+        "配图生成"
+      ],
+      "model": "qwen3.5-plus",
+      "temperature": 0.8
+    },
+    {
+      "name": "编辑",
+      "description": "负责内容审核、优化、发布",
+      "skills": [
+        "humanize-ai-text",
+        "xhs-publisher",
+        "multi-platform-publisher",
+        "web-design-guidelines"
+      ],
+      "responsibilities": [
+        "内容审核（准确性、合规性）",
+        "文风优化（人性化改写）",
+        "格式调整（平台适配）",
+        "发布执行"
+      ],
+      "model": "qwen3-max",
+      "temperature": 0.5
+    }
+  ],
+  "workflow": {
+    "steps": [
+      {
+        "step": 1,
+        "role": "创作者",
+        "task": "选题和调研",
+        "output": "选题方案 + 调研资料"
+      },
+      {
+        "step": 2,
+        "role": "编辑",
+        "task": "选题审核",
+        "output": "选题批准/修改意见"
+      },
+      {
+        "step": 3,
+        "role": "创作者",
+        "task": "内容创作",
+        "output": "内容初稿 + 配图"
+      },
+      {
+        "step": 4,
+        "role": "编辑",
+        "task": "内容审核和优化",
+        "output": "审核意见 + 优化建议"
+      },
+      {
+        "step": 5,
+        "role": "创作者",
+        "task": "根据意见修改",
+        "output": "内容终稿"
+      },
+      {
+        "step": 6,
+        "role": "编辑",
+        "task": "发布执行",
+        "output": "发布链接 + 数据追踪"
+      }
+    ],
+    "handoff_protocol": {
+      "format": "json",
+      "required_fields": [
+        "task_id",
+        "from_role",
+        "to_role",
+        "content_url",
+        "assets",
+        "notes",
+        "platform_requirements"
+      ]
+    }
+  },
+  "communication": {
+    "channel": "team_chat",
+    "notification": "on_content_ready",
+    "escalation": "on_compliance_issue"
+  },
+  "quality_gates": {
+    "min_quality_score": 0.85,
+    "require_humanize": true,
+    "require_platform_check": true,
+    "block_on_compliance_issues": true
+  },
+  "example_tasks": [
+    "小红书笔记创作",
+    "微信公众号文章",
+    "知乎回答",
+    "微博内容",
+    "多平台分发"
+  ]
+}

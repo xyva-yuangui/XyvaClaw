@@ -1,0 +1,8 @@
+{
+  "ownerId": "kn73vp5rarc3b14rc7wjcw8f8580t5d1",
+  "slug": "batch",
+  "version": "1.0.0",
+  "publishedAt": 1770835885068,
+  "name": "Batch",
+  "description": "Process multiple items with progress tracking, checkpointing, and failure recovery."
+}

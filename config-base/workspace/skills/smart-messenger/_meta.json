@@ -1,0 +1,6 @@
+{
+  "slug": "smart-messenger",
+  "name": "Smart Messenger",
+  "version": "1.0.0",
+  "description": "Send rich messages to Feishu chats including text, images, cards, and scheduled messages. Use when the user asks to send a message, share an image, create a card/report, schedule a notification, or manage message templates. Integrates with screenshot-sender and vision-reader for multimedia messaging."
+}

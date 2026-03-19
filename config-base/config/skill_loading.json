@@ -1,0 +1,24 @@
+{
+  "lazy_loading": {
+    "enabled": true,
+    "common_skills": [
+      "proactive-agent",
+      "self-improving-agent",
+      "claw-shell",
+      "browser-pilot",
+      "web-scraper",
+      "error-guard",
+      "effect-tracker",
+      "smart-messenger"
+    ],
+    "other_skills": "on_demand"
+  },
+  "cache_warming": {
+    "enabled": true,
+    "preload_on_startup": [
+      "quant-strategy-engine/config",
+      "quant-strategy-engine/output",
+      "quant-strategy-engine/cache/tushare"
+    ]
+  }
+}

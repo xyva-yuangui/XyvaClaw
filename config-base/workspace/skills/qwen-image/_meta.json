@@ -1,0 +1,8 @@
+{
+  "ownerId": "kn7dkx3sey4sf5s5336q2axad580mwhy",
+  "slug": "qwen-image",
+  "version": "1.0.0",
+  "publishedAt": 1770348338231,
+  "name": "Qwen Image",
+  "description": "Generate images using Qwen Image API (Alibaba Cloud DashScope). Use when users request image generation with Chinese prompts or need high-quality AI-generated images from text descriptions."
+}

@@ -1,0 +1,98 @@
+# 每日选股推送工作流配置
+
+## 基础配置
+workflow:
+  name: "每日选股推送"
+  version: "1.0.0"
+  timezone: "Asia/Shanghai"
+  timeout_minutes: 10
+
+## 调度配置
+schedule:
+  # Cron 表达式（每天 9:00 执行）
+  cron: "0 9 * * 1-5"  # 周一至周五
+  # 或使用 OpenClaw Cron 格式
+  time: "09:00"
+  days: ["monday", "tuesday", "wednesday", "thursday", "friday"]
+
+## 选股策略配置
+strategy:
+  # 策略类型
+  type: "technical"
+  
+  # 筛选条件
+  filters:
+    # 最小成交量（股）
+    min_volume: 1000000
+    # 最小市值（元）
+    min_market_cap: 5000000000
+    # 排除 ST 股票
+    exclude_st: true
+    # 排除停牌股票
+    exclude_suspended: true
+    # 最大选股数量
+    max_stocks: 20
+  
+  # 选股因子
+  factors:
+    - name: "momentum"
+      weight: 0.3
+    - name: "volume_ratio"
+      weight: 0.2
+    - name: "price_trend"
+      weight: 0.3
+    - name: "volatility"
+      weight: 0.2
+
+## 报告配置
+report:
+  # 报告模板
+  template: "default"
+  # 输出目录
+  output_dir: "output/reports"
+  # 包含详细分析
+  include_details: true
+  # 包含图表
+  include_charts: false
+
+## 飞书推送配置
+feishu:
+  # 是否启用推送
+  enabled: true
+  # 目标群聊 ID（从飞书获取）
+  channel_id: "oc_XXXXXXXXXXXXXX"
+  # 消息类型
+  message_type: "markdown"  # 或 "image"
+  # @所有人
+  mention_all: false
+  # 发送时间（报告生成后延迟）
+  delay_seconds: 0
+
+## 日志配置
+logging:
+  # 日志级别
+  level: "INFO"
+  # 日志文件
+  file: "output/logs/workflow.log"
+  # 保留天数
+  retention_days: 30
+
+## 错误处理
+error_handling:
+  # 最大重试次数
+  max_retries: 3
+  # 重试间隔（秒）
+  retry_delay: 60
+  # 失败时发送告警
+  alert_on_failure: true
+  # 告警接收者
+  alert_channel: "oc_XXXXXXXXXXXXXX"
+
+## 数据源配置
+data_source:
+  # 主要数据源
+  primary: "tushare"
+  # Tushare 网关
+  tushare_gateway: "__TUSHARE_HTTP_URL__"
+  # 备用数据源
+  fallback: "akshare"

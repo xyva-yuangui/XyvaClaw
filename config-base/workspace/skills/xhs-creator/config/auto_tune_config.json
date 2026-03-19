@@ -1,0 +1,33 @@
+{
+  "last_updated": "2026-03-08T09:33:58",
+  "optimizations": {
+    "title_enhancement": {
+      "enabled": true,
+      "params": {
+        "add_numbers": true,
+        "add_questions": true,
+        "add_emotions": true,
+        "reference_best": "AI 提示词高级技巧"
+      },
+      "applied_at": "2026-03-08T11:08:21"
+    },
+    "cover_enhancement": {
+      "enabled": true,
+      "params": {
+        "require_title_text": true,
+        "use_contrast_colors": true,
+        "min_title_font_size": 48
+      },
+      "applied_at": "2026-03-08T11:08:21"
+    },
+    "content_structure": {
+      "enabled": true,
+      "params": {
+        "prefer_list_format": true,
+        "prefer_step_by_step": true,
+        "min_practical_tips": 3
+      },
+      "applied_at": "2026-03-08T11:08:21"
+    }
+  }
+}

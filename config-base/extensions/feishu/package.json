@@ -1,0 +1,13 @@
+{
+  "name": "feishu_local",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "Feishu overlay plugin for OpenClaw runtime",
+  "main": "index.ts",
+  "openclaw": {
+    "extensions": [
+      "./index.ts"
+    ]
+  }
+}

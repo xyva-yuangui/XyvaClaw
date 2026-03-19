@@ -1,0 +1,54 @@
+{
+  "name": "@martian-engineering/lossless-claw",
+  "version": "0.2.8",
+  "description": "Lossless Context Management plugin for OpenClaw — DAG-based conversation summarization with incremental compaction",
+  "type": "module",
+  "main": "index.ts",
+  "license": "MIT",
+  "author": "Josh Lehman <josh@martian.engineering>",
+  "keywords": [
+    "openclaw",
+    "openclaw-plugin",
+    "context-management",
+    "llm",
+    "summarization",
+    "conversation-memory",
+    "dag"
+  ],
+  "files": [
+    "index.ts",
+    "src/**/*.ts",
+    "openclaw.plugin.json",
+    "docs/",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "vitest run --dir test"
+  },
+  "dependencies": {
+    "@mariozechner/pi-agent-core": "*",
+    "@mariozechner/pi-ai": "*",
+    "@sinclair/typebox": "0.34.48"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0",
+    "vitest": "^3.0.0"
+  },
+  "peerDependencies": {
+    "openclaw": "*"
+  },
+  "openclaw": {
+    "extensions": [
+      "./index.ts"
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Martian-Engineering/lossless-claw.git"
+  },
+  "homepage": "https://github.com/Martian-Engineering/lossless-claw#readme",
+  "bugs": {
+    "url": "https://github.com/Martian-Engineering/lossless-claw/issues"
+  }
+}

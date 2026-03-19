@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "description": "领域别名/同义词映射表 — 用于记忆检索时的查询扩展",
+  "updated": "2026-03-05",
+  "aliases": {
+    "xhs": ["小红书", "RED", "RedNote", "小红书笔记"],
+    "小红书": ["xhs", "RED", "RedNote"],
+    "tushare": ["A股数据", "股票数据接口", "Tushare Pro"],
+    "A股": ["a-share", "A股市场", "沪深股票"],
+    "cron": ["定时任务", "计划任务", "scheduled task", "cron job"],
+    "定时任务": ["cron", "cron job", "scheduled task"],
+    "feishu": ["飞书", "Lark", "飞书机器人"],
+    "飞书": ["feishu", "Lark"],
+    "openclaw": ["OpenClaw", "开爪", "OC"],
+    "quant": ["量化", "量化选股", "quantitative", "选股"],
+    "量化选股": ["quant", "stock screener", "选股策略"],
+    "CDP": ["Chrome DevTools Protocol", "浏览器自动化", "Playwright"],
+    "OCR": ["文字识别", "图片识别", "vision reader"],
+    "MACD": ["指数平滑异同移动平均线", "MACD指标"],
+    "RSI": ["相对强弱指标", "相对强弱指数"],
+    "PE": ["市盈率", "price-to-earnings"],
+    "ROE": ["净资产收益率", "return on equity"],
+    "ollama": ["Ollama", "本地模型服务"],
+    "embedding": ["嵌入", "向量化", "embedding model"],
+    "rerank": ["重排序", "re-ranking"],
+    "MMR": ["最大边际相关性", "Maximal Marginal Relevance"],
+    "WAL": ["Write-Ahead Log", "预写日志"],
+    "heartbeat": ["心跳", "健康检查"],
+    "compaction": ["上下文压缩", "context compaction"]
+  },
+  "negation_patterns": [
+    "不要", "别", "禁止", "不可以", "不能", "避免", "不推荐", "不应该",
+    "不建议", "停止", "取消", "去掉", "不用",
+    "don't", "do not", "not", "never", "avoid", "stop", "cancel"
+  ]
+}

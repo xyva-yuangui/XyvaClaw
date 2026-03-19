@@ -1,0 +1,8 @@
+{
+  "ownerId": "kn7byb5dah80gfbb4z2s2q1t0h7zre8e",
+  "slug": "miniflux-news",
+  "version": "0.1.0",
+  "publishedAt": 1769158886872,
+  "name": "Miniflux News",
+  "description": "Fetch and triage the latest unread RSS/news entries from a Miniflux instance via its REST API using an API token. Use when the user asks to get the latest Miniflux unread items, list recent entries with titles/links, or generate short summaries of specific Miniflux entries. Includes a bundled script to query Miniflux (/v1/entries and /v1/entries/{id}) using credentials from ~/.config/clawdbot/miniflux-news.json (or MINIFLUX_URL and MINIFLUX_TOKEN overrides)."
+}

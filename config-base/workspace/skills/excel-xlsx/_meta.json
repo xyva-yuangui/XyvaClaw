@@ -1,0 +1,8 @@
+{
+  "ownerId": "kn73vp5rarc3b14rc7wjcw8f8580t5d1",
+  "slug": "excel-xlsx",
+  "version": "1.0.1",
+  "publishedAt": 1771847282734,
+  "name": "Excel Xlsx",
+  "description": "Read, write, and generate Excel files with correct types, dates, formulas, and cross-platform compatibility."
+}

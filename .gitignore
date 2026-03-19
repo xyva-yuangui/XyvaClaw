@@ -1,0 +1,14 @@
+node_modules/
+dist/
+.env
+*.sqlite
+*.log
+.DS_Store
+*.tar.gz
+__pycache__/
+*.pyc
+config-base/extensions/*/node_modules/
+setup-wizard/node_modules/
+website/
+# setup-wizard/dist/ is intentionally tracked (pre-built for faster setup)
+!setup-wizard/dist/
