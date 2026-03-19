@@ -179,9 +179,9 @@ cleanup_existing_claws() {
             SVC_MATCH=$(launchctl list 2>/dev/null | grep "$svc_label" 2>/dev/null || true)
             if [ -n "$SVC_MATCH" ]; then
                 FOUND_ISSUES=true
-                log_info "检测到已有服务 $svc_label，正在停止..."
+                log_info "检测到已有服务 ${svc_label}，正在停止..."
                 launchctl bootout gui/$(id -u)/$svc_label 2>/dev/null || true
-                log_ok "服务 $svc_label 已停止"
+                log_ok "服务 ${svc_label} 已停止"
             fi
         done
         # Remove all related plist files
@@ -499,7 +499,7 @@ with open(p,'w') as f: f.writelines(lines)
     if [ "$VALIDATE_OK" = true ]; then
         log_ok "API Key 验证通过"
     else
-        log_warn "API Key 验证未通过（HTTP $HTTP_CODE），请确认 Key 是否正确。安装将继续。"
+        log_warn "API Key 验证未通过（HTTP ${HTTP_CODE}），请确认 Key 是否正确。安装将继续。"
     fi
 else
     log_warn "未配置 API Key，安装后请编辑 $ENV_FILE"
