@@ -27,10 +27,13 @@
 ## ⚡ 30 秒快速开始
 
 ```bash
-git clone https://github.com/xyva-yuangui/XyvaClaw.git && cd XyvaClaw && bash xyvaclaw-setup.sh
+git clone https://github.com/xyva-yuangui/XyvaClaw.git 2>/dev/null || (cd XyvaClaw && git pull)
+cd XyvaClaw && bash xyvaclaw-setup.sh
 ```
 
 > 💡 不会用 git？[下载 ZIP 压缩包](https://github.com/xyva-yuangui/XyvaClaw/archive/refs/heads/main.zip)，解压后运行 `bash xyvaclaw-setup.sh`
+>
+> 💡 已经安装过？直接再次运行上面的命令即可升级，安装脚本会自动清理旧版本
 
 <details>
 <summary><b>📋 详细安装步骤</b></summary>
