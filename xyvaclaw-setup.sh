@@ -884,6 +884,18 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
     if kill -0 $GATEWAY_PID 2>/dev/null; then
         log_ok "Gateway 已在后台启动 (PID: $GATEWAY_PID)"
         echo ""
+
+        # Extract and display gateway token for Dashboard login
+        GW_TOKEN=""
+        if [ -f "$XYVACLAW_HOME/.openclaw/openclaw.json" ]; then
+            GW_TOKEN=$(python3 -c "import json; d=json.load(open('$XYVACLAW_HOME/.openclaw/openclaw.json')); print(d.get('gateway',{}).get('auth',{}).get('token',''))" 2>/dev/null || true)
+        fi
+        echo -e "  ${BOLD}Dashboard:${NC} http://localhost:18789"
+        if [ -n "$GW_TOKEN" ]; then
+            echo -e "  ${BOLD}网关令牌:${NC} $GW_TOKEN"
+            echo -e "  ${YELLOW}(打开 Dashboard 后粘贴此令牌到「网关令牌」输入框)${NC}"
+        fi
+        echo ""
         echo -e "  ${BOLD}查看日志:${NC} tail -f $XYVACLAW_HOME/logs/gateway.log"
         echo -e "  ${BOLD}停止服务:${NC} kill $GATEWAY_PID"
         echo ""

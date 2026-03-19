@@ -304,7 +304,7 @@ def llm_extract_entities(text: str, model: str = "qwen3.5-plus") -> dict:
         # Get Bailian API config from OpenClaw
         bailian_config = openclaw_config.get('models', {}).get('providers', {}).get('bailian', {})
         api_key = bailian_config.get('apiKey', '')
-        base_url_config = bailian_config.get('baseUrl', 'https://coding.dashscope.aliyuncs.com/v1')
+        base_url_config = bailian_config.get('baseUrl', 'https://dashscope.aliyuncs.com/compatible-mode/v1')
         
         # Use OpenClaw's endpoint format: {baseUrl}/chat/completions
         base_url = f"{base_url_config}/chat/completions"

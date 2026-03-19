@@ -245,7 +245,7 @@ def apply_wizard(data, wizard):
                 ],
             },
             'bailian': {
-                'baseUrl': 'https://coding.dashscope.aliyuncs.com/v1',
+                'baseUrl': 'https://dashscope.aliyuncs.com/compatible-mode/v1',
                 'api': 'openai-completions',
                 'models': [
                     {'id': 'qwen3.5-plus', 'name': 'qwen3.5-plus', 'reasoning': False,
