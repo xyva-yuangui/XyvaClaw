@@ -275,8 +275,7 @@
     "mode": "local",
     "bind": "loopback",
     "auth": {
-      "mode": "token",
-      "token": "__AUTO_GENERATE__"
+      "mode": "none"
     },
     "tailscale": {
       "mode": "off",

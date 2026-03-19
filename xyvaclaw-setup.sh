@@ -369,197 +369,150 @@ mkdir -p "$XYVACLAW_HOME"/{workspace/memory,workspace/output/{audio,video,temp},
 log_ok "运行时目录"
 
 # ============================================
-# Step 4: Setup wizard or manual config
+# Step 4: Configure API Key
 # ============================================
 log_step "4/8" "配置 $BRAND..."
 
-WIZARD_DIR="$SCRIPT_DIR/setup-wizard"
-USE_WIZARD=false
+ENV_FILE="$XYVACLAW_HOME/.env"
+if [ ! -f "$ENV_FILE" ]; then
+    cp "$SCRIPT_DIR/templates/.env.template" "$ENV_FILE"
+fi
 
-if [ -d "$WIZARD_DIR" ] && [ -f "$WIZARD_DIR/package.json" ]; then
-    if [ "$AUTO_MODE" = true ]; then
-        # Auto mode: skip wizard, use env vars or .env template directly
-        log_info "无人值守模式：跳过 Web 向导，使用环境变量/模板配置"
-        USE_WIZARD=false
+# Collect API Key — from environment variable or interactive prompt
+API_KEY=""
+
+# Priority 1: environment variables already set
+if [ -n "${BAILIAN_API_KEY:-}" ]; then
+    API_KEY="$BAILIAN_API_KEY"
+elif [ -n "${DEEPSEEK_API_KEY:-}" ]; then
+    API_KEY="$DEEPSEEK_API_KEY"
+fi
+
+# Priority 2: already configured in .env
+if [ -z "$API_KEY" ] && [ -f "$ENV_FILE" ]; then
+    API_KEY=$(grep -m1 '^BAILIAN_API_KEY=.\+' "$ENV_FILE" 2>/dev/null | cut -d= -f2- || true)
+    [ -z "$API_KEY" ] && API_KEY=$(grep -m1 '^DEEPSEEK_API_KEY=.\+' "$ENV_FILE" 2>/dev/null | cut -d= -f2- || true)
+fi
+
+# Priority 3: interactive prompt (skip in auto mode)
+if [ -z "$API_KEY" ] && [ "$AUTO_MODE" != true ]; then
+    echo ""
+    echo -e "  ${BOLD}请粘贴你的 API Key${NC}"
+    echo ""
+    echo -e "  获取方式（任选其一）:"
+    echo -e "    ${CYAN}百炼${NC}: https://bailian.console.aliyun.com → API-KEY 管理 → 创建"
+    echo -e "    ${CYAN}DeepSeek${NC}: https://platform.deepseek.com/api_keys"
+    echo ""
+    read -p "  API Key: " -r API_KEY
+    echo ""
+fi
+
+# Detect key type and write to .env
+if [ -n "$API_KEY" ]; then
+    KEY_TYPE=""
+    KEY_VAR=""
+    if echo "$API_KEY" | grep -q '^sk-sp-'; then
+        KEY_TYPE="百炼 Coding Plan"
+        KEY_VAR="BAILIAN_API_KEY"
+    elif echo "$API_KEY" | grep -q '^sk-' && [ ${#API_KEY} -gt 50 ]; then
+        KEY_TYPE="DeepSeek"
+        KEY_VAR="DEEPSEEK_API_KEY"
+    elif echo "$API_KEY" | grep -q '^sk-'; then
+        KEY_TYPE="百炼标准"
+        KEY_VAR="BAILIAN_API_KEY"
     else
-        echo ""
-        echo -e "  ${BOLD}选择配置方式:${NC}"
-        echo "    1) 🌐 Web 配置向导 (推荐，图形界面)"
-        echo "    2) 📝 手动编辑 .env 文件"
-        echo ""
-        read -p "  请选择 (1/2): " -n 1 -r
-        echo ""
+        KEY_TYPE="自定义"
+        KEY_VAR="BAILIAN_API_KEY"
+    fi
 
-        if [[ $REPLY == "1" ]]; then
-            USE_WIZARD=true
+    # Write to .env (use python to avoid sed special char issues)
+    python3 -c "
+import sys
+key_var, key_val = sys.argv[1], sys.argv[2]
+env_path = sys.argv[3]
+lines = []
+found = False
+with open(env_path) as f:
+    for line in f:
+        if line.startswith(key_var + '='):
+            lines.append(key_var + '=' + key_val + '\n')
+            found = True
+        else:
+            lines.append(line)
+if not found:
+    lines.append(key_var + '=' + key_val + '\n')
+with open(env_path, 'w') as f:
+    f.writelines(lines)
+" "$KEY_VAR" "$API_KEY" "$ENV_FILE"
+
+    # Also write feishu vars from environment if present
+    [ -n "${FEISHU_APP_ID:-}" ] && python3 -c "
+import sys; v,k,p=sys.argv[1],sys.argv[2],sys.argv[3]
+lines=[]; found=False
+with open(p) as f:
+    for l in f:
+        if l.startswith(v+'='): lines.append(v+'='+k+'\n'); found=True
+        else: lines.append(l)
+if not found: lines.append(v+'='+k+'\n')
+with open(p,'w') as f: f.writelines(lines)
+" "FEISHU_APP_ID" "$FEISHU_APP_ID" "$ENV_FILE"
+
+    [ -n "${FEISHU_APP_SECRET:-}" ] && python3 -c "
+import sys; v,k,p=sys.argv[1],sys.argv[2],sys.argv[3]
+lines=[]; found=False
+with open(p) as f:
+    for l in f:
+        if l.startswith(v+'='): lines.append(v+'='+k+'\n'); found=True
+        else: lines.append(l)
+if not found: lines.append(v+'='+k+'\n')
+with open(p,'w') as f: f.writelines(lines)
+" "FEISHU_APP_SECRET" "$FEISHU_APP_SECRET" "$ENV_FILE"
+
+    log_ok "$KEY_TYPE 密钥已写入"
+
+    # Validate key (quick test)
+    log_info "验证 API Key..."
+    VALIDATE_OK=false
+    if [ "$KEY_VAR" = "BAILIAN_API_KEY" ]; then
+        if echo "$API_KEY" | grep -q '^sk-sp-'; then
+            TEST_URL="https://coding.dashscope.aliyuncs.com/v1/chat/completions"
+        else
+            TEST_URL="https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions"
+        fi
+        HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" -m 10 "$TEST_URL" \
+            -H "Authorization: Bearer $API_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{"model":"qwen3.5-plus","messages":[{"role":"user","content":"hi"}],"max_tokens":1}' 2>/dev/null || echo "000")
+        if [ "$HTTP_CODE" = "200" ]; then
+            VALIDATE_OK=true
+        fi
+    elif [ "$KEY_VAR" = "DEEPSEEK_API_KEY" ]; then
+        HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" -m 10 "https://api.deepseek.com/v1/chat/completions" \
+            -H "Authorization: Bearer $API_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{"model":"deepseek-chat","messages":[{"role":"user","content":"hi"}],"max_tokens":1}' 2>/dev/null || echo "000")
+        if [ "$HTTP_CODE" = "200" ]; then
+            VALIDATE_OK=true
         fi
     fi
-fi
 
-if [ "$USE_WIZARD" = true ]; then
-    log_info "启动配置向导..."
-
-    # Check if frontend is built (dist/ may be absent after git clone)
-    NEED_BUILD=false
-    if [ ! -f "$WIZARD_DIR/dist/index.html" ]; then
-        NEED_BUILD=true
-        log_info "前端未构建，正在安装依赖并构建..."
-    elif [ -d "$WIZARD_DIR/src" ]; then
-        # Rebuild if any source file is newer than the built output
-        NEWEST_SRC=$(find "$WIZARD_DIR/src" -type f -newer "$WIZARD_DIR/dist/index.html" 2>/dev/null | head -1)
-        if [ -n "$NEWEST_SRC" ]; then
-            NEED_BUILD=true
-            log_info "检测到前端源码更新，重新构建..."
-        fi
-    fi
-
-    # Install wizard deps
-    # When NEED_BUILD=true, always run full `npm install` (dev deps like vite are required).
-    # A stale node_modules from a previous --production install won't have vite/react.
-    MODULES_EXIST=false
-    if [ -d "$WIZARD_DIR/node_modules" ] && [ -n "$(ls -A "$WIZARD_DIR/node_modules" 2>/dev/null | head -1)" ]; then
-        MODULES_EXIST=true
-    fi
-
-    if [ "$NEED_BUILD" = true ]; then
-        # Full install needed (includes vite + @vitejs/plugin-react for building)
-        log_info "安装配置向导依赖 (npm install, 含构建工具)..."
-        (cd "$WIZARD_DIR" && npm install) || {
-            log_warn "npm install 失败，将使用手动配置"
-            USE_WIZARD=false
-        }
-    elif [ "$MODULES_EXIST" = false ]; then
-        # No build needed, just server deps
-        log_info "安装配置向导依赖 (npm install --production)..."
-        (cd "$WIZARD_DIR" && npm install --production) || {
-            log_warn "npm install 失败，将使用手动配置"
-            USE_WIZARD=false
-        }
-    fi
-
-    # Build frontend if needed
-    if [ "$USE_WIZARD" = true ] && [ "$NEED_BUILD" = true ]; then
-        log_info "构建前端页面 (vite build)..."
-        (cd "$WIZARD_DIR" && npm run build) || {
-            log_warn "前端构建失败，将使用手动配置"
-            USE_WIZARD=false
-        }
-        if [ "$USE_WIZARD" = true ] && [ -f "$WIZARD_DIR/dist/index.html" ]; then
-            log_ok "前端构建完成"
-        fi
-    fi
-fi
-
-if [ "$USE_WIZARD" = true ]; then
-    # Start wizard server
-    WIZARD_CONFIG="$XYVACLAW_HOME/.wizard-config.json"
-    export XYVACLAW_HOME
-    export WIZARD_CONFIG
-    export WIZARD_PORT
-
-    node "$WIZARD_DIR/server/index.js" &
-    WIZARD_PID=$!
-
-    # Wait for server to start
-    sleep 3
-
-    # Verify wizard server is running
-    if ! kill -0 $WIZARD_PID 2>/dev/null; then
-        log_warn "配置向导服务启动失败，将使用手动配置"
-        USE_WIZARD=false
-    fi
-fi
-
-if [ "$USE_WIZARD" = true ]; then
-    echo ""
-    echo -e "  ${BOLD}${CYAN}════════════════════════════════════════${NC}"
-    echo -e "  ${BOLD}${CYAN}  🌐 配置向导已启动!${NC}"
-    echo -e "  ${BOLD}${CYAN}════════════════════════════════════════${NC}"
-    echo ""
-    echo -e "  请在浏览器中完成配置: ${BOLD}http://localhost:${WIZARD_PORT}${NC}"
-    echo ""
-    echo -e "  ${YELLOW}• 在浏览器中填写 API Key、选择模型、配置飞书等${NC}"
-    echo -e "  ${YELLOW}• 点击“保存配置”后向导会自动关闭，安装继续${NC}"
-    echo -e "  ${YELLOW}• 或按 Ctrl+C 跳过向导，稍后手动编辑 .env 文件${NC}"
-    echo ""
-
-    # Open browser
-    if command -v open &>/dev/null; then
-        open "http://localhost:${WIZARD_PORT}" 2>/dev/null || true
-    fi
-
-    # Wait for wizard to finish (it calls process.exit(0) after save)
-    log_info "等待配置完成..."
-    wait $WIZARD_PID 2>/dev/null || true
-
-    # Apply wizard config
-    if [ -f "$WIZARD_CONFIG" ]; then
-        log_info "应用向导配置..."
-        cd "$XYVACLAW_HOME"
-        python3 "$SCRIPT_DIR/installer/restore-config.py" \
-            "$XYVACLAW_HOME/openclaw.json.template" \
-            "$XYVACLAW_HOME/.env" \
-            "$WIZARD_CONFIG"
-        log_ok "配置已生成 (.openclaw/openclaw.json)"
+    if [ "$VALIDATE_OK" = true ]; then
+        log_ok "API Key 验证通过"
+    else
+        log_warn "API Key 验证未通过（HTTP $HTTP_CODE），请确认 Key 是否正确。安装将继续。"
     fi
 else
-    # Manual .env config
-    ENV_FILE="$XYVACLAW_HOME/.env"
-    if [ ! -f "$ENV_FILE" ]; then
-        cp "$SCRIPT_DIR/templates/.env.template" "$ENV_FILE"
-        log_info "已创建配置模板: $ENV_FILE"
-    fi
+    log_warn "未配置 API Key，安装后请编辑 $ENV_FILE"
+fi
 
-    echo ""
-    echo -e "  ${BOLD}请编辑 $ENV_FILE 填写你的 API 密钥${NC}"
-    echo ""
-    echo "  必填（至少一个模型 Provider）:"
-    echo "    DEEPSEEK_API_KEY=你的DeepSeek密钥"
-    echo "    或 BAILIAN_API_KEY=你的百炼密钥"
-    echo ""
-    echo "  选填（飞书通道）:"
-    echo "    FEISHU_APP_ID=你的飞书应用ID"
-    echo "    FEISHU_APP_SECRET=你的飞书应用密钥"
-    echo ""
-
-    # In auto mode, write env vars from environment into .env if provided
-    if [ "$AUTO_MODE" = true ]; then
-        log_info "无人值守模式：从环境变量写入配置..."
-        # Write any provided API keys from env into the .env file
-        [ -n "${DEEPSEEK_API_KEY:-}" ] && sed -i.bak "s/^DEEPSEEK_API_KEY=.*/DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY}/" "$ENV_FILE" 2>/dev/null || true
-        [ -n "${BAILIAN_API_KEY:-}" ] && sed -i.bak "s/^BAILIAN_API_KEY=.*/BAILIAN_API_KEY=${BAILIAN_API_KEY}/" "$ENV_FILE" 2>/dev/null || true
-        [ -n "${FEISHU_APP_ID:-}" ] && sed -i.bak "s/^FEISHU_APP_ID=.*/FEISHU_APP_ID=${FEISHU_APP_ID}/" "$ENV_FILE" 2>/dev/null || true
-        [ -n "${FEISHU_APP_SECRET:-}" ] && sed -i.bak "s/^FEISHU_APP_SECRET=.*/FEISHU_APP_SECRET=${FEISHU_APP_SECRET}/" "$ENV_FILE" 2>/dev/null || true
-        [ -n "${ASSISTANT_NAME:-}" ] && sed -i.bak "s/^ASSISTANT_NAME=.*/ASSISTANT_NAME=${ASSISTANT_NAME}/" "$ENV_FILE" 2>/dev/null || true
-        rm -f "${ENV_FILE}.bak"
-        # Check if at least one key is configured
-        if grep -qE '^(DEEPSEEK_API_KEY|BAILIAN_API_KEY)=.+' "$ENV_FILE" 2>/dev/null; then
-            log_ok "API Key 已从环境变量写入"
-        else
-            log_warn "未检测到 API Key 环境变量，安装后请手动编辑 $ENV_FILE"
-        fi
-    else
-        # Try to open editor
-        if command -v code &>/dev/null; then
-            read -p "  是否用 VS Code 打开？(y/n) " -n 1 -r
-            echo ""
-            if [[ $REPLY =~ ^[Yy]$ ]]; then
-                code "$ENV_FILE"
-            fi
-        fi
-
-        read -p "  填写完成后按回车继续..." -r
-    fi
-
-    # Generate config from .env
-    if [ -f "$XYVACLAW_HOME/openclaw.json.template" ]; then
-        log_info "生成配置文件..."
-        cd "$XYVACLAW_HOME"
-        python3 "$SCRIPT_DIR/installer/restore-config.py" \
-            "$XYVACLAW_HOME/openclaw.json.template" \
-            "$ENV_FILE"
-        log_ok ".openclaw/openclaw.json 已生成"
-    fi
+# Generate config from .env + template
+if [ -f "$XYVACLAW_HOME/openclaw.json.template" ]; then
+    log_info "生成配置文件..."
+    cd "$XYVACLAW_HOME"
+    python3 "$SCRIPT_DIR/installer/restore-config.py" \
+        "$XYVACLAW_HOME/openclaw.json.template" \
+        "$ENV_FILE"
+    log_ok ".openclaw/openclaw.json 已生成"
 fi
 
 # ============================================
@@ -783,18 +736,13 @@ fi
 # Create xyvaclaw wrapper
 WRAPPER_PATH="/usr/local/bin/xyvaclaw"
 if [ ! -f "$WRAPPER_PATH" ] || [ ! -x "$WRAPPER_PATH" ]; then
-    echo ""
-    log_info "创建 xyvaclaw 命令..."
-    auto_confirm "  需要 sudo 权限写入 /usr/local/bin/xyvaclaw，继续？(y/n) " y
-    if [[ $REPLY =~ ^[Yy]$ ]]; then
-        sudo tee "$WRAPPER_PATH" > /dev/null << 'WRAPPER_EOF'
+    sudo tee "$WRAPPER_PATH" > /dev/null << 'WRAPPER_EOF'
 #!/bin/bash
 export OPENCLAW_HOME="${OPENCLAW_HOME:-$HOME/.xyvaclaw}"
 exec openclaw "$@"
 WRAPPER_EOF
-        sudo chmod +x "$WRAPPER_PATH"
-        log_ok "xyvaclaw 命令已创建"
-    fi
+    sudo chmod +x "$WRAPPER_PATH"
+    log_ok "xyvaclaw 命令已创建"
 fi
 
 # Feishu secret to secrets dir
@@ -807,14 +755,11 @@ if [ -f "$XYVACLAW_HOME/.env" ]; then
     fi
 fi
 
-# LaunchAgent (auto-start)
-echo ""
-auto_confirm "  是否配置开机自启动？(y/n) " y
-
+# LaunchAgent (auto-start) — always configure
 PLIST_DIR="$HOME/Library/LaunchAgents"
 PLIST_FILE="$PLIST_DIR/ai.xyvaclaw.gateway.plist"
 
-if [[ $REPLY =~ ^[Yy]$ ]]; then
+if [ ! -f "$PLIST_FILE" ]; then
     mkdir -p "$PLIST_DIR"
     OPENCLAW_BIN=$(which openclaw 2>/dev/null || echo "/usr/local/bin/openclaw")
     cat > "$PLIST_FILE" << PLIST_EOF
@@ -900,11 +845,10 @@ echo "    - QQ 群: 1087471835"
 echo "    - Discord: https://discord.gg/QABg4Z2Mzu"
 echo ""
 
-# Ask to start now
-auto_confirm "  是否现在启动 gateway？(y/n) " y
-if [[ $REPLY =~ ^[Yy]$ ]]; then
-    echo ""
-    log_info "启动 gateway..."
+# Auto-start gateway
+echo ""
+log_info "启动 gateway..."
+{
     export OPENCLAW_HOME="$XYVACLAW_HOME"
 
     # Always start gateway in background so the script can finish cleanly
@@ -916,28 +860,17 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
     if kill -0 $GATEWAY_PID 2>/dev/null; then
         log_ok "Gateway 已在后台启动 (PID: $GATEWAY_PID)"
         echo ""
-
-        # Extract and display gateway token for Dashboard login
-        GW_TOKEN=""
-        if [ -f "$XYVACLAW_HOME/.openclaw/openclaw.json" ]; then
-            GW_TOKEN=$(python3 -c "import json; d=json.load(open('$XYVACLAW_HOME/.openclaw/openclaw.json')); print(d.get('gateway',{}).get('auth',{}).get('token',''))" 2>/dev/null || true)
-        fi
         echo -e "  ${BOLD}Dashboard:${NC} http://localhost:18789"
-        if [ -n "$GW_TOKEN" ]; then
-            echo -e "  ${BOLD}网关令牌:${NC} $GW_TOKEN"
-            echo -e "  ${YELLOW}(打开 Dashboard 后粘贴此令牌到「网关令牌」输入框)${NC}"
-        fi
-        echo ""
         echo -e "  ${BOLD}查看日志:${NC} tail -f $XYVACLAW_HOME/logs/gateway.log"
         echo -e "  ${BOLD}停止服务:${NC} kill $GATEWAY_PID"
         echo ""
 
-        # Open browser for the user
-        if [ "$AUTO_MODE" != true ] && command -v open &>/dev/null; then
+        # Open browser — no token needed (auth mode=none for loopback)
+        if command -v open &>/dev/null; then
             log_info "正在打开浏览器..."
             open "http://localhost:18789" 2>/dev/null || true
         fi
     else
         log_warn "Gateway 启动可能失败，请检查日志: $XYVACLAW_HOME/logs/gateway.log"
     fi
-fi
+}

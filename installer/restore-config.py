@@ -187,10 +187,14 @@ def apply_env(data, env):
 
     # Gateway
     gw_port = env.get('GATEWAY_PORT', '18789')
-    gw_token = env.get('GATEWAY_TOKEN', '') or secrets.token_hex(24)
     if 'gateway' in data:
         data['gateway']['port'] = int(gw_port)
-        data['gateway']['auth']['token'] = gw_token
+        bind = data['gateway'].get('bind', 'loopback')
+        if bind == 'loopback':
+            data['gateway']['auth'] = {'mode': 'none'}
+        else:
+            gw_token = env.get('GATEWAY_TOKEN', '') or secrets.token_hex(24)
+            data['gateway']['auth'] = {'mode': 'token', 'token': gw_token}
 
     # Restore paths
     data = restore_paths(data, home_dir)
