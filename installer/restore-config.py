@@ -295,10 +295,15 @@ def apply_wizard(data, wizard):
 
     # Channels from wizard
     # wizard['channels'] is a dict: {feishu: {enabled, appId, ...}, dingtalk: {...}, webchat: {...}}
+    # Only write channels that OpenClaw actually recognises; unknown IDs (e.g. webchat)
+    # make the whole config invalid and block plugin registration.
+    KNOWN_CHANNELS = {'feishu', 'dingtalk', 'slack', 'discord', 'telegram', 'wechat', 'whatsapp'}
     if 'channels' in wizard and isinstance(wizard['channels'], dict):
         if 'channels' not in data:
             data['channels'] = {}
         for ch_name, ch_conf in wizard['channels'].items():
+            if ch_name not in KNOWN_CHANNELS:
+                continue  # skip unknown channel IDs like 'webchat'
             if isinstance(ch_conf, dict) and ch_conf.get('enabled'):
                 existing = data['channels'].get(ch_name, {})
                 existing.update(ch_conf)

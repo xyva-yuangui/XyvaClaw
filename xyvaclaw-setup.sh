@@ -531,17 +531,24 @@ OPENCLAW_CONFIG="$XYVACLAW_HOME/.openclaw/openclaw.json"
 if [ -f "$OPENCLAW_CONFIG" ]; then
     log_info "注册本地插件到 OpenClaw..."
 
-    # Save plugins config and temporarily clear it (OpenClaw validates plugins.allow
-    # against its registry, so we must register plugins before referencing them)
+    # Save plugins AND channels config, then temporarily strip both.
+    # OpenClaw validates the ENTIRE config before running any command, so:
+    #   - unknown channel IDs (e.g. "webchat") → config invalid → plugins install fails
+    #   - unregistered plugin names in plugins.allow → config invalid → plugins install fails
+    # We must produce a minimal valid config so `openclaw plugins install --link` can run.
     python3 -c "
 import json, sys
 p = sys.argv[1]
 with open(p) as f: d = json.load(f)
-plugins_backup = d.get('plugins', {})
-with open(p + '.plugins-stash', 'w') as f: json.dump(plugins_backup, f)
+stash = {
+    'plugins': d.get('plugins', {}),
+    'channels': d.get('channels', {}),
+}
+with open(p + '.stash', 'w') as f: json.dump(stash, f)
 d['plugins'] = {'allow': [], 'slots': {}, 'entries': {}}
+d['channels'] = {}
 with open(p, 'w') as f: json.dump(d, f, indent=2)
-" "$OPENCLAW_CONFIG" 2>/dev/null
+" "$OPENCLAW_CONFIG"
 
     export OPENCLAW_HOME="$XYVACLAW_HOME"
 
@@ -559,40 +566,48 @@ with open(p, 'w') as f: json.dump(d, f, indent=2)
             || log_warn "feishu_local 插件注册失败"
     fi
 
-    # Merge stashed plugin settings into what openclaw plugins install wrote
-    # (preserving load.paths and installs registry that openclaw created)
+    # Merge stashed plugins + channels back into the config that openclaw
+    # plugins install wrote (preserving load.paths and installs registry).
+    # Also filter out unknown channel IDs to prevent config validation errors.
     python3 -c "
 import json, sys, os
 p = sys.argv[1]
-stash = p + '.plugins-stash'
-if not os.path.exists(stash):
+stash_path = p + '.stash'
+if not os.path.exists(stash_path):
     sys.exit(0)
 with open(p) as f: d = json.load(f)
-with open(stash) as f: saved = json.load(f)
+with open(stash_path) as f: stash = json.load(f)
+
+# --- Restore plugins (merge) ---
+saved_plugins = stash.get('plugins', {})
 cur = d.setdefault('plugins', {})
-# Merge allow list (union, preserving order)
 cur_allow = cur.get('allow', [])
-for item in saved.get('allow', []):
+for item in saved_plugins.get('allow', []):
     if item not in cur_allow:
         cur_allow.append(item)
 cur['allow'] = cur_allow
-# Merge slots
-cur.setdefault('slots', {}).update(saved.get('slots', {}))
-# Merge entries (deep: preserve openclaw's enabled, add our config)
+cur.setdefault('slots', {}).update(saved_plugins.get('slots', {}))
 cur_entries = cur.setdefault('entries', {})
-for name, entry in saved.get('entries', {}).items():
+for name, entry in saved_plugins.get('entries', {}).items():
     if name not in cur_entries:
         cur_entries[name] = entry
     else:
-        # Merge config from stash into existing entry
         if 'config' in entry:
             cur_entries[name].setdefault('config', {}).update(entry['config'])
         if 'enabled' in entry:
             cur_entries[name]['enabled'] = entry['enabled']
 d['plugins'] = cur
+
+# --- Restore channels (filter out unknown IDs) ---
+KNOWN_CHANNELS = {'feishu', 'dingtalk', 'slack', 'discord', 'telegram', 'wechat', 'whatsapp'}
+saved_channels = stash.get('channels', {})
+for ch_name, ch_conf in saved_channels.items():
+    if ch_name in KNOWN_CHANNELS:
+        d.setdefault('channels', {})[ch_name] = ch_conf
+
 with open(p, 'w') as f: json.dump(d, f, indent=2)
-os.remove(stash)
-" "$OPENCLAW_CONFIG" 2>/dev/null
+os.remove(stash_path)
+" "$OPENCLAW_CONFIG"
 
     log_ok "插件配置已恢复"
 fi

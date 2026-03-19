@@ -259,7 +259,7 @@
       "domain": "feishu",
       "connectionMode": "websocket",
       "dmPolicy": "pairing",
-      "groupPolicy": "allowlist",
+      "groupPolicy": "open",
       "requireMention": true,
       "accounts": {
         "main": {
