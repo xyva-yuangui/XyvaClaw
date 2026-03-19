@@ -104,7 +104,10 @@ export default function App() {
             <p className="text-gray-500 mb-1"># 启动你的 AI 助手</p>
             <p className="text-brand-600 font-semibold">xyvaclaw gateway</p>
           </div>
-          <p className="text-gray-400 text-sm">你可以关闭此页面了。安装脚本会继续完成剩余步骤。</p>
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm text-amber-700">
+            ⚠️ <strong>请勿关闭终端窗口！</strong>安装脚本正在后台完成剩余步骤（安装依赖、配置环境等）。
+            终端显示「安装完成」后才可关闭。此浏览器页面可以关闭。
+          </div>
         </div>
       </div>
     );

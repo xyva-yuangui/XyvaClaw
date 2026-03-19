@@ -104,6 +104,14 @@ if command -v node &>/dev/null; then
     NODE_VER=$(node -v | sed 's/v//')
     NODE_MAJOR=$(echo "$NODE_VER" | cut -d. -f1)
     if [ "$NODE_MAJOR" -lt 22 ]; then
+        log_warn "Node.js $NODE_VER 版本过低，需要 22+"
+        if command -v nvm &>/dev/null; then
+            echo -e "  ${CYAN}检测到 nvm，建议执行：${NC}"
+            echo "    nvm install 22"
+            echo "    nvm use 22"
+            echo "    nvm alias default 22"
+            echo ""
+        fi
         MISSING+=("node (当前 $NODE_VER, 需要 22+)")
     else
         log_ok "Node.js $NODE_VER"
@@ -146,8 +154,10 @@ if [ ${#MISSING[@]} -gt 0 ]; then
         if ! command -v brew &>/dev/null; then
             echo "📦 安装 Homebrew..."
             echo ""
-            echo "  如果下载很慢，可以按 Ctrl+C 取消，然后使用国内镜像安装："
+            echo -e "  ${YELLOW}如果下载很慢，可以按 Ctrl+C 取消，然后使用国内镜像安装：${NC}"
             echo "  /bin/zsh -c \"\$(curl -fsSL https://gitee.com/cunkai/HomebrewCN/raw/master/Homebrew.sh)\""
+            echo ""
+            echo -e "  ${YELLOW}安装 Homebrew 可能需要几分钟，请耐心等待...${NC}"
             echo ""
             /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
         fi
@@ -260,8 +270,17 @@ if command -v openclaw &>/dev/null; then
     CURRENT_VER=$(openclaw --version 2>/dev/null || echo "unknown")
     log_ok "OpenClaw 已安装 ($CURRENT_VER)"
 else
-    log_info "安装 OpenClaw..."
-    npm install -g openclaw@latest
+    log_info "安装 OpenClaw（可能需要 1-2 分钟）..."
+    if ! npm install -g openclaw@latest; then
+        log_fail "OpenClaw 安装失败"
+        echo ""
+        echo -e "  ${YELLOW}常见原因及解决方法：${NC}"
+        echo "    1. 网络问题 → 使用镜像: npm config set registry https://registry.npmmirror.com"
+        echo "    2. 权限问题 → 使用 sudo: sudo npm install -g openclaw@latest"
+        echo "    3. Node.js 版本过低 → 需要 Node.js 22+"
+        echo ""
+        exit 1
+    fi
     log_ok "OpenClaw 安装完成"
 fi
 
@@ -354,13 +373,14 @@ if [ "$USE_WIZARD" = true ]; then
     if [ ! -d "$WIZARD_DIR/node_modules" ] || [ "$(ls -A "$WIZARD_DIR/node_modules" 2>/dev/null | head -1)" = "" ]; then
         if [ "$NEED_BUILD" = true ]; then
             # Full install needed (includes vite for building)
-            (cd "$WIZARD_DIR" && npm install 2>/dev/null) || {
+            log_info "安装向导依赖（首次可能需要 1-2 分钟）..."
+            (cd "$WIZARD_DIR" && npm install) || {
                 log_warn "npm install 失败，将使用手动配置"
                 USE_WIZARD=false
             }
         else
             # Distribution mode: only server deps needed
-            (cd "$WIZARD_DIR" && npm install --production 2>/dev/null) || {
+            (cd "$WIZARD_DIR" && npm install --production) || {
                 log_warn "npm install 失败，将使用手动配置"
                 USE_WIZARD=false
             }
@@ -369,7 +389,8 @@ if [ "$USE_WIZARD" = true ]; then
 
     # Build frontend if needed
     if [ "$USE_WIZARD" = true ] && [ "$NEED_BUILD" = true ]; then
-        (cd "$WIZARD_DIR" && npx vite build 2>/dev/null) || {
+        log_info "构建前端界面..."
+        (cd "$WIZARD_DIR" && npx vite build) || {
             log_warn "前端构建失败，将使用手动配置"
             USE_WIZARD=false
         }
@@ -406,6 +427,13 @@ if [ "$USE_WIZARD" = true ]; then
 
     # Wait for wizard to finish
     wait $WIZARD_PID 2>/dev/null || true
+
+    echo ""
+    echo -e "  ${YELLOW}${BOLD}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -e "  ${YELLOW}${BOLD}⚠️  请保持终端窗口打开，安装尚未完成！${NC}"
+    echo -e "  ${YELLOW}   正在完成剩余步骤（生成配置/安装依赖/配置环境）...${NC}"
+    echo -e "  ${YELLOW}${BOLD}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo ""
 
     # Apply wizard config
     if [ -f "$WIZARD_CONFIG" ]; then

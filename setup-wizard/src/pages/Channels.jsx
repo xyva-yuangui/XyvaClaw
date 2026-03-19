@@ -130,6 +130,7 @@ export default function Channels({ config, updateConfig }) {
                   }
                   placeholder="飞书应用密钥"
                   provider="feishu"
+                  extraBody={{ appId: chConfig.appId || '' }}
                   helpUrl={ch.helpUrl}
                   helpText={ch.helpText}
                 />

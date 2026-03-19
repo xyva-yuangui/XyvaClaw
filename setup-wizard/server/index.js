@@ -54,7 +54,7 @@ app.post('/api/validate-key', async (req, res) => {
           Authorization: `Bearer ${apiKey}`,
         };
         body = JSON.stringify({
-          model: 'qwen-turbo',
+          model: 'qwen3.5-plus',
           messages: [{ role: 'user', content: 'hi' }],
           max_tokens: 1,
         });
@@ -103,8 +103,16 @@ app.post('/api/validate-key', async (req, res) => {
     }
 
     const status = response.status;
+    let errorDetail = '';
+    try {
+      const errBody = await response.json();
+      errorDetail = errBody.error?.message || errBody.message || JSON.stringify(errBody);
+    } catch {
+      errorDetail = response.statusText;
+    }
+
     if (status === 401 || status === 403) {
-      return res.json({ valid: false, error: 'Invalid API key (401/403)' });
+      return res.json({ valid: false, error: `API Key 无效 (${status}): ${errorDetail}` });
     }
 
     // Some providers return 400 for minimal request but key is valid
@@ -112,7 +120,7 @@ app.post('/api/validate-key', async (req, res) => {
       return res.json({ valid: true, note: 'Key accepted (400 on minimal request)' });
     }
 
-    return res.json({ valid: false, error: `HTTP ${status}` });
+    return res.json({ valid: false, error: `HTTP ${status}: ${errorDetail}` });
   } catch (err) {
     return res.json({
       valid: false,

@@ -9,25 +9,34 @@ export default function ApiKeyInput({
   verified,
   helpUrl,
   helpText,
+  extraBody,
 }) {
   const [show, setShow] = useState(false);
   const [verifying, setVerifying] = useState(false);
   const [verifyResult, setVerifyResult] = useState(verified ? 'ok' : null);
+  const [verifyError, setVerifyError] = useState('');
 
   const handleVerify = async () => {
     if (!value.trim()) return;
     setVerifying(true);
     setVerifyResult(null);
+    setVerifyError('');
     try {
       const res = await fetch('/api/validate-key', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ provider, apiKey: value }),
+        body: JSON.stringify({ provider, apiKey: value, ...extraBody }),
       });
       const data = await res.json();
-      setVerifyResult(data.valid ? 'ok' : 'fail');
+      if (data.valid) {
+        setVerifyResult('ok');
+      } else {
+        setVerifyResult('fail');
+        setVerifyError(data.error || '');
+      }
     } catch {
       setVerifyResult('fail');
+      setVerifyError('网络请求失败');
     } finally {
       setVerifying(false);
     }
@@ -83,7 +92,7 @@ export default function ApiKeyInput({
       )}
       {verifyResult === 'fail' && (
         <p className="text-sm text-red-500 flex items-center gap-1">
-          <span>❌</span> 验证失败，请检查 Key 是否正确
+          <span>❌</span> 验证失败{verifyError ? `：${verifyError}` : '，请检查 Key 是否正确'}
         </p>
       )}
     </div>

@@ -26,6 +26,16 @@
 
 ## ⚡ 30 秒快速开始
 
+> **⚠️ 前提条件：需要 Node.js 22+**（检查版本：`node -v`）
+> 
+> 如果版本低于 22，请先升级：
+> ```bash
+> # 使用 nvm（推荐）
+> nvm install 22 && nvm use 22 && nvm alias default 22
+> # 或使用 Homebrew（macOS）
+> brew install node
+> ```
+
 ```bash
 git clone https://github.com/xyva-yuangui/XyvaClaw.git && cd XyvaClaw && bash xyvaclaw-setup.sh
 ```
@@ -37,11 +47,13 @@ git clone https://github.com/xyva-yuangui/XyvaClaw.git && cd XyvaClaw && bash xy
 
 ### 准备工作（只需一次）
 
-1. **获取 AI 模型密钥**（免费注册，二选一即可）：
+1. **确认 Node.js 版本 ≥ 22**（`node -v` 检查，低于 22 请先升级，见上方说明）
+
+2. **获取 AI 模型密钥**（免费注册，二选一即可）：
    - [DeepSeek](https://platform.deepseek.com/api_keys)（推荐，注册即送免费额度）
    - [百炼/通义千问](https://bailian.console.aliyun.com/)（阿里云，一个 Key 调用多个模型）
 
-2. **打开终端**：macOS 按 `Command + 空格` 输入 `Terminal` | Linux 按 `Ctrl + Alt + T`
+3. **打开终端**：macOS 按 `Command + 空格` 输入 `Terminal` | Linux 按 `Ctrl + Alt + T`
 
 ### 安装过程自动完成
 
