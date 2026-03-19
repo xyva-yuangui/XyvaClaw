@@ -153,15 +153,18 @@ def apply_env(data, env):
         feishu_conf['enabled'] = True
         feishu_conf.setdefault('domain', 'feishu')
         feishu_conf.setdefault('connectionMode', 'websocket')
-        feishu_conf.setdefault('dmPolicy', 'pairing')
-        feishu_conf.setdefault('groupPolicy', 'allowlist')
+        feishu_conf.setdefault('dmPolicy', 'open')
+        feishu_conf.setdefault('groupPolicy', 'open')
         feishu_conf.setdefault('requireMention', True)
+        # dmPolicy=open requires allowFrom=["*"] to accept DMs from anyone
+        if feishu_conf.get('dmPolicy') == 'open':
+            feishu_conf.setdefault('allowFrom', ['*'])
         # Use accounts format (official recommended)
         if 'accounts' not in feishu_conf:
             feishu_conf['accounts'] = {}
-        feishu_conf['accounts'].setdefault('main', {})
-        feishu_conf['accounts']['main']['appId'] = feishu_id
-        feishu_conf['accounts']['main']['appSecret'] = feishu_secret
+        feishu_conf['accounts'].setdefault('default', {})
+        feishu_conf['accounts']['default']['appId'] = feishu_id
+        feishu_conf['accounts']['default']['appSecret'] = feishu_secret
         # Remove legacy top-level credentials if present
         feishu_conf.pop('appId', None)
         feishu_conf.pop('appSecret', None)

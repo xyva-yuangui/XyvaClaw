@@ -258,11 +258,12 @@
       "enabled": true,
       "domain": "feishu",
       "connectionMode": "websocket",
-      "dmPolicy": "pairing",
+      "dmPolicy": "open",
       "groupPolicy": "open",
       "requireMention": true,
+      "allowFrom": ["*"],
       "accounts": {
-        "main": {
+        "default": {
           "appId": "__APP_ID__",
           "appSecret": "__APP_SECRET__"
         }
