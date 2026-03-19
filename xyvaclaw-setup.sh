@@ -170,6 +170,7 @@ fi
 # This step only warns — it never deletes or modifies anything.
 # Wrapped in a subshell so any error here cannot break the install.
 detect_existing_claws() {
+    set +eo pipefail
     local FOUND_ISSUES=false
 
     # --- Check for existing OpenClaw config directory ---
@@ -178,7 +179,7 @@ detect_existing_claws() {
         FOUND_ISSUES=true
         log_warn "检测到已有 OpenClaw 配置目录: $OPENCLAW_DIR"
         echo ""
-        echo -e "  ${BOLD}xyvaClaw 使用独立目录 $XYVACLAW_HOME，不会影响现有配置。${NC}"
+        echo -e "  ${BOLD}xyvaClaw 使用独立目录 ${XYVACLAW_HOME}，不会影响现有配置。${NC}"
         echo -e "  如果你不再需要原版 OpenClaw，可以稍后手动清理："
         echo ""
         echo -e "  ${CYAN}# 停止原有 OpenClaw 服务${NC}"
@@ -192,7 +193,9 @@ detect_existing_claws() {
 
     # --- Check for existing OpenClaw launchd service (macOS) ---
     if [ "$(uname)" = "Darwin" ]; then
-        if launchctl list 2>/dev/null | grep -q "ai.openclaw" 2>/dev/null; then
+        local LAUNCHD_MATCH
+        LAUNCHD_MATCH=$(launchctl list 2>/dev/null | grep "ai.openclaw" 2>/dev/null || true)
+        if [ -n "$LAUNCHD_MATCH" ]; then
             FOUND_ISSUES=true
             log_warn "检测到原版 OpenClaw 自启动服务正在运行"
             echo -e "  xyvaClaw 会创建自己的服务 (ai.xyvaclaw.gateway)，两者可以共存。"
@@ -221,7 +224,7 @@ detect_existing_claws() {
     # --- Check if default port 18789 is in use ---
     if command -v lsof &>/dev/null; then
         local PORT_PID
-        PORT_PID=$(lsof -ti:18789 2>/dev/null | head -1)
+        PORT_PID=$(lsof -ti:18789 2>/dev/null | head -1 || true)
         if [ -n "$PORT_PID" ]; then
             local PORT_PROC
             PORT_PROC=$(ps -p "$PORT_PID" -o comm= 2>/dev/null || echo "unknown")
@@ -246,6 +249,7 @@ detect_existing_claws() {
             fi
         fi
     fi
+    set -eo pipefail
 }
 
 # Run detection in a safe wrapper — any error here must not break install
@@ -475,6 +479,79 @@ else
             "$ENV_FILE"
         log_ok ".openclaw/openclaw.json 已生成"
     fi
+fi
+
+# ============================================
+# Step 4.5: Register local plugins with OpenClaw
+# ============================================
+OPENCLAW_CONFIG="$XYVACLAW_HOME/.openclaw/openclaw.json"
+if [ -f "$OPENCLAW_CONFIG" ]; then
+    log_info "注册本地插件到 OpenClaw..."
+
+    # Save plugins config and temporarily clear it (OpenClaw validates plugins.allow
+    # against its registry, so we must register plugins before referencing them)
+    python3 -c "
+import json, sys
+p = sys.argv[1]
+with open(p) as f: d = json.load(f)
+plugins_backup = d.get('plugins', {})
+with open(p + '.plugins-stash', 'w') as f: json.dump(plugins_backup, f)
+d['plugins'] = {'allow': [], 'slots': {}, 'entries': {}}
+with open(p, 'w') as f: json.dump(d, f, indent=2)
+" "$OPENCLAW_CONFIG" 2>/dev/null
+
+    export OPENCLAW_HOME="$XYVACLAW_HOME"
+
+    # Register lossless-claw
+    if [ -d "$XYVACLAW_HOME/extensions/lossless-claw" ]; then
+        openclaw plugins install --link "$XYVACLAW_HOME/extensions/lossless-claw" 2>/dev/null \
+            && log_ok "lossless-claw 插件已注册" \
+            || log_warn "lossless-claw 插件注册失败"
+    fi
+
+    # Register feishu_local
+    if [ -d "$XYVACLAW_HOME/extensions/feishu" ]; then
+        openclaw plugins install --link "$XYVACLAW_HOME/extensions/feishu" 2>/dev/null \
+            && log_ok "feishu_local 插件已注册" \
+            || log_warn "feishu_local 插件注册失败"
+    fi
+
+    # Merge stashed plugin settings into what openclaw plugins install wrote
+    # (preserving load.paths and installs registry that openclaw created)
+    python3 -c "
+import json, sys, os
+p = sys.argv[1]
+stash = p + '.plugins-stash'
+if not os.path.exists(stash):
+    sys.exit(0)
+with open(p) as f: d = json.load(f)
+with open(stash) as f: saved = json.load(f)
+cur = d.setdefault('plugins', {})
+# Merge allow list (union, preserving order)
+cur_allow = cur.get('allow', [])
+for item in saved.get('allow', []):
+    if item not in cur_allow:
+        cur_allow.append(item)
+cur['allow'] = cur_allow
+# Merge slots
+cur.setdefault('slots', {}).update(saved.get('slots', {}))
+# Merge entries (deep: preserve openclaw's enabled, add our config)
+cur_entries = cur.setdefault('entries', {})
+for name, entry in saved.get('entries', {}).items():
+    if name not in cur_entries:
+        cur_entries[name] = entry
+    else:
+        # Merge config from stash into existing entry
+        if 'config' in entry:
+            cur_entries[name].setdefault('config', {}).update(entry['config'])
+        if 'enabled' in entry:
+            cur_entries[name]['enabled'] = entry['enabled']
+d['plugins'] = cur
+with open(p, 'w') as f: json.dump(d, f, indent=2)
+os.remove(stash)
+" "$OPENCLAW_CONFIG" 2>/dev/null
+
+    log_ok "插件配置已恢复"
 fi
 
 # ============================================

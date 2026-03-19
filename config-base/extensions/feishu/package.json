@@ -9,5 +9,11 @@
     "extensions": [
       "./index.ts"
     ]
+  },
+  "dependencies": {
+    "@sinclair/typebox": "^0.34.0",
+    "@larksuiteoapi/node-sdk": "^1.59.0",
+    "https-proxy-agent": "^7.0.0",
+    "zod": "^3.23.0"
   }
 }
