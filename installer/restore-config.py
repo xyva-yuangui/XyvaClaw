@@ -44,6 +44,16 @@ def restore_paths(obj, home_dir):
     return obj
 
 
+def bailian_base_url(api_key):
+    """Auto-detect Bailian baseUrl based on API key prefix.
+    sk-sp- = Coding Plan key -> coding.dashscope.aliyuncs.com
+    sk-    = Standard key     -> dashscope.aliyuncs.com/compatible-mode
+    """
+    if api_key.startswith('sk-sp-'):
+        return 'https://coding.dashscope.aliyuncs.com/v1'
+    return 'https://dashscope.aliyuncs.com/compatible-mode/v1'
+
+
 def apply_env(data, env):
     """Apply environment variables to config template"""
     home_dir = str(Path.home())
@@ -85,6 +95,7 @@ def apply_env(data, env):
         providers = data['models']['providers']
         if 'bailian' in providers:
             providers['bailian']['apiKey'] = bailian_key
+            providers['bailian']['baseUrl'] = bailian_base_url(bailian_key)
 
     # Custom providers from .env
     custom_count = int(env.get('CUSTOM_PROVIDER_COUNT', '0') or '0')
@@ -277,8 +288,13 @@ def apply_wizard(data, wizard):
             prov_conf = wp.get(name)
             if isinstance(prov_conf, dict) and prov_conf.get('enabled') and prov_conf.get('apiKey'):
                 existing = data['models']['providers'].get(name, {})
+                # Auto-detect Bailian baseUrl based on key prefix
+                if name == 'bailian':
+                    base_url = bailian_base_url(prov_conf['apiKey'])
+                else:
+                    base_url = existing.get('baseUrl', meta['baseUrl'])
                 data['models']['providers'][name] = {
-                    'baseUrl': existing.get('baseUrl', meta['baseUrl']),
+                    'baseUrl': base_url,
                     'apiKey': prov_conf['apiKey'],
                     'api': existing.get('api', meta['api']),
                     'models': existing.get('models', meta['models']),

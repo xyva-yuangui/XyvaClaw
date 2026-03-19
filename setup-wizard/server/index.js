@@ -48,7 +48,9 @@ app.post('/api/validate-key', async (req, res) => {
         break;
 
       case 'bailian':
-        url = 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions';
+        url = apiKey.startsWith('sk-sp-')
+          ? 'https://coding.dashscope.aliyuncs.com/v1/chat/completions'
+          : 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions';
         headers = {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${apiKey}`,
