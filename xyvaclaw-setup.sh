@@ -544,17 +544,43 @@ with open(p, 'w') as f: json.dump(d, f, indent=2)
     export OPENCLAW_HOME="$XYVACLAW_HOME"
 
     # Register lossless-claw
+    PLUGINS_OK=true
     if [ -d "$XYVACLAW_HOME/extensions/lossless-claw" ]; then
-        openclaw plugins install --link "$XYVACLAW_HOME/extensions/lossless-claw" 2>/dev/null \
-            && log_ok "lossless-claw 插件已注册" \
-            || log_warn "lossless-claw 插件注册失败"
+        if openclaw plugins install --link "$XYVACLAW_HOME/extensions/lossless-claw" 2>&1 | tail -3; then
+            log_ok "lossless-claw 插件已注册"
+        else
+            log_warn "lossless-claw 插件注册失败（将使用手动注入）"
+            PLUGINS_OK=false
+        fi
     fi
 
     # Register feishu_local
     if [ -d "$XYVACLAW_HOME/extensions/feishu" ]; then
-        openclaw plugins install --link "$XYVACLAW_HOME/extensions/feishu" 2>/dev/null \
-            && log_ok "feishu_local 插件已注册" \
-            || log_warn "feishu_local 插件注册失败"
+        if openclaw plugins install --link "$XYVACLAW_HOME/extensions/feishu" 2>&1 | tail -3; then
+            log_ok "feishu_local 插件已注册"
+        else
+            log_warn "feishu_local 插件注册失败（将使用手动注入）"
+            PLUGINS_OK=false
+        fi
+    fi
+
+    # Fallback: if openclaw plugins install failed, manually inject load.paths
+    if [ "$PLUGINS_OK" = false ]; then
+        log_info "手动注入插件路径..."
+        python3 -c "
+import json, sys
+p = sys.argv[1]
+with open(p) as f: d = json.load(f)
+load = d.setdefault('plugins', {}).setdefault('load', {})
+paths = load.get('paths', [])
+for ext_path in ['\$OPENCLAW_HOME/extensions/lossless-claw', '\$OPENCLAW_HOME/extensions/feishu']:
+    if ext_path not in paths:
+        paths.append(ext_path)
+load['paths'] = paths
+d['plugins']['load'] = load
+with open(p, 'w') as f: json.dump(d, f, indent=2)
+print('injected load.paths:', paths)
+" "$OPENCLAW_CONFIG"
     fi
 
     # Merge stashed plugins + channels back into the config that openclaw
@@ -590,7 +616,7 @@ for name, entry in saved_plugins.get('entries', {}).items():
 d['plugins'] = cur
 
 # --- Restore channels (filter out unknown IDs) ---
-KNOWN_CHANNELS = {'feishu', 'dingtalk', 'slack', 'discord', 'telegram', 'wechat', 'whatsapp'}
+KNOWN_CHANNELS = {'feishu', 'dingtalk', 'slack', 'discord', 'telegram', 'wechat', 'whatsapp', 'webchat'}
 saved_channels = stash.get('channels', {})
 for ch_name, ch_conf in saved_channels.items():
     if ch_name in KNOWN_CHANNELS:

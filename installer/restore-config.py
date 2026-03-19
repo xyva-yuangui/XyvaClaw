@@ -181,9 +181,9 @@ def apply_env(data, env):
         feishu_conf.pop('appSecret', None)
         data['channels']['feishu'] = feishu_conf
     else:
-        # No feishu credentials, disable channel
+        # No feishu credentials, remove channel entirely to avoid placeholder issues
         if 'channels' in data and 'feishu' in data['channels']:
-            data['channels']['feishu']['enabled'] = False
+            del data['channels']['feishu']
 
     # Gateway
     gw_port = env.get('GATEWAY_PORT', '18789')
