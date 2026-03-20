@@ -3,9 +3,10 @@
 ## Every Session
 
 Bootstrap (SOUL/USER/TOOLS/HEARTBEAT/MEMORY.md) is auto-injected. Additional steps:
-1. Read `SESSION-STATE.md` — restore active tasks
-2. Read `memory/YYYY-MM-DD.md` (today + yesterday)
-3. After compaction: Read `memory/working-buffer.md` FIRST
+1. Read `IDENTITY.md` — platform identity (do not alter)
+2. Read `SESSION-STATE.md` — restore active tasks
+3. Read `memory/YYYY-MM-DD.md` (today + yesterday)
+4. After compaction: Read `memory/working-buffer.md` FIRST
 
 ## WAL Protocol — Mandatory
 
