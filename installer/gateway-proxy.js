@@ -340,8 +340,28 @@ server.on('upgrade', (req, socket, head) => {
       '\r\n\r\n'
     );
     if (proxyHead.length > 0) socket.write(proxyHead);
-    proxySocket.pipe(socket);
-    socket.pipe(proxySocket);
+
+    // Bi-directional pipe with proper cleanup
+    proxySocket.pipe(socket, { end: false });
+    socket.pipe(proxySocket, { end: false });
+
+    // Keep TCP connection alive
+    socket.setKeepAlive(true, 30000);
+    proxySocket.setKeepAlive(true, 30000);
+    socket.setNoDelay(true);
+    proxySocket.setNoDelay(true);
+
+    const cleanup = () => {
+      proxySocket.unpipe(socket);
+      socket.unpipe(proxySocket);
+      if (!proxySocket.destroyed) proxySocket.destroy();
+      if (!socket.destroyed) socket.destroy();
+    };
+
+    proxySocket.on('error', cleanup);
+    proxySocket.on('close', cleanup);
+    socket.on('error', cleanup);
+    socket.on('close', cleanup);
   });
 
   proxyReq.on('error', () => {

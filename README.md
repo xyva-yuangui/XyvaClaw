@@ -53,9 +53,25 @@ cd XyvaClaw && bash xyvaclaw-setup.sh
 - ✅ 部署 42+ 技能和所有配置
 - ✅ 设置开机自启动
 
+### Web 配置向导预览
+
+<p align="center">
+  <img src="docs/images/wizard-welcome.png" alt="欢迎页 - 命名你的 AI 助手" width="80%" />
+</p>
+<p align="center">
+  <img src="docs/images/wizard-api.png" alt="API 配置 - 选择模型 Provider" width="80%" />
+</p>
+<p align="center">
+  <img src="docs/images/wizard-confirm.png" alt="确认配置 - 一键启动" width="80%" />
+</p>
+
 ### 安装完成后
 
 ```bash
+xyvaclaw setup            # 打开 Web 配置向导
+xyvaclaw doctor           # 健康检查与诊断
+xyvaclaw doctor --fix     # 自动修复问题
+xyvaclaw status           # 查看运行状态
 xyvaclaw gateway          # 启动 AI 助手
 # 浏览器打开 http://localhost:18789
 ```
