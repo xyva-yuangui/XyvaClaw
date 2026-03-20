@@ -10,6 +10,24 @@
 # ============================================
 set -euo pipefail
 
+# --- Self-update: ensure we're running the latest code ---
+# Previous installs may modify tracked files (e.g. setup-wizard/dist/),
+# causing git pull to fail. Auto-reset and pull before proceeding.
+_SELF_DIR="$(cd "$(dirname "$0")" && pwd)"
+if [ -d "$_SELF_DIR/.git" ]; then
+    (
+        cd "$_SELF_DIR"
+        git checkout -- . 2>/dev/null || true
+        git pull origin main 2>/dev/null || true
+    )
+    # Re-exec if the script was updated
+    _NEW_HASH=$(md5 -q "$0" 2>/dev/null || md5sum "$0" 2>/dev/null | cut -d' ' -f1)
+    if [ "${_XYVACLAW_SELF_HASH:-}" != "$_NEW_HASH" ]; then
+        export _XYVACLAW_SELF_HASH="$_NEW_HASH"
+        exec bash "$0" "$@"
+    fi
+fi
+
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 XYVACLAW_HOME="${XYVACLAW_HOME:-$HOME/.xyvaclaw}"
 WIZARD_PORT=19090
