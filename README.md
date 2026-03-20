@@ -35,6 +35,54 @@ cd XyvaClaw && bash xyvaclaw-setup.sh
 >
 > 💡 已经安装过？直接再次运行上面的命令即可升级，安装脚本会自动清理旧版本
 
+---
+
+## 🧙 Web 配置向导
+
+安装过程自动弹出**图形化配置向导**，在浏览器中完成所有配置，无需手动编辑任何文件：
+
+<table>
+<tr>
+<td width="33%" align="center">
+<img src="docs/images/wizard-welcome.png" alt="Step 1: 命名 AI 助手" /><br/>
+<b>① 命名你的 AI 助手</b>
+</td>
+<td width="33%" align="center">
+<img src="docs/images/wizard-api.png" alt="Step 2: API 配置" /><br/>
+<b>② 配置 AI 模型密钥</b>
+</td>
+<td width="33%" align="center">
+<img src="docs/images/wizard-skills.png" alt="Step 3: 技能选装" /><br/>
+<b>③ 按需选择 38+ 技能</b>
+</td>
+</tr>
+<tr>
+<td width="33%" align="center">
+<img src="docs/images/wizard-confirm.png" alt="Step 4: 确认启动" /><br/>
+<b>④ 确认配置一键启动</b>
+</td>
+<td width="33%" align="center">
+<img src="docs/images/wizard-terminal.png" alt="Step 5: 安装中" /><br/>
+<b>⑤ 终端自动安装</b>
+</td>
+<td width="33%" align="center">
+<img src="docs/images/wizard-test.png" alt="Step 6: 测试成功" /><br/>
+<b>⑥ 测试生效</b>
+</td>
+</tr>
+</table>
+
+### 安装完成后
+
+```bash
+xyvaclaw setup            # 打开 Web 配置向导
+xyvaclaw doctor           # 健康检查与诊断
+xyvaclaw doctor --fix     # 自动修复问题
+xyvaclaw status           # 查看运行状态
+xyvaclaw gateway          # 启动 AI 助手
+# 浏览器打开 http://localhost:18789
+```
+
 <details>
 <summary><b>📋 详细安装步骤</b></summary>
 
@@ -52,29 +100,6 @@ cd XyvaClaw && bash xyvaclaw-setup.sh
 - ✅ 弹出**图形化配置向导**（浏览器中填写 API Key）
 - ✅ 部署 42+ 技能和所有配置
 - ✅ 设置开机自启动
-
-### Web 配置向导预览
-
-<p align="center">
-  <img src="docs/images/wizard-welcome.png" alt="欢迎页 - 命名你的 AI 助手" width="80%" />
-</p>
-<p align="center">
-  <img src="docs/images/wizard-api.png" alt="API 配置 - 选择模型 Provider" width="80%" />
-</p>
-<p align="center">
-  <img src="docs/images/wizard-confirm.png" alt="确认配置 - 一键启动" width="80%" />
-</p>
-
-### 安装完成后
-
-```bash
-xyvaclaw setup            # 打开 Web 配置向导
-xyvaclaw doctor           # 健康检查与诊断
-xyvaclaw doctor --fix     # 自动修复问题
-xyvaclaw status           # 查看运行状态
-xyvaclaw gateway          # 启动 AI 助手
-# 浏览器打开 http://localhost:18789
-```
 
 </details>
 
