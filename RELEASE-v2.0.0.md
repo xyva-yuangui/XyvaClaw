@@ -72,6 +72,9 @@ Wizard 的 API Key 页面新增"还没有 API Key？"推荐面板：
 
 - **webchat 频道导致配置验证失败**: 从 Wizard 频道列表和默认配置中移除 `webchat`（不是有效的 OpenClaw channel ID）
 - **Wizard 保存后不生成 openclaw.json**: `server/index.js` 保存后自动调用 `restore-config.py`
+- **Gateway 端口配置错误**: 安装脚本使用 `gateway.port`（整数）替代错误的 `gateway.server.bind`
+- **Gateway 代理 WebSocket 断连**: 增加 TCP KeepAlive/NoDelay + 双向 error/close 清理，防止 Dashboard 静默断开后跳转 token 页
+- **lossless-claw 引用未配置模型**: `summaryModel` 从 `deepseek/deepseek-chat` 修正为实际配置的 `bailian/qwen3.5-plus`
 
 ---
 
