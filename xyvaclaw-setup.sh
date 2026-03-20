@@ -70,6 +70,7 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 CYAN='\033[0;36m'
+GRAY='\033[0;90m'
 BOLD='\033[1m'
 NC='\033[0m'
 
@@ -387,7 +388,7 @@ mkdir -p "$XYVACLAW_HOME"/{workspace/memory,workspace/output/{audio,video,temp},
 log_ok "运行时目录"
 
 # ============================================
-# Step 4: Configure API Key
+# Step 4: Configure via Web Setup Wizard
 # ============================================
 log_step "4/8" "配置 $BRAND..."
 
@@ -396,55 +397,132 @@ if [ ! -f "$ENV_FILE" ]; then
     cp "$SCRIPT_DIR/templates/.env.template" "$ENV_FILE"
 fi
 
-# Collect API Key — from environment variable or interactive prompt
-API_KEY=""
+WIZARD_USED=false
+WIZARD_DIR="$SCRIPT_DIR/setup-wizard"
 
-# Priority 1: environment variables already set
-if [ -n "${BAILIAN_API_KEY:-}" ]; then
-    API_KEY="$BAILIAN_API_KEY"
-elif [ -n "${DEEPSEEK_API_KEY:-}" ]; then
-    API_KEY="$DEEPSEEK_API_KEY"
-fi
-
-# Priority 2: already configured in .env
-if [ -z "$API_KEY" ] && [ -f "$ENV_FILE" ]; then
-    API_KEY=$(grep -m1 '^BAILIAN_API_KEY=.\+' "$ENV_FILE" 2>/dev/null | cut -d= -f2- || true)
-    [ -z "$API_KEY" ] && API_KEY=$(grep -m1 '^DEEPSEEK_API_KEY=.\+' "$ENV_FILE" 2>/dev/null | cut -d= -f2- || true)
-fi
-
-# Priority 3: interactive prompt (skip in auto mode)
-if [ -z "$API_KEY" ] && [ "$AUTO_MODE" != true ]; then
-    echo ""
-    echo -e "  ${BOLD}请粘贴你的 API Key${NC}"
-    echo ""
-    echo -e "  获取方式（任选其一）:"
-    echo -e "    ${CYAN}百炼${NC}: https://bailian.console.aliyun.com → API-KEY 管理 → 创建"
-    echo -e "    ${CYAN}DeepSeek${NC}: https://platform.deepseek.com/api_keys"
-    echo ""
-    read -p "  API Key: " -r API_KEY
-    echo ""
-fi
-
-# Detect key type and write to .env
-if [ -n "$API_KEY" ]; then
-    KEY_TYPE=""
-    KEY_VAR=""
-    if echo "$API_KEY" | grep -q '^sk-sp-'; then
-        KEY_TYPE="百炼 Coding Plan"
-        KEY_VAR="BAILIAN_API_KEY"
-    elif echo "$API_KEY" | grep -q '^sk-' && [ ${#API_KEY} -gt 50 ]; then
-        KEY_TYPE="DeepSeek"
-        KEY_VAR="DEEPSEEK_API_KEY"
-    elif echo "$API_KEY" | grep -q '^sk-'; then
-        KEY_TYPE="百炼标准"
-        KEY_VAR="BAILIAN_API_KEY"
-    else
-        KEY_TYPE="自定义"
-        KEY_VAR="BAILIAN_API_KEY"
+# --- Try Web Setup Wizard (interactive mode only) ---
+if [ "$AUTO_MODE" != true ] && [ -f "$WIZARD_DIR/server/index.js" ] && [ -d "$WIZARD_DIR/dist" ]; then
+    # Install wizard server deps if needed
+    if [ ! -d "$WIZARD_DIR/node_modules/express" ]; then
+        log_info "安装配置向导依赖..."
+        (cd "$WIZARD_DIR" && npm install --production 2>/dev/null) || true
     fi
 
-    # Write to .env (use python to avoid sed special char issues)
-    python3 -c "
+    if [ -d "$WIZARD_DIR/node_modules/express" ]; then
+        log_info "启动 Web 配置向导..."
+
+        export XYVACLAW_HOME WIZARD_PORT
+        export XYVACLAW_PROJECT="$SCRIPT_DIR"
+        node "$WIZARD_DIR/server/index.js" &
+        WIZARD_PID=$!
+
+        # Wait for wizard server to be ready
+        WIZARD_READY=false
+        for i in $(seq 1 15); do
+            if curl -s -o /dev/null -w "" "http://localhost:${WIZARD_PORT}/" 2>/dev/null; then
+                WIZARD_READY=true
+                break
+            fi
+            sleep 1
+        done
+
+        if [ "$WIZARD_READY" = true ]; then
+            echo ""
+            echo -e "  ${GREEN}${BOLD}🌐 配置页面已启动: http://localhost:${WIZARD_PORT}${NC}"
+            echo ""
+            echo -e "  ${BOLD}请在浏览器中完成以下配置:${NC}"
+            echo -e "    1️⃣  为你的 AI 助手取个名字"
+            echo -e "    2️⃣  配置 API Key（DeepSeek / 百炼）"
+            echo -e "    3️⃣  配置飞书机器人（可选）"
+            echo -e "    4️⃣  选择技能"
+            echo -e "    5️⃣  确认并保存"
+            echo ""
+            echo -e "  ${CYAN}⏳ 等待你在浏览器中完成配置...${NC}"
+            echo -e "  ${GRAY}（配置完成后此页面会自动关闭，安装将继续）${NC}"
+            echo ""
+
+            # Open browser
+            if command -v open &>/dev/null; then
+                open "http://localhost:${WIZARD_PORT}" 2>/dev/null || true
+            elif command -v xdg-open &>/dev/null; then
+                xdg-open "http://localhost:${WIZARD_PORT}" 2>/dev/null || true
+            fi
+
+            # Wait for wizard to exit (it exits after user saves config)
+            # Timeout after 600 seconds (10 minutes)
+            WIZARD_TIMEOUT=600
+            WIZARD_ELAPSED=0
+            while kill -0 $WIZARD_PID 2>/dev/null; do
+                sleep 2
+                WIZARD_ELAPSED=$((WIZARD_ELAPSED + 2))
+                if [ $WIZARD_ELAPSED -ge $WIZARD_TIMEOUT ]; then
+                    log_warn "配置向导超时（10分钟），将切换到终端配置..."
+                    kill $WIZARD_PID 2>/dev/null || true
+                    break
+                fi
+            done
+
+            # Check if wizard saved config successfully
+            if [ -f "$XYVACLAW_HOME/.wizard-config.json" ]; then
+                WIZARD_USED=true
+                log_ok "Web 配置向导完成"
+            fi
+        else
+            log_warn "配置向导启动失败，切换到终端配置..."
+            kill $WIZARD_PID 2>/dev/null || true
+        fi
+    fi
+fi
+
+# --- Fallback: Terminal API Key prompt ---
+if [ "$WIZARD_USED" = false ]; then
+    # Collect API Key — from environment variable, .env, or interactive prompt
+    API_KEY=""
+
+    # Priority 1: environment variables
+    if [ -n "${BAILIAN_API_KEY:-}" ]; then
+        API_KEY="$BAILIAN_API_KEY"
+    elif [ -n "${DEEPSEEK_API_KEY:-}" ]; then
+        API_KEY="$DEEPSEEK_API_KEY"
+    fi
+
+    # Priority 2: already configured in .env
+    if [ -z "$API_KEY" ] && [ -f "$ENV_FILE" ]; then
+        API_KEY=$(grep -m1 '^BAILIAN_API_KEY=.\+' "$ENV_FILE" 2>/dev/null | cut -d= -f2- || true)
+        [ -z "$API_KEY" ] && API_KEY=$(grep -m1 '^DEEPSEEK_API_KEY=.\+' "$ENV_FILE" 2>/dev/null | cut -d= -f2- || true)
+    fi
+
+    # Priority 3: interactive prompt
+    if [ -z "$API_KEY" ] && [ "$AUTO_MODE" != true ]; then
+        echo ""
+        echo -e "  ${BOLD}请粘贴你的 API Key${NC}"
+        echo ""
+        echo -e "  获取方式（任选其一）:"
+        echo -e "    ${CYAN}百炼${NC}: https://bailian.console.aliyun.com → API-KEY 管理 → 创建"
+        echo -e "    ${CYAN}DeepSeek${NC}: https://platform.deepseek.com/api_keys"
+        echo ""
+        read -p "  API Key: " -r API_KEY
+        echo ""
+    fi
+
+    if [ -n "$API_KEY" ]; then
+        KEY_TYPE=""
+        KEY_VAR=""
+        if echo "$API_KEY" | grep -q '^sk-sp-'; then
+            KEY_TYPE="百炼 Coding Plan"
+            KEY_VAR="BAILIAN_API_KEY"
+        elif echo "$API_KEY" | grep -q '^sk-' && [ ${#API_KEY} -gt 50 ]; then
+            KEY_TYPE="DeepSeek"
+            KEY_VAR="DEEPSEEK_API_KEY"
+        elif echo "$API_KEY" | grep -q '^sk-'; then
+            KEY_TYPE="百炼标准"
+            KEY_VAR="BAILIAN_API_KEY"
+        else
+            KEY_TYPE="自定义"
+            KEY_VAR="BAILIAN_API_KEY"
+        fi
+
+        python3 -c "
 import sys
 key_var, key_val = sys.argv[1], sys.argv[2]
 env_path = sys.argv[3]
@@ -463,8 +541,8 @@ with open(env_path, 'w') as f:
     f.writelines(lines)
 " "$KEY_VAR" "$API_KEY" "$ENV_FILE"
 
-    # Also write feishu vars from environment if present
-    [ -n "${FEISHU_APP_ID:-}" ] && python3 -c "
+        # Also write feishu vars from environment if present
+        [ -n "${FEISHU_APP_ID:-}" ] && python3 -c "
 import sys; v,k,p=sys.argv[1],sys.argv[2],sys.argv[3]
 lines=[]; found=False
 with open(p) as f:
@@ -475,7 +553,7 @@ if not found: lines.append(v+'='+k+'\n')
 with open(p,'w') as f: f.writelines(lines)
 " "FEISHU_APP_ID" "$FEISHU_APP_ID" "$ENV_FILE"
 
-    [ -n "${FEISHU_APP_SECRET:-}" ] && python3 -c "
+        [ -n "${FEISHU_APP_SECRET:-}" ] && python3 -c "
 import sys; v,k,p=sys.argv[1],sys.argv[2],sys.argv[3]
 lines=[]; found=False
 with open(p) as f:
@@ -486,44 +564,13 @@ if not found: lines.append(v+'='+k+'\n')
 with open(p,'w') as f: f.writelines(lines)
 " "FEISHU_APP_SECRET" "$FEISHU_APP_SECRET" "$ENV_FILE"
 
-    log_ok "$KEY_TYPE 密钥已写入"
-
-    # Validate key (quick test)
-    log_info "验证 API Key..."
-    VALIDATE_OK=false
-    if [ "$KEY_VAR" = "BAILIAN_API_KEY" ]; then
-        if echo "$API_KEY" | grep -q '^sk-sp-'; then
-            TEST_URL="https://coding.dashscope.aliyuncs.com/v1/chat/completions"
-        else
-            TEST_URL="https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions"
-        fi
-        HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" -m 10 "$TEST_URL" \
-            -H "Authorization: Bearer $API_KEY" \
-            -H "Content-Type: application/json" \
-            -d '{"model":"qwen3.5-plus","messages":[{"role":"user","content":"hi"}],"max_tokens":1}' 2>/dev/null || echo "000")
-        if [ "$HTTP_CODE" = "200" ]; then
-            VALIDATE_OK=true
-        fi
-    elif [ "$KEY_VAR" = "DEEPSEEK_API_KEY" ]; then
-        HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" -m 10 "https://api.deepseek.com/v1/chat/completions" \
-            -H "Authorization: Bearer $API_KEY" \
-            -H "Content-Type: application/json" \
-            -d '{"model":"deepseek-chat","messages":[{"role":"user","content":"hi"}],"max_tokens":1}' 2>/dev/null || echo "000")
-        if [ "$HTTP_CODE" = "200" ]; then
-            VALIDATE_OK=true
-        fi
-    fi
-
-    if [ "$VALIDATE_OK" = true ]; then
-        log_ok "API Key 验证通过"
+        log_ok "$KEY_TYPE 密钥已写入"
     else
-        log_warn "API Key 验证未通过（HTTP ${HTTP_CODE}），请确认 Key 是否正确。安装将继续。"
+        log_warn "未配置 API Key，安装后运行 xyvaclaw setup 配置"
     fi
-else
-    log_warn "未配置 API Key，安装后请编辑 $ENV_FILE"
 fi
 
-# Generate config from .env + template
+# Generate config from .env + template (if wizard didn't already do it)
 if [ -f "$XYVACLAW_HOME/openclaw.json.template" ]; then
     log_info "生成配置文件..."
     cd "$XYVACLAW_HOME"
@@ -777,17 +824,305 @@ if [ -n "$SHELL_RC" ]; then
     fi
 fi
 
-# Create xyvaclaw wrapper
+# Create xyvaclaw CLI wrapper (always update to latest version)
 WRAPPER_PATH="/usr/local/bin/xyvaclaw"
-if [ ! -f "$WRAPPER_PATH" ] || [ ! -x "$WRAPPER_PATH" ]; then
-    sudo tee "$WRAPPER_PATH" > /dev/null << 'WRAPPER_EOF'
+sudo tee "$WRAPPER_PATH" > /dev/null << 'WRAPPER_EOF'
 #!/bin/bash
+# xyvaClaw CLI — AI Assistant Platform
+# Wraps OpenClaw with xyvaClaw-specific commands
+set -euo pipefail
+
 export OPENCLAW_HOME="${OPENCLAW_HOME:-$HOME/.xyvaclaw}"
-exec openclaw "$@"
+XYVACLAW_HOME="$OPENCLAW_HOME"
+
+# Find project directory (where setup-wizard lives)
+XYVACLAW_PROJECT=""
+for candidate in \
+    "$(dirname "$(readlink -f "$0" 2>/dev/null || echo "$0")")/../share/xyvaclaw" \
+    "$HOME/Downloads/XyvaClaw-main" \
+    "$HOME/XyvaClaw" \
+    "/opt/xyvaclaw"; do
+    if [ -d "$candidate/setup-wizard" ]; then
+        XYVACLAW_PROJECT="$candidate"
+        break
+    fi
+done
+
+# Colors
+RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'
+CYAN='\033[0;36m'; BOLD='\033[1m'; NC='\033[0m'
+
+case "${1:-}" in
+# ─── xyvaclaw setup ───
+setup)
+    echo -e "${BOLD}🐾 xyvaClaw 配置向导${NC}"
+    echo ""
+
+    if [ -z "$XYVACLAW_PROJECT" ]; then
+        echo -e "${RED}错误: 找不到 xyvaClaw 项目目录${NC}"
+        echo "请确保 XyvaClaw-main 目录存在"
+        exit 1
+    fi
+
+    WIZARD_DIR="$XYVACLAW_PROJECT/setup-wizard"
+    WIZARD_PORT="${WIZARD_PORT:-19090}"
+
+    if [ ! -f "$WIZARD_DIR/server/index.js" ]; then
+        echo -e "${RED}错误: 配置向导文件不存在${NC}"
+        exit 1
+    fi
+
+    # Install deps if needed
+    if [ ! -d "$WIZARD_DIR/node_modules/express" ]; then
+        echo -e "${CYAN}安装向导依赖...${NC}"
+        (cd "$WIZARD_DIR" && npm install --production 2>/dev/null) || true
+    fi
+
+    # Kill any existing wizard
+    lsof -ti :$WIZARD_PORT 2>/dev/null | xargs kill 2>/dev/null || true
+    sleep 1
+
+    export XYVACLAW_HOME WIZARD_PORT XYVACLAW_PROJECT
+    node "$WIZARD_DIR/server/index.js" &
+    WIZARD_PID=$!
+
+    # Wait for ready
+    for i in $(seq 1 10); do
+        curl -s -o /dev/null "http://localhost:$WIZARD_PORT/" 2>/dev/null && break
+        sleep 1
+    done
+
+    echo -e "${GREEN}${BOLD}🌐 配置页面: http://localhost:${WIZARD_PORT}${NC}"
+    echo -e "${CYAN}完成配置后页面会自动关闭${NC}"
+    echo ""
+
+    # Open browser
+    if command -v open &>/dev/null; then
+        open "http://localhost:$WIZARD_PORT" 2>/dev/null || true
+    elif command -v xdg-open &>/dev/null; then
+        xdg-open "http://localhost:$WIZARD_PORT" 2>/dev/null || true
+    fi
+
+    # Wait for wizard to exit
+    wait $WIZARD_PID 2>/dev/null || true
+
+    # Regenerate config
+    if [ -f "$XYVACLAW_HOME/openclaw.json.template" ] && [ -f "$XYVACLAW_HOME/.env" ]; then
+        echo -e "${CYAN}重新生成配置...${NC}"
+        python3 "$XYVACLAW_PROJECT/installer/restore-config.py" \
+            "$XYVACLAW_HOME/openclaw.json.template" \
+            "$XYVACLAW_HOME/.env"
+        echo -e "${GREEN}✅ openclaw.json 已更新${NC}"
+    fi
+
+    # Restart gateway if running
+    GATEWAY_PID=$(pgrep -f "openclaw gateway" 2>/dev/null | head -1 || true)
+    if [ -n "$GATEWAY_PID" ]; then
+        echo -e "${CYAN}重启 Gateway...${NC}"
+        kill "$GATEWAY_PID" 2>/dev/null || true
+        sleep 2
+        nohup openclaw gateway > "$XYVACLAW_HOME/logs/gateway.log" 2>&1 &
+        echo -e "${GREEN}✅ Gateway 已重启${NC}"
+    fi
+
+    echo ""
+    echo -e "${GREEN}${BOLD}配置完成！${NC}"
+    ;;
+
+# ─── xyvaclaw doctor ───
+doctor)
+    echo -e "${BOLD}🔍 xyvaClaw 健康检查${NC}"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo ""
+    ISSUES=0
+    FIX_MODE=false
+    [ "${2:-}" = "--fix" ] && FIX_MODE=true
+
+    # Check Node.js
+    if command -v node &>/dev/null; then
+        echo -e "  ${GREEN}✅${NC} Node.js $(node -v)"
+    else
+        echo -e "  ${RED}❌${NC} Node.js 未安装"
+        ISSUES=$((ISSUES + 1))
+    fi
+
+    # Check Python
+    if command -v python3 &>/dev/null; then
+        echo -e "  ${GREEN}✅${NC} Python $(python3 --version 2>&1 | cut -d' ' -f2)"
+    else
+        echo -e "  ${RED}❌${NC} Python3 未安装"
+        ISSUES=$((ISSUES + 1))
+    fi
+
+    # Check OpenClaw
+    if command -v openclaw &>/dev/null; then
+        OC_VER=$(openclaw --version 2>/dev/null || echo "unknown")
+        echo -e "  ${GREEN}✅${NC} OpenClaw 运行时 ($OC_VER)"
+    else
+        echo -e "  ${RED}❌${NC} OpenClaw 运行时未安装"
+        ISSUES=$((ISSUES + 1))
+    fi
+
+    # Check config
+    CONFIG_FILE="$XYVACLAW_HOME/.openclaw/openclaw.json"
+    if [ -f "$CONFIG_FILE" ]; then
+        echo -e "  ${GREEN}✅${NC} Gateway 配置文件存在"
+    else
+        echo -e "  ${RED}❌${NC} Gateway 配置文件不存在"
+        ISSUES=$((ISSUES + 1))
+        if [ "$FIX_MODE" = true ] && [ -f "$XYVACLAW_HOME/openclaw.json.template" ] && [ -f "$XYVACLAW_HOME/.env" ]; then
+            echo -e "      ${CYAN}→ 正在修复: 重新生成配置...${NC}"
+            python3 "$XYVACLAW_PROJECT/installer/restore-config.py" \
+                "$XYVACLAW_HOME/openclaw.json.template" "$XYVACLAW_HOME/.env" 2>/dev/null && \
+                echo -e "      ${GREEN}→ 已修复${NC}" || echo -e "      ${RED}→ 修复失败${NC}"
+        fi
+    fi
+
+    # Check API Key
+    HAS_KEY=false
+    if [ -f "$XYVACLAW_HOME/.env" ]; then
+        if grep -q '^BAILIAN_API_KEY=.\+' "$XYVACLAW_HOME/.env" 2>/dev/null || \
+           grep -q '^DEEPSEEK_API_KEY=.\+' "$XYVACLAW_HOME/.env" 2>/dev/null; then
+            echo -e "  ${GREEN}✅${NC} API Key 已配置"
+            HAS_KEY=true
+        else
+            echo -e "  ${YELLOW}⚠️${NC}  API Key 未配置 → 运行 ${BOLD}xyvaclaw setup${NC}"
+            ISSUES=$((ISSUES + 1))
+        fi
+    else
+        echo -e "  ${RED}❌${NC} .env 文件不存在"
+        ISSUES=$((ISSUES + 1))
+    fi
+
+    # Check plugins
+    if [ -f "$CONFIG_FILE" ]; then
+        if python3 -c "
+import json
+with open('$CONFIG_FILE') as f: d = json.load(f)
+plugins = d.get('plugins', {}).get('entries', {})
+print('lossless-claw' if 'lossless-claw' in plugins else '')
+" 2>/dev/null | grep -q "lossless-claw"; then
+            echo -e "  ${GREEN}✅${NC} lossless-claw 插件已注册"
+        else
+            echo -e "  ${YELLOW}⚠️${NC}  lossless-claw 插件未注册"
+            ISSUES=$((ISSUES + 1))
+        fi
+    fi
+
+    # Check Feishu
+    if [ -f "$XYVACLAW_HOME/.env" ]; then
+        if grep -q '^FEISHU_APP_ID=.\+' "$XYVACLAW_HOME/.env" 2>/dev/null && \
+           grep -q '^FEISHU_APP_SECRET=.\+' "$XYVACLAW_HOME/.env" 2>/dev/null; then
+            echo -e "  ${GREEN}✅${NC} 飞书凭证已配置"
+        else
+            echo -e "  ${YELLOW}⚠️${NC}  飞书未配置（可选） → 运行 ${BOLD}xyvaclaw setup${NC}"
+        fi
+    fi
+
+    # Check Gateway process
+    GATEWAY_PID=$(pgrep -f "openclaw gateway" 2>/dev/null | head -1 || true)
+    if [ -n "$GATEWAY_PID" ]; then
+        echo -e "  ${GREEN}✅${NC} Gateway 进程运行中 (PID: $GATEWAY_PID)"
+    else
+        echo -e "  ${YELLOW}⚠️${NC}  Gateway 未运行 → 运行 ${BOLD}xyvaclaw gateway${NC}"
+        if [ "$FIX_MODE" = true ] && [ "$HAS_KEY" = true ]; then
+            echo -e "      ${CYAN}→ 正在修复: 启动 Gateway...${NC}"
+            nohup openclaw gateway > "$XYVACLAW_HOME/logs/gateway.log" 2>&1 &
+            sleep 3
+            if pgrep -f "openclaw gateway" &>/dev/null; then
+                echo -e "      ${GREEN}→ Gateway 已启动${NC}"
+            else
+                echo -e "      ${RED}→ 启动失败，请查看日志: $XYVACLAW_HOME/logs/gateway.log${NC}"
+            fi
+        fi
+    fi
+
+    # Check Dashboard accessibility
+    if [ -n "$GATEWAY_PID" ]; then
+        if curl -s -o /dev/null -w "" "http://localhost:18789/" 2>/dev/null; then
+            echo -e "  ${GREEN}✅${NC} Dashboard 可访问: http://localhost:18789"
+        else
+            echo -e "  ${YELLOW}⚠️${NC}  Dashboard 不可访问（Gateway 可能还在启动中）"
+        fi
+    fi
+
+    echo ""
+    if [ $ISSUES -eq 0 ]; then
+        echo -e "  ${GREEN}${BOLD}🎉 一切正常！${NC}"
+    else
+        echo -e "  ${YELLOW}发现 $ISSUES 个问题${NC}"
+        if [ "$FIX_MODE" = false ]; then
+            echo -e "  ${CYAN}运行 ${BOLD}xyvaclaw doctor --fix${NC}${CYAN} 尝试自动修复${NC}"
+        fi
+    fi
+    echo ""
+    ;;
+
+# ─── xyvaclaw status ───
+status)
+    echo -e "${BOLD}🐾 xyvaClaw 状态${NC}"
+    echo ""
+    echo -e "  ${BOLD}数据目录:${NC} $XYVACLAW_HOME"
+
+    # Gateway status
+    GATEWAY_PID=$(pgrep -f "openclaw gateway" 2>/dev/null | head -1 || true)
+    if [ -n "$GATEWAY_PID" ]; then
+        echo -e "  ${BOLD}Gateway:${NC}  ${GREEN}运行中${NC} (PID: $GATEWAY_PID)"
+        echo -e "  ${BOLD}Dashboard:${NC} http://localhost:18789"
+    else
+        echo -e "  ${BOLD}Gateway:${NC}  ${RED}未运行${NC}"
+    fi
+
+    # Config info
+    if [ -f "$XYVACLAW_HOME/.env" ]; then
+        if grep -q '^BAILIAN_API_KEY=.\+' "$XYVACLAW_HOME/.env" 2>/dev/null; then
+            echo -e "  ${BOLD}模型:${NC}     百炼"
+        elif grep -q '^DEEPSEEK_API_KEY=.\+' "$XYVACLAW_HOME/.env" 2>/dev/null; then
+            echo -e "  ${BOLD}模型:${NC}     DeepSeek"
+        else
+            echo -e "  ${BOLD}模型:${NC}     ${YELLOW}未配置${NC}"
+        fi
+
+        if grep -q '^FEISHU_APP_ID=.\+' "$XYVACLAW_HOME/.env" 2>/dev/null; then
+            echo -e "  ${BOLD}飞书:${NC}     ${GREEN}已配置${NC}"
+        else
+            echo -e "  ${BOLD}飞书:${NC}     未配置"
+        fi
+    fi
+    echo ""
+    ;;
+
+# ─── xyvaclaw help ───
+help|--help|-h)
+    echo -e "${BOLD}🐾 xyvaClaw — AI 助手平台${NC}"
+    echo ""
+    echo -e "  ${BOLD}xyvaClaw 命令:${NC}"
+    echo "    xyvaclaw setup          打开 Web 配置向导"
+    echo "    xyvaclaw doctor         健康检查与诊断"
+    echo "    xyvaclaw doctor --fix   自动修复问题"
+    echo "    xyvaclaw status         查看运行状态"
+    echo ""
+    echo -e "  ${BOLD}OpenClaw 命令 (透传):${NC}"
+    echo "    xyvaclaw gateway        启动 Gateway"
+    echo "    xyvaclaw gateway status 查看 Gateway 状态"
+    echo "    xyvaclaw agents list    查看 Agent 列表"
+    echo "    xyvaclaw skills list    查看技能列表"
+    echo "    xyvaclaw configure      终端配置向导"
+    echo ""
+    echo -e "  ${BOLD}帮助:${NC}"
+    echo "    文档: https://github.com/xyva-yuangui/XyvaClaw"
+    echo "    QQ群: 1087471835"
+    echo ""
+    ;;
+
+# ─── Default: proxy to openclaw ───
+*)
+    exec openclaw "$@"
+    ;;
+esac
 WRAPPER_EOF
-    sudo chmod +x "$WRAPPER_PATH"
-    log_ok "xyvaclaw 命令已创建"
-fi
+sudo chmod +x "$WRAPPER_PATH"
+log_ok "xyvaclaw CLI 已创建 (setup / doctor / status / help)"
 
 # Feishu secret to secrets dir
 if [ -f "$XYVACLAW_HOME/.env" ]; then
@@ -844,7 +1179,7 @@ INSTALL_MODE="interactive"
 [ "$AUTO_MODE" = true ] && INSTALL_MODE="auto"
 (curl -sS -m 5 -X POST "https://api.xyvaclaw.com/v1/setup-complete" \
   -H "Content-Type: application/json" \
-  -d "{\"os\":\"macos\",\"v\":\"1.1.5\",\"mode\":\"${INSTALL_MODE}\"}" \
+  -d "{\"os\":\"macos\",\"v\":\"2.0.0\",\"mode\":\"${INSTALL_MODE}\"}" \
   2>/dev/null || true) &
 
 # ============================================
@@ -852,67 +1187,90 @@ INSTALL_MODE="interactive"
 # ============================================
 echo ""
 echo -e "${GREEN}${BOLD}============================================${NC}"
-echo -e "${GREEN}${BOLD}  🎉 $BRAND 安装完成！${NC}"
+echo -e "${GREEN}${BOLD}  🎉 $BRAND v2.0.0 安装完成！${NC}"
 echo -e "${GREEN}${BOLD}============================================${NC}"
 echo ""
 echo -e "  ${BOLD}数据目录:${NC} $XYVACLAW_HOME"
 echo ""
-echo -e "  ${CYAN}${BOLD}▶ 如何使用（3 步）:${NC}"
+echo -e "  ${CYAN}${BOLD}▶ 常用命令:${NC}"
 echo ""
-echo -e "  ${BOLD}1. 启动:${NC}"
-echo "     xyvaclaw gateway"
-echo ""
-echo -e "  ${BOLD}2. 打开浏览器访问:${NC}"
-echo "     http://localhost:18789"
-echo ""
-echo -e "  ${BOLD}3. 开始和你的 AI 助手对话！${NC}"
-echo ""
-echo -e "  ${BOLD}常用命令:${NC}"
+echo -e "  ${BOLD}启动:${NC}"
 echo "    xyvaclaw gateway          # 启动 AI 助手"
-echo "    xyvaclaw gateway status   # 查看运行状态"
-echo "    xyvaclaw agents list      # 查看 agent 列表"
+echo "    xyvaclaw status           # 查看运行状态"
+echo ""
+echo -e "  ${BOLD}配置:${NC}"
+echo "    xyvaclaw setup            # 打开 Web 配置向导（修改 API Key / 飞书 / 技能）"
+echo "    xyvaclaw doctor           # 健康检查与诊断"
+echo "    xyvaclaw doctor --fix     # 自动修复问题"
+echo ""
+echo -e "  ${BOLD}OpenClaw:${NC}"
+echo "    xyvaclaw agents list      # 查看 Agent 列表"
+echo "    xyvaclaw skills list      # 查看技能列表"
 echo ""
 echo -e "  ${BOLD}首次启动注意:${NC}"
 echo "    - 会下载本地 embedding 模型（约 70MB），请耐心等待约 1 分钟"
 echo ""
-echo -e "  ${BOLD}飞书机器人配置（必须在飞书开放平台完成）:${NC}"
-echo "    1. open.feishu.cn → 你的应用 → 事件与回调"
-echo "    2. 订阅方式：选择「使用长连接接收事件」(WebSocket)"
-echo "    3. 添加事件：im.message.receive_v1（接收消息）"
-echo "    4. 权限管理：开通「获取与发送单聊/群组消息」"
-echo "    5. 版本管理与发布 → 创建版本并发布上线"
-echo "    6. 将机器人拉入群 → @机器人名字 即可对话"
-echo ""
 echo -e "  ${BOLD}遇到问题？${NC}"
-echo "    - 常见问题: https://github.com/xyva-yuangui/XyvaClaw/blob/main/docs/FAQ.md"
-echo "    - QQ 群: 1087471835"
-echo "    - Discord: https://discord.gg/QABg4Z2Mzu"
+echo "    xyvaclaw doctor           # 一键诊断"
+echo "    文档: https://github.com/xyva-yuangui/XyvaClaw"
+echo "    QQ 群: 1087471835"
 echo ""
 
-# Auto-start gateway
+# Auto-start gateway (with proxy layer)
 echo ""
 log_info "启动 gateway..."
 {
     export OPENCLAW_HOME="$XYVACLAW_HOME"
 
-    # Always start gateway in background so the script can finish cleanly
+    # Modify gateway config to use internal port (18790) so the proxy can sit on 18789
+    GATEWAY_PORT_PUBLIC=18789
+    GATEWAY_PORT_INTERNAL=$((GATEWAY_PORT_PUBLIC + 1))
+
+    # Update gateway bind port to internal
+    if [ -f "$XYVACLAW_HOME/.openclaw/openclaw.json" ]; then
+        python3 -c "
+import json, sys
+p = sys.argv[1]
+internal = int(sys.argv[2])
+with open(p) as f: d = json.load(f)
+binds = d.get('gateway', {}).get('server', {}).get('bind', [])
+for b in binds:
+    if b.get('address', '').startswith('127.0.0.1:'):
+        b['address'] = f'127.0.0.1:{internal}'
+    elif b.get('address', '').startswith('0.0.0.0:'):
+        b['address'] = f'0.0.0.0:{internal}'
+with open(p, 'w') as f: json.dump(d, f, indent=2)
+" "$XYVACLAW_HOME/.openclaw/openclaw.json" "$GATEWAY_PORT_INTERNAL"
+    fi
+
+    # Start OpenClaw Gateway on internal port
     nohup openclaw gateway > "$XYVACLAW_HOME/logs/gateway.log" 2>&1 &
     GATEWAY_PID=$!
+
+    # Start xyvaClaw proxy on public port
+    PROXY_SCRIPT="$SCRIPT_DIR/installer/gateway-proxy.js"
+    if [ -f "$PROXY_SCRIPT" ]; then
+        GATEWAY_PORT=$GATEWAY_PORT_PUBLIC nohup node "$PROXY_SCRIPT" > "$XYVACLAW_HOME/logs/proxy.log" 2>&1 &
+        PROXY_PID=$!
+    fi
+
     sleep 3
 
     # Verify gateway is actually running
     if kill -0 $GATEWAY_PID 2>/dev/null; then
         log_ok "Gateway 已在后台启动 (PID: $GATEWAY_PID)"
+        if [ -n "${PROXY_PID:-}" ] && kill -0 $PROXY_PID 2>/dev/null; then
+            log_ok "智能引导代理已启动 (PID: $PROXY_PID)"
+        fi
         echo ""
-        echo -e "  ${BOLD}Dashboard:${NC} http://localhost:18789"
+        echo -e "  ${BOLD}Dashboard:${NC} http://localhost:${GATEWAY_PORT_PUBLIC}"
         echo -e "  ${BOLD}查看日志:${NC} tail -f $XYVACLAW_HOME/logs/gateway.log"
-        echo -e "  ${BOLD}停止服务:${NC} kill $GATEWAY_PID"
         echo ""
 
-        # Open browser — no token needed (auth mode=none for loopback)
+        # Open browser
         if command -v open &>/dev/null; then
             log_info "正在打开浏览器..."
-            open "http://localhost:18789" 2>/dev/null || true
+            open "http://localhost:${GATEWAY_PORT_PUBLIC}" 2>/dev/null || true
         fi
     else
         log_warn "Gateway 启动可能失败，请检查日志: $XYVACLAW_HOME/logs/gateway.log"

@@ -3,6 +3,7 @@ import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import fs from 'fs';
 import { createServer } from 'http';
+import { spawn } from 'child_process';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -233,13 +234,31 @@ app.post('/api/save-config', (req, res) => {
     console.log(`[wizard] Config saved to ${WIZARD_CONFIG}`);
     console.log(`[wizard] Env saved to ${envPath}`);
 
+    // Run restore-config.py to generate openclaw.json
+    const projectRoot = process.env.XYVACLAW_PROJECT || join(__dirname, '..', '..');
+    const restoreScript = join(projectRoot, 'installer', 'restore-config.py');
+    if (fs.existsSync(restoreScript)) {
+      console.log('[wizard] Running restore-config.py to generate openclaw.json...');
+      const restoreProc = spawn('python3', [restoreScript], {
+        env: { ...process.env, XYVACLAW_HOME },
+        stdio: 'inherit',
+      });
+      restoreProc.on('close', (code) => {
+        if (code === 0) {
+          console.log('[wizard] openclaw.json generated successfully.');
+        } else {
+          console.warn(`[wizard] restore-config.py exited with code ${code}`);
+        }
+      });
+    }
+
     res.json({ ok: true });
 
     // Shut down wizard server after a short delay
     setTimeout(() => {
       console.log('[wizard] Configuration complete. Shutting down wizard server...');
       process.exit(0);
-    }, 2000);
+    }, 3000);
   } catch (err) {
     console.error('[wizard] Save error:', err);
     res.json({ ok: false, error: err.message });

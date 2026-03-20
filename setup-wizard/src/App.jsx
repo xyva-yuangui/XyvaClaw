@@ -27,7 +27,6 @@ const DEFAULT_CONFIG = {
   channels: {
     feishu: { enabled: false, appId: '', appSecret: '' },
     dingtalk: { enabled: false, appKey: '', appSecret: '' },
-    webchat: { enabled: true },
   },
   skills: {
     core: ['secret-manager', 'claw-shell', 'error-guard', 'vision-reader', 'browser-pilot'],

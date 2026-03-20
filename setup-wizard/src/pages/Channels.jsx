@@ -38,14 +38,6 @@ const CHANNEL_LIST = [
     desc: '通过 Telegram Bot 对话',
     status: 'coming',
   },
-  {
-    id: 'webchat',
-    name: 'Web Chat',
-    icon: '🌐',
-    desc: '通过浏览器直接与 AI 助手对话（默认启用）',
-    status: 'available',
-    alwaysOn: true,
-  },
 ];
 
 export default function Channels({ config, updateConfig }) {

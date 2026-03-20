@@ -507,6 +507,7 @@ Design principles: Main Agent never blocks, event-driven workers, fail-safe reco
 | V5.1 | 2026-03-16 | Message Analyzer merge, V5 Orchestrator, Cron cleanup |
 | V5.0 | 2026-03-15 | 5-stage cognitive pipeline, Bootstrap Bundle, API Fallback, Reasoning Chain |
 | V4.0 | 2026-03-09 | Adversarial reasoning, memory partitioning, context compression |
+| v2.0.0 | 2026-03-20 | Novice-friendly major release: Web Setup Wizard in install flow, xyvaClaw CLI upgrade (setup/doctor/status), Gateway smart onboarding proxy, Coding Plan guidance, preset conversation scenarios |
 | v1.1.5 | 2026-03-19 | Install UX overhaul: Gateway local auth-free, smart API Key input, zero-confirmation install, plugin registration fix |
 | v1.1.4 | 2026-03-19 | Fix __API_KEY__ placeholder override, Bailian baseUrl auto-detect, clear leaked tokens |
 | v1.1.3 | 2026-03-19 | Feishu WebSocket event subscription fix, accounts.default correction, DM/group policy fix |

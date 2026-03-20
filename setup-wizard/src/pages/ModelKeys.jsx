@@ -92,6 +92,52 @@ export default function ModelKeys({ config, updateConfig }) {
         <p className="text-gray-500 mt-1">至少需要配置一个模型 Provider</p>
       </div>
 
+      {/* Coding Plan Guidance for new users */}
+      {!hasAnyProvider && (
+        <div className="bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-200 rounded-xl p-5">
+          <h3 className="font-semibold text-gray-900 mb-3">💡 还没有 API Key？推荐方案</h3>
+          <div className="space-y-3">
+            <a
+              href="https://bailian.console.aliyun.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-start gap-3 p-3 bg-white rounded-lg border border-indigo-100 hover:border-indigo-300 transition group"
+            >
+              <span className="text-xl">🔥</span>
+              <div>
+                <div className="font-medium text-gray-900 group-hover:text-indigo-600">百炼 Coding Plan（推荐）</div>
+                <div className="text-sm text-gray-500">¥39/月不限量，支持 Qwen、Kimi、GLM 等 20+ 模型</div>
+              </div>
+            </a>
+            <a
+              href="https://platform.deepseek.com/api_keys"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-start gap-3 p-3 bg-white rounded-lg border border-indigo-100 hover:border-indigo-300 transition group"
+            >
+              <span className="text-xl">💎</span>
+              <div>
+                <div className="font-medium text-gray-900 group-hover:text-indigo-600">DeepSeek</div>
+                <div className="text-sm text-gray-500">注册送 500 万 Token，性价比最高</div>
+              </div>
+            </a>
+            <a
+              href="https://volcengine.com/product/doubao"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-start gap-3 p-3 bg-white rounded-lg border border-indigo-100 hover:border-indigo-300 transition group"
+            >
+              <span className="text-xl">☁️</span>
+              <div>
+                <div className="font-medium text-gray-900 group-hover:text-indigo-600">火山引擎 Coding Plan</div>
+                <div className="text-sm text-gray-500">首月 ¥9.9，支持豆包、DeepSeek 等多模型</div>
+              </div>
+            </a>
+          </div>
+          <p className="text-xs text-gray-400 mt-3">获取 API Key 后，在下方启用对应的 Provider 并粘贴即可</p>
+        </div>
+      )}
+
       {PROVIDERS.map((prov) => {
         const provConfig = config.providers[prov.id];
         return (

@@ -2,6 +2,37 @@
 
 All notable changes to xyvaClaw will be documented in this file.
 
+## [2.0.0] - 2026-03-20
+
+### Major Release — 小白友好大版本
+
+基于 6 款竞品深度调研（QClaw、AutoClaw、ArkClaw、CoPaw、JVS Claw、WorkBuddy），全面重构安装配置体验。
+
+### New Features
+- **Web Setup Wizard 接入安装流程**: 安装时自动启动 Web 配置向导 (`localhost:19090`)，6 步可视化配置（命名 → API Key → 飞书 → 技能 → 高级 → 确认）
+- **xyvaClaw CLI 升级**: `xyvaclaw setup`（打开配置向导）、`xyvaclaw doctor`（健康检查）、`xyvaclaw doctor --fix`（自动修复）、`xyvaclaw status`（查看状态）
+- **Gateway 智能引导代理**: 未配置 API Key 时显示美观引导页（含配置向导入口 + Coding Plan 指引），已配置时透传到 OpenClaw Dashboard
+- **Coding Plan 获取指引**: Wizard API Key 页面新增百炼/DeepSeek/火山引擎推荐面板
+- **预置对话场景**: 首次使用时 AI 助手主动展示能力场景引导（日常效率/技术开发/内容创作）
+- **竞品分析文档**: `docs/CONFIG-UX-PROPOSAL.md` 升级为 v2，含完整竞品对标
+
+### Bug Fixes
+- **webchat 频道导致配置验证失败**: 从 Wizard 频道列表和默认配置中移除
+- **Wizard 保存后不生成 openclaw.json**: 保存后自动调用 `restore-config.py`
+
+### Changed
+- `xyvaclaw-setup.sh`: Step 4 → Web Wizard；CLI 升级；Gateway 启动改为代理模式
+- `setup-wizard/src/pages/Channels.jsx`: 删除 webchat
+- `setup-wizard/src/App.jsx`: 删除 webchat 默认配置
+- `setup-wizard/src/pages/ModelKeys.jsx`: 新增 Coding Plan 指引
+- `setup-wizard/server/index.js`: 保存后调用 restore-config.py
+- `templates/SOUL.md.template`: 新增 First Conversation 场景引导
+
+### Added
+- `installer/gateway-proxy.js`: Gateway 智能引导代理层
+- `RELEASE-v2.0.0.md`: 发布说明
+- `docs/CONFIG-UX-PROPOSAL.md` v2: 竞品调研 + 三阶段方案
+
 ## [1.1.5] - 2026-03-19
 
 ### Breaking Changes

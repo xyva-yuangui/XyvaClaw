@@ -499,6 +499,7 @@ v5-orchestrator.py --daily
 | V5.1 | 2026-03-16 | Message Analyzer 合并、V5 Orchestrator、Cron 清理 |
 | V5.0 | 2026-03-15 | 五阶段认知管道、Bootstrap Bundle、API Fallback、推理链 |
 | V4.0 | 2026-03-09 | 对抗性推理、记忆分区、上下文压缩 |
+| v2.0.0 | 2026-03-20 | 小白友好大版本：Web 配置向导接入安装流程、xyvaClaw CLI 升级（setup/doctor/status）、Gateway 智能引导代理、Coding Plan 指引、预置对话场景 |
 | v1.1.5 | 2026-03-19 | 安装体验大幅简化：Gateway 本机免认证、API Key 智能输入、零确认安装、插件注册修复 |
 | v1.1.4 | 2026-03-19 | 修复 __API_KEY__ 占位符覆盖、百炼 baseUrl 动态选择、清除泄露 token |
 | v1.1.3 | 2026-03-19 | 飞书 WebSocket 事件订阅修复、accounts.default 修正、DM/群策略修复 |
