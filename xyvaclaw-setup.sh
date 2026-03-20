@@ -1226,20 +1226,18 @@ log_info "启动 gateway..."
     GATEWAY_PORT_PUBLIC=18789
     GATEWAY_PORT_INTERNAL=$((GATEWAY_PORT_PUBLIC + 1))
 
-    # Update gateway bind port to internal
+    # Update gateway port to internal (OpenClaw uses gateway.port, not gateway.server.bind)
     if [ -f "$XYVACLAW_HOME/.openclaw/openclaw.json" ]; then
         python3 -c "
 import json, sys
 p = sys.argv[1]
 internal = int(sys.argv[2])
 with open(p) as f: d = json.load(f)
-binds = d.get('gateway', {}).get('server', {}).get('bind', [])
-for b in binds:
-    if b.get('address', '').startswith('127.0.0.1:'):
-        b['address'] = f'127.0.0.1:{internal}'
-    elif b.get('address', '').startswith('0.0.0.0:'):
-        b['address'] = f'0.0.0.0:{internal}'
-with open(p, 'w') as f: json.dump(d, f, indent=2)
+gw = d.setdefault('gateway', {})
+gw['port'] = internal
+# Remove server key if it was incorrectly added
+gw.pop('server', None)
+with open(p, 'w') as f: json.dump(d, f, indent=2, ensure_ascii=False)
 " "$XYVACLAW_HOME/.openclaw/openclaw.json" "$GATEWAY_PORT_INTERNAL"
     fi
 
