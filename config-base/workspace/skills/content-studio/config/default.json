@@ -1,0 +1,70 @@
+{
+  "name": "content-studio",
+  "version": "1.0.0",
+  "description": "统一内容创作 — 文生图/文生视频/图生图/图生视频/首尾帧生视频 + 飞书直发",
+
+  "video": {
+    "api_key": "7879c3cc-952b-48e9-b8bd-4f76406dcb55",
+    "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+    "models": {
+      "quality": "doubao-seedance-2-0-260128",
+      "fast": "doubao-seedance-2-0-fast-260128"
+    },
+    "defaults": {
+      "model": "doubao-seedance-2-0-260128",
+      "ratio": "16:9",
+      "duration": 5,
+      "resolution": "720p",
+      "generate_audio": true,
+      "watermark": false
+    },
+    "ratio_options": ["16:9", "9:16", "1:1", "4:3", "3:4", "21:9", "adaptive"],
+    "duration_options": [4, 5, 6, 7, 8, 10, 15],
+    "resolution_options": ["480p", "720p"]
+  },
+
+  "image": {
+    "seedream_api_key": "3853f396-b0e1-499f-956f-8b65218ebb32",
+    "wanx_api_key": "sk-b673c67477e54da0a4d00fe5375db747",
+    "engines": {
+      "seedream5": "doubao-seedream-5-0-260128",
+      "wanx": "wan2.6-t2i"
+    },
+    "defaults": {
+      "engine": "seedream5",
+      "size": "2K",
+      "quality": "high",
+      "watermark": false
+    },
+    "size_options": {
+      "seedream": ["2K", "2K_16:9", "2K_9:16", "2K_4:3", "2K_3:4", "3K"],
+      "wanx": ["wanx_1:1", "wanx_16:9", "wanx_9:16", "wanx_4:3", "wanx_3:4"]
+    }
+  },
+
+  "feishu": {
+    "enabled": true,
+    "send_file": true,
+    "default_target": "ou_3665e9a9d79f52105fd5868bae4a8b49",
+    "default_target_type": "open_id",
+    "group_chat_id": "oc_bb11ddeb722729367b17cbd179a189b4"
+  },
+
+  "output": {
+    "base_dir": "~/.openclaw/workspace/output",
+    "image_subdir": "image",
+    "video_subdir": "video"
+  },
+
+  "prompt_optimizer": {
+    "enabled": true,
+    "provider": "deepseek",
+    "model": "deepseek-chat"
+  },
+
+  "polling": {
+    "interval_seconds": 30,
+    "max_retries": 120,
+    "timeout_seconds": 1800
+  }
+}
