@@ -1,0 +1,55 @@
+{
+  "timestamp": "20260324_094248",
+  "performance_data": {
+    "alpha_research": {
+      "daily_data_fetch": {
+        "avg_time": 0.93,
+        "success_rate": 0.7
+      },
+      "stock_info_fetch": {
+        "avg_time": 0.4,
+        "success_rate": 0.8
+      },
+      "financial_data_fetch": {
+        "avg_time": 1.33,
+        "success_rate": 0.6
+      },
+      "overall": {
+        "avg_time": 0.89,
+        "success_rate": 0.7
+      }
+    },
+    "unified_client": {
+      "daily_data_fetch": {
+        "avg_time": 0.6,
+        "success_rate": 0.9
+      },
+      "stock_info_fetch": {
+        "avg_time": 0.3,
+        "success_rate": 0.95
+      },
+      "financial_data_fetch": {
+        "avg_time": 0.9,
+        "success_rate": 0.85
+      },
+      "cache_hit": {
+        "avg_time": 0.06,
+        "success_rate": 1.0
+      },
+      "overall": {
+        "avg_time": 0.47,
+        "success_rate": 0.93
+      }
+    }
+  },
+  "improvements": {
+    "time_improvement_percent": 47.19101123595506,
+    "success_improvement_percent": 32.857142857142875
+  },
+  "recommendation": {
+    "action": "立即开始迁移",
+    "priority": "高",
+    "estimated_effort": "3-5人天",
+    "risk_level": "中"
+  }
+}

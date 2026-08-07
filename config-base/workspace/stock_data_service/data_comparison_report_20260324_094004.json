@@ -1,0 +1,45 @@
+{
+  "timestamp": "20260324_094004",
+  "total_time": 13.308677911758423,
+  "summary": {
+    "total_tests": 4,
+    "passed": 4,
+    "failed": 0,
+    "warnings": 0
+  },
+  "results": {
+    "unified_client": {
+      "name": "统一接口库数据获取测试",
+      "status": "pass",
+      "subtests": [
+        {
+          "name": "快速测试",
+          "status": "pass",
+          "message": "现有测试脚本运行成功",
+          "output": ".\nlogin success!\n股票代码应为9位，请检查。格式示例：sh.600000。\nlogout success!\n   ✅ 获取成功: 1 条，耗时 6.40s\n      列数：10\n      示例：{'ts_code': '000001.SZ', 'symbol': '000001', 'name': '平安银行', 'area': '深圳', 'industry': '银行', 'cnspell': 'PAYH', 'market': '主板', 'list_date': '19910403', 'act_name': '无实际控制人', 'act_ent_type': '其他'}\n\n6. 获取客户端统计...\n   ✅ 统计信息:\n      总调用：1\n      缓存命中：0\n      错误数：0\n\n============================================================\n🎉 快速测试完成！\n============================================================\n"
+        }
+      ]
+    },
+    "comparison": {
+      "name": "数据源对比分析",
+      "status": "pass",
+      "subtests": [
+        {
+          "name": "alpha-research数据源",
+          "status": "pass",
+          "message": "使用数据源: AkShare, BaoStock, Tushare, mootdx"
+        },
+        {
+          "name": "统一接口库数据源",
+          "status": "pass",
+          "message": "支持数据源: Mootdx, Base, Akshare, Tushare, Baostock"
+        },
+        {
+          "name": "架构对比",
+          "status": "pass",
+          "message": "两者都支持多数据源，统一接口库提供更统一的接口和缓存"
+        }
+      ]
+    }
+  }
+}

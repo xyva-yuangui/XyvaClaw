@@ -192,6 +192,18 @@
             "maxTokens": 65536
           }
         ]
+      },
+      "ollama": {
+        "baseUrl": "http://127.0.0.1:11434",
+        "apiKey": "ollama-local",
+        "api": "openai-completions",
+        "_note": "memorySearch 的 embedding 服务；本机执行 ollama pull bge-m3 后生效",
+        "models": [
+          {
+            "id": "bge-m3",
+            "name": "BGE-M3 Embedding"
+          }
+        ]
       }
     }
   },
@@ -219,6 +231,12 @@
         "deepseek/deepseek-reasoner": {}
       },
       "bootstrapMaxChars": 16000,
+      "memorySearch": {
+        "enabled": true,
+        "provider": "ollama",
+        "model": "bge-m3",
+        "_note": "需本机 ollama + bge-m3；不想装本地模型就把 enabled 改 false"
+      },
       "compaction": {
         "mode": "safeguard",
         "memoryFlush": {
@@ -294,7 +312,8 @@
     "allow": [
       "lossless-claw",
       "feishu_local",
-      "feishu"
+      "feishu",
+      "v15-cognitive-hook"
     ],
     "slots": {
       "contextEngine": "lossless-claw"
@@ -314,6 +333,17 @@
       },
       "feishu_local": {
         "enabled": true
+      },
+      "v15-cognitive-hook": {
+        "enabled": false,
+        "_note": "认知注入默认关闭。开启前先跑 python3 ~/.openclaw/workspace/scripts/v15/cognitive-core-v15.py --analyze \"测试\" 确认输出 ok=true，再改为 true 并重启 gateway",
+        "config": {
+          "timeoutMs": 1200,
+          "maxContextChars": 1200
+        },
+        "hooks": {
+          "allowPromptInjection": true
+        }
       }
     }
   }

@@ -2,6 +2,22 @@
 
 All notable changes to xyvaClaw will be documented in this file.
 
+## [Unreleased] - 2026-08-07
+
+### Added — V15 认知管道实装
+- **V15 认知引擎源码**（17 个 Python 模块）并入 `config-base/workspace/scripts/v15/`：规则引擎（101 条通用意图规则）、记忆织网、模型路由、技能锻造、守护循环、学习循环、预知与轨迹记录等
+- **v15-cognitive-hook 扩展**（`config-base/extensions/v15-cognitive-hook/`）：`before_prompt_build` 钩子，注入耗时 70–180ms，fail-open，默认关闭
+- **12 个新技能**：claw-link（实例互联）、amap-service、calendar-manager、code-runner、dataviz-suite、document-qa/suite、github-manager、pdf-generator、research-suite、translation、weather-query
+- **5 个技能升级**：browser-pilot、cron-scheduler、system-control、vision-reader、web-scraper 更新到 kit 版
+- **记忆工作区模板**：IDENTITY / USER / MEMORY / SOUL
+- **A股数据服务**（`config-base/workspace/stock_data_service/`）：akshare / baostock / tushare 多源路由 + 缓存
+- **cron 示例任务**（`config-base/cron/jobs.json`）：V15 每日维护、健康检查、完整性巡检
+- **配置**：`openclaw.json.template` 增加 ollama(bge-m3) 向量检索 provider + `memorySearch` + `v15-cognitive-hook` 插件（默认 disabled）
+- **安装器**：`xyvaclaw-setup.sh` 部署 cron 目录 + 注册/安装 v15-cognitive-hook 扩展
+
+### Changed
+- README / README_EN：认知管线徽章 V5.1 → V15
+
 ## [2.0.0] - 2026-03-20
 
 ### Major Release — 小白友好大版本

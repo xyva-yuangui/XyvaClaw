@@ -3,7 +3,7 @@ import json
 from collections import Counter, defaultdict
 from pathlib import Path
 
-JOBS_FILE = Path("~/.xyvaclaw/cron/jobs.json")
+JOBS_FILE = Path("__LEGACY_HOME__/.openclaw/cron/jobs.json")
 
 
 def main() -> int:

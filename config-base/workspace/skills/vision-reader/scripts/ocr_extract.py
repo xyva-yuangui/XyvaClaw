@@ -142,20 +142,20 @@ def ocr_with_tesseract(image_path: str, languages: list[str]):
 
 
 def main():
-    if args.check:
-        print("✅ OK")
-        return
-
     parser = argparse.ArgumentParser(description="Extract text from images using OCR")
     parser.add_argument('--check', action='store_true', help='Health check')
-    parser.add_argument("image_path", help="Path to image file")
-    parser.add_argument('--check', action='store_true', help='Health check')
+    parser.add_argument("image_path", nargs='?', help="Path to image file")
     parser.add_argument("--lang", default="zh-Hans,en", help="OCR languages (comma-separated)")
-    parser.add_argument('--check', action='store_true', help='Health check')
     parser.add_argument("--json", action="store_true", dest="output_json", help="Output as JSON")
-    parser.add_argument('--check', action='store_true', help='Health check')
     parser.add_argument("--confidence", type=float, default=0.5, help="Min confidence threshold")
     args = parser.parse_args()
+
+    if args.check:
+        print("✅ OK - vision-reader")
+        return
+
+    if not args.image_path:
+        parser.error("image_path is required")
 
     image_path = str(Path(args.image_path).resolve())
     if not Path(image_path).exists():

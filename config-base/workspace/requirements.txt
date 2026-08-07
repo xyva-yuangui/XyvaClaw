@@ -1,0 +1,39 @@
+# OpenClaw Global Python Dependencies
+# Generated: 2026-03-06
+# Usage: pip install -r requirements.txt
+
+# === Core ===
+requests>=2.31.0
+pandas>=2.0.0
+numpy>=1.24.0
+
+# === Visualization ===
+matplotlib>=3.7.0
+seaborn>=0.12.0
+plotly>=5.15.0
+
+# === Browser Automation ===
+playwright>=1.40.0
+
+# === Finance (A-Share) ===
+mootdx>=0.8.0
+# alpha-research / stock_data_service 数据源（缺一个则对应数据源不可用）
+akshare>=1.12.0
+baostock>=0.8.8
+tushare>=1.4.0
+stockstats>=0.6.2
+
+# === AI / NLP ===
+faster-whisper>=0.10.0
+
+# === Document ===
+markdown>=3.4.0
+pyyaml>=6.0.0
+python-dotenv>=1.0.0
+
+# === Network ===
+websockets>=12.0
+
+# === Image ===
+# Pillow is often needed for image processing
+Pillow>=10.0.0

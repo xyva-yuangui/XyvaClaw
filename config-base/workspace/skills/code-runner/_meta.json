@@ -1,0 +1,11 @@
+{
+  "name": "code-runner",
+  "version": "1.0.0",
+  "category": "coding",
+  "entrypoint": "scripts/run_code.py",
+  "description": "Execute Python/Shell code and pytest tests with structured output",
+  "dependencies": {
+    "python": ">=3.10",
+    "pip": ["pytest"]
+  }
+}

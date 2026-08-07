@@ -1,0 +1,10 @@
+{
+  "name": "calendar-manager",
+  "version": "1.0.0",
+  "status": "stable",
+  "entry": "scripts/calendar_manager.py",
+  "check": "scripts/calendar_manager.py --check --json",
+  "requires": ["python3"],
+  "os": ["darwin"],
+  "category": "productivity"
+}

@@ -9,7 +9,7 @@
 [![Node.js](https://img.shields.io/badge/Node.js-22%2B-green.svg)]()
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue.svg)]()
 [![Skills](https://img.shields.io/badge/Skills-42%2B-orange.svg)]()
-[![V5 Pipeline](https://img.shields.io/badge/Cognitive-V5.1-red.svg)]()
+[![V15 Pipeline](https://img.shields.io/badge/Cognitive-V15-red.svg)]()
 [![Feishu](https://img.shields.io/badge/Feishu-Deep%20Integration-purple.svg)]()
 
 **一键部署 · 五阶段认知管道 · 42+ 技能 · 四层记忆系统 · 三级 API 容灾 · 自我进化**
@@ -115,9 +115,14 @@ xyvaClaw 是基于 [OpenClaw](https://openclaw.ai/) 运行时**深度增强**的
 
 ---
 
-## 🧠 V5 认知管道 — 核心引擎
+## 🧠 V15 认知管道 — 核心引擎
 
-每条用户消息经过 **V5 Orchestrator** 统一编排的五阶段管道：
+> **已实装**：V15 认知引擎源码（17 个 Python 模块）随仓库附带，位于 `config-base/workspace/scripts/v15/`。
+> 通过 `v15-cognitive-hook` 插件在每轮对话构建 prompt 前注入认知上下文（规则意图识别 / 长期记忆检索 / 技能预选），
+> 注入耗时实测 70–180ms，全链路 fail-open。默认关闭，开启方法见
+> [openclaw-cognitive-kit](openclaw-cognitive-kit/) 说明。
+
+每条用户消息经过 **V15 Orchestrator** 统一编排的五阶段管道：
 
 ```
 ┌──────────────────────────────────────────────────────────────┐

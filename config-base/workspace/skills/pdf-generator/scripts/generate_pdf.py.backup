@@ -1,0 +1,164 @@
+#!/usr/bin/env python3
+# /// script
+# requires-python = ">=3.10"
+# dependencies = [
+#     "weasyprint>=62.0",
+#     "jinja2>=3.1.0",
+#     "markdown>=3.5",
+# ]
+# ///
+"""
+PDF Generator — 从Markdown/HTML/文本生成PDF
+
+用法:
+  uv run generate_pdf.py --input report.md --output report.pdf
+  uv run generate_pdf.py --text "报告内容..." --output report.pdf --title "标题"
+  uv run generate_pdf.py --template report --data '{"title":"月度分析","sections":[...]}' --output report.pdf
+"""
+
+import argparse
+import json
+import os
+import sys
+from pathlib import Path
+
+TEMPLATES_DIR = Path(__file__).parent.parent / "templates"
+
+
+def md_to_html(md_text: str) -> str:
+    """Markdown → HTML"""
+    import markdown
+    extensions = ["tables", "fenced_code", "codehilite", "toc", "nl2br"]
+    return markdown.markdown(md_text, extensions=extensions)
+
+
+def load_base_css() -> str:
+    """加载基础样式"""
+    css_path = TEMPLATES_DIR / "base.css"
+    if css_path.exists():
+        return css_path.read_text(encoding="utf-8")
+    return DEFAULT_CSS
+
+
+DEFAULT_CSS = """
+@page {
+    size: A4;
+    margin: 2cm 2.5cm;
+    @bottom-center { content: counter(page) " / " counter(pages); font-size: 9pt; color: #999; }
+}
+body {
+    font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+    font-size: 11pt;
+    line-height: 1.8;
+    color: #333;
+}
+h1 { font-size: 22pt; color: #1a1a2e; border-bottom: 2px solid #16213e; padding-bottom: 8px; margin-top: 0; }
+h2 { font-size: 16pt; color: #16213e; margin-top: 1.5em; }
+h3 { font-size: 13pt; color: #0f3460; }
+table { width: 100%; border-collapse: collapse; margin: 1em 0; font-size: 10pt; }
+th { background: #16213e; color: white; padding: 8px 12px; text-align: left; }
+td { padding: 6px 12px; border-bottom: 1px solid #ddd; }
+tr:nth-child(even) { background: #f8f9fa; }
+code { background: #f4f4f4; padding: 2px 6px; border-radius: 3px; font-size: 10pt; }
+pre { background: #f8f9fa; padding: 12px; border-radius: 6px; overflow-x: auto; font-size: 9.5pt; }
+blockquote { border-left: 4px solid #16213e; padding-left: 1em; color: #555; margin: 1em 0; }
+.cover { text-align: center; padding-top: 30%; }
+.cover h1 { font-size: 28pt; border: none; }
+.cover .subtitle { font-size: 14pt; color: #666; margin-top: 1em; }
+.cover .date { font-size: 11pt; color: #999; margin-top: 2em; }
+.toc { page-break-after: always; }
+.section { page-break-before: always; }
+"""
+
+
+def render_template(template_name: str, data: dict) -> str:
+    """使用Jinja2渲染HTML模板"""
+    from jinja2 import Environment, FileSystemLoader
+    env = Environment(loader=FileSystemLoader(str(TEMPLATES_DIR)))
+    try:
+        tmpl = env.get_template(f"{template_name}.html")
+        return tmpl.render(**data)
+    except Exception as e:
+        print(f"⚠️ 模板 {template_name} 加载失败: {e}", file=sys.stderr)
+        return None
+
+
+def build_html(content: str, title: str = "", css: str = None) -> str:
+    """组装完整HTML"""
+    if css is None:
+        css = load_base_css()
+    title_block = f'<div class="cover"><h1>{title}</h1></div>' if title else ""
+    return f"""<!DOCTYPE html>
+<html><head><meta charset="utf-8"><style>{css}</style></head>
+<body>{title_block}{content}</body></html>"""
+
+
+def generate_pdf(html_content: str, output_path: str) -> dict:
+    """HTML → PDF"""
+    from weasyprint import HTML
+    out = Path(output_path)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    HTML(string=html_content).write_pdf(str(out))
+    size_kb = out.stat().st_size / 1024
+    return {"success": True, "path": str(out.resolve()), "size_kb": round(size_kb, 1)}
+
+
+def main():
+    parser = argparse.ArgumentParser(description="PDF Generator")
+    parser.add_argument("--input", "-i", help="输入文件 (Markdown/HTML/文本)")
+    parser.add_argument("--text", "-t", help="直接输入文本内容")
+    parser.add_argument("--output", "-o", required=True, help="输出PDF路径")
+    parser.add_argument("--title", default="", help="文档标题")
+    parser.add_argument("--template", help="使用模板 (report/invoice/article)")
+    parser.add_argument("--data", help="模板数据 (JSON字符串)")
+    parser.add_argument("--page-size", default="A4", choices=["A4", "Letter", "A3"])
+    parser.add_argument("--list-templates", action="store_true", help="列出可用模板")
+    args = parser.parse_args()
+
+    if args.list_templates:
+        print("可用模板:")
+        for f in sorted(TEMPLATES_DIR.glob("*.html")):
+            print(f"  - {f.stem}")
+        return
+
+    # 模板模式
+    if args.template:
+        data = json.loads(args.data) if args.data else {}
+        data.setdefault("title", args.title or "报告")
+        html = render_template(args.template, data)
+        if not html:
+            sys.exit(1)
+    # 文件输入模式
+    elif args.input:
+        input_path = Path(args.input)
+        if not input_path.exists():
+            print(f"❌ 文件不存在: {args.input}", file=sys.stderr)
+            sys.exit(1)
+        content = input_path.read_text(encoding="utf-8")
+        if input_path.suffix in (".md", ".markdown"):
+            content = md_to_html(content)
+        elif input_path.suffix in (".html", ".htm"):
+            pass  # 已经是HTML
+        else:
+            content = f"<pre>{content}</pre>"
+        html = build_html(content, title=args.title)
+    # 文本输入模式
+    elif args.text:
+        content = md_to_html(args.text) if "#" in args.text or "**" in args.text else f"<p>{args.text}</p>"
+        html = build_html(content, title=args.title)
+    else:
+        print("❌ 请提供 --input, --text 或 --template", file=sys.stderr)
+        sys.exit(1)
+
+    print(f"📄 生成PDF: {args.output}")
+    result = generate_pdf(html, args.output)
+    if result["success"]:
+        print(f"✅ PDF已生成: {result['path']} ({result['size_kb']} KB)")
+        print(f"MEDIA: {result['path']}")
+    else:
+        print(f"❌ 生成失败", file=sys.stderr)
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()

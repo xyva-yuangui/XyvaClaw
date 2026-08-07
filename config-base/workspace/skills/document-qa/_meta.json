@@ -1,0 +1,10 @@
+{
+  "name": "document-qa",
+  "version": "1.0.0",
+  "status": "stable",
+  "entry": "scripts/doc_qa.py",
+  "check": "scripts/doc_qa.py --check --json",
+  "requires": ["python3"],
+  "optional": ["pdfplumber", "python-docx"],
+  "category": "documents"
+}

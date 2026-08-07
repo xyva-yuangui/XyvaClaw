@@ -1,0 +1,8 @@
+{
+  "name": "github-manager",
+  "version": "2.0.0",
+  "status": "stable",
+  "category": "dev",
+  "description": "GitHub管理: Repo/Issue/PR/Release操作 (REST API)",
+  "updated": "2026-04-14"
+}

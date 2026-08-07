@@ -1,0 +1,83 @@
+{
+  "version": 1,
+  "jobs": [
+    {
+      "id": "cdf0f090-aaad-4148-8263-591a0256941a",
+      "agentId": "main",
+      "sessionKey": "agent:main:cron:cdf0f090-aaad-4148-8263-591a0256941a",
+      "name": "V15-daemon每日维护",
+      "description": "自校准/学习循环/规则挖掘/技能扫描",
+      "enabled": true,
+      "createdAtMs": 1786072144062,
+      "updatedAtMs": 1786072144062,
+      "schedule": {
+        "kind": "cron",
+        "expr": "30 3 * * *",
+        "tz": "Asia/Shanghai"
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "运行 python3 ~/.openclaw/workspace/scripts/v15/daemon-loop-v15.py --daily，仅在失败时汇报异常",
+        "timeoutSeconds": 600
+      },
+      "delivery": {
+        "mode": "none"
+      },
+      "state": {}
+    },
+    {
+      "id": "b9bd2a57-72bf-4c19-aee3-5f350ad72232",
+      "agentId": "main",
+      "sessionKey": "agent:main:cron:b9bd2a57-72bf-4c19-aee3-5f350ad72232",
+      "name": "V15-daemon健康检查",
+      "description": "模型路由/感知/管道健康",
+      "enabled": true,
+      "createdAtMs": 1786072144062,
+      "updatedAtMs": 1786072144062,
+      "schedule": {
+        "kind": "cron",
+        "expr": "15 */6 * * *",
+        "tz": "Asia/Shanghai"
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "运行 python3 ~/.openclaw/workspace/scripts/v15/daemon-loop-v15.py --health，仅在失败时汇报异常",
+        "timeoutSeconds": 300
+      },
+      "delivery": {
+        "mode": "none"
+      },
+      "state": {}
+    },
+    {
+      "id": "c27f911f-a4e7-48b9-8207-098011282609",
+      "agentId": "main",
+      "sessionKey": "agent:main:cron:c27f911f-a4e7-48b9-8207-098011282609",
+      "name": "cron完整性巡检",
+      "description": "校验定时任务引用的脚本是否存在、超时是否够用",
+      "enabled": true,
+      "createdAtMs": 1786072144062,
+      "updatedAtMs": 1786072144062,
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 9 * * *",
+        "tz": "Asia/Shanghai"
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "运行 python3 ~/.openclaw/workspace/scripts/cron-integrity-check.py，退出码非0 说明有问题，需汇报",
+        "timeoutSeconds": 180
+      },
+      "delivery": {
+        "mode": "none"
+      },
+      "state": {}
+    }
+  ]
+}

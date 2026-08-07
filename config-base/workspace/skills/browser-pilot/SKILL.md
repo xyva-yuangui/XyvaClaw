@@ -112,11 +112,24 @@ pip install playwright
 playwright install
 ```
 
-## 注意事项
+## 限制
 
-1. 无头模式默认开启（可通过 `--headed` 切换有头模式）
-2. 长时间运行的自动化任务建议使用有头模式以便观察
+1. 复杂验证码（CAPTCHA）无法自动破解，需人工干预
+2. 部分网站使用高级 Bot 检测（如 Cloudflare Turnstile），可能触发拦截
+3. 无头模式默认开启；如需可见浏览器，传入 `headless=False`
+4. 下载文件依赖浏览器配置的下载路径
+
+## 已支持功能
+
+- ✅ 文件上传（`input[type=file]` 元素）
+- ✅ 文件下载（等待下载事件）
+- ✅ 多标签页管理（open/switch/close tab）
+- ✅ 反检测（stealth 模式，随机 User-Agent，人类速度）
+- ✅ 截图 / 全页截图
+- ✅ 表单填写 / 点击 / 滚动 / 悬停
+- ✅ 文本提取 / HTML 提取
+- ✅ 等待元素出现
 
 ## 输出目录
 
-截图和输出文件保存到：`~/.xyvaclaw/output/browser/`
+截图和输出文件保存到：`__LEGACY_HOME__/.openclaw/output/browser/`

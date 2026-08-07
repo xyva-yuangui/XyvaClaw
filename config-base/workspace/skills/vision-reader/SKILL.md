@@ -34,7 +34,7 @@ Analyze images using AI vision models or local OCR.
 
 ## Capabilities
 
-1. **AI Vision Analysis** — send image to vision model (qwen3.5-plus, kimi-k2.5) for understanding
+1. **AI Vision Analysis** — send image to vision model (qwen3.5-plus, qwen3-max) for understanding
 2. **OCR Text Extraction** — extract text from images using macOS Vision framework
 3. **Screenshot Analysis** — combine with screenshot-sender for screen understanding
 4. **Document Reading** — extract text from scanned documents, receipts, etc.
@@ -44,7 +44,7 @@ Analyze images using AI vision models or local OCR.
 Use vision-capable models directly. These models accept image input:
 
 - `bailian/qwen3.5-plus` — 1M context, supports `["text", "image"]`
-- `bailian/kimi-k2.5` — 262K context, supports `["text", "image"]`
+- `bailian/qwen3-max-2026-01-23` — 262K context, supports `["text", "image"]`
 - `qwen-portal/vision-model` — 128K context, supports `["text", "image"]`
 
 When analyzing images, switch to one of these models if the current model doesn't support image input.

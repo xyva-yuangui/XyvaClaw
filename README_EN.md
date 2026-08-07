@@ -9,7 +9,7 @@
 [![Node.js](https://img.shields.io/badge/Node.js-22%2B-green.svg)]()
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue.svg)]()
 [![Skills](https://img.shields.io/badge/Skills-42%2B-orange.svg)]()
-[![V5 Pipeline](https://img.shields.io/badge/Cognitive-V5.1-red.svg)]()
+[![V15 Pipeline](https://img.shields.io/badge/Cognitive-V15-red.svg)]()
 [![Feishu](https://img.shields.io/badge/Feishu-Deep%20Integration-purple.svg)]()
 
 **One-click deploy · 5-stage cognitive pipeline · 42+ skills · 4-tier memory · 3-level API fallback · Self-evolving**
@@ -63,7 +63,7 @@ xyvaclaw gateway          # Start your AI assistant
 
 ## 🌍 What is xyvaClaw?
 
-xyvaClaw is an **enhanced AI assistant platform** built on the [OpenClaw](https://openclaw.ai/) runtime. It's not just a chatbot — through its **V5 five-stage cognitive pipeline**, it can **understand intent, decompose tasks, reason structurally, self-check quality**, and then respond.
+xyvaClaw is an **enhanced AI assistant platform** built on the [OpenClaw](https://openclaw.ai/) runtime. It's not just a chatbot — through its **V15 cognitive pipeline** (rules + memory + skill pre-selection), it can **understand intent, decompose tasks, reason structurally, self-check quality**, and then respond.
 
 ```
 User message → Cognitive Pipeline (Understand → Analyze → Reason → QA → Respond) → Execute → Remember → Self-iterate
@@ -88,9 +88,15 @@ Think of it as **OpenClaw on steroids**: same engine, but with pre-tuned models,
 
 ---
 
-## 🧠 V5 Cognitive Pipeline — Core Engine
+## 🧠 V15 Cognitive Pipeline — Core Engine
 
-Every user message passes through the **V5 Orchestrator**'s five-stage pipeline:
+> **Shipped**: the V15 cognitive engine source (17 Python modules) lives in
+> `config-base/workspace/scripts/v15/`. The `v15-cognitive-hook` plugin injects
+> cognitive context (rule intent / long-term memory / skill pre-selection) before
+> every prompt build — 70–180ms, fail-open, disabled by default. See
+> [openclaw-cognitive-kit](openclaw-cognitive-kit/) for how to enable it.
+
+Every user message passes through the **V15 Orchestrator**'s five-stage pipeline:
 
 ```
 ┌──────────────────────────────────────────────────────────────────┐

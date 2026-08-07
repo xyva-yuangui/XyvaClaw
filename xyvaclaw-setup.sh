@@ -338,7 +338,7 @@ fi
 
 # Deploy config-base
 log_info "部署配置文件..."
-for dir in agents workspace extensions config completions scripts; do
+for dir in agents workspace extensions config completions scripts cron; do
     if [ -d "$SCRIPT_DIR/config-base/$dir" ]; then
         rsync -a --ignore-existing "$SCRIPT_DIR/config-base/$dir/" "$XYVACLAW_HOME/$dir/"
         log_ok "$dir/"
@@ -629,6 +629,16 @@ with open(p, 'w') as f: json.dump(d, f, indent=2)
         fi
     fi
 
+    # Register v15-cognitive-hook (认知注入钩子，默认在 openclaw.json 中 disabled)
+    if [ -d "$XYVACLAW_HOME/extensions/v15-cognitive-hook" ]; then
+        if openclaw plugins install --link "$XYVACLAW_HOME/extensions/v15-cognitive-hook" 2>&1 | tail -3; then
+            log_ok "v15-cognitive-hook 插件已注册"
+        else
+            log_warn "v15-cognitive-hook 插件注册失败"
+            PLUGINS_OK=false
+        fi
+    fi
+
     # Fallback: if openclaw plugins install failed, manually inject load.paths
     if [ "$PLUGINS_OK" = false ]; then
         log_info "手动注入插件路径..."
@@ -789,6 +799,12 @@ fi
 if [ -d "$XYVACLAW_HOME/extensions/lossless-claw" ] && [ -f "$XYVACLAW_HOME/extensions/lossless-claw/package.json" ]; then
     log_info "安装 lossless-claw 依赖..."
     (cd "$XYVACLAW_HOME/extensions/lossless-claw" && npm install --production 2>/dev/null) && log_ok "lossless-claw" || log_warn "lossless-claw npm install 失败"
+fi
+
+# v15-cognitive-hook extension
+if [ -d "$XYVACLAW_HOME/extensions/v15-cognitive-hook" ] && [ -f "$XYVACLAW_HOME/extensions/v15-cognitive-hook/package.json" ]; then
+    log_info "安装 v15-cognitive-hook 依赖..."
+    (cd "$XYVACLAW_HOME/extensions/v15-cognitive-hook" && npm install --production 2>/dev/null) && log_ok "v15-cognitive-hook" || log_warn "v15-cognitive-hook npm install 失败"
 fi
 
 # Skills with package.json

@@ -101,7 +101,7 @@ osascript -e 'tell application "Safari" to activate'
 osascript -e 'display notification "消息内容" with title "标题" subtitle "副标题" sound name "default"'
 
 # Notification with custom sound
-osascript -e 'display notification "提醒" with title "AI助手提醒" sound name "Glass"'
+osascript -e 'display notification "提醒" with title "助手提醒" sound name "Glass"'
 ```
 
 ## 4. Clipboard
@@ -202,3 +202,35 @@ nc -z -w 3 host port
 - **Prefer `trash` over `rm`** — recoverable deletion
 - **Volume changes**: warn user before setting volume > 80
 - **App launches**: safe to do freely; app quits need confirmation
+
+## 9. 统一控制脚本（syscontrol.py）
+
+`scripts/syscontrol.py` 提供统一 Python 接口，无需拼接 osascript：
+
+```bash
+# 执行任意 shell 命令
+python3 {baseDir}/scripts/syscontrol.py run "ls -la ~/Desktop" --timeout 10
+
+# 列出进程（可按名称过滤）
+python3 {baseDir}/scripts/syscontrol.py ps --name chrome
+
+# 终止进程
+python3 {baseDir}/scripts/syscontrol.py kill --pid 1234
+python3 {baseDir}/scripts/syscontrol.py kill --name "Google Chrome"
+
+# 打开文件/URL/应用
+python3 {baseDir}/scripts/syscontrol.py open https://example.com
+python3 {baseDir}/scripts/syscontrol.py open /path/to/file.pdf
+
+# 发送系统通知
+python3 {baseDir}/scripts/syscontrol.py notify "助手" "任务完成"
+
+# 磁盘使用
+python3 {baseDir}/scripts/syscontrol.py disk
+
+# 设置环境变量（--persist 写入 ~/.zshenv）
+python3 {baseDir}/scripts/syscontrol.py env-set MY_KEY myvalue --persist
+
+# 健康检查
+python3 {baseDir}/scripts/syscontrol.py --check
+```

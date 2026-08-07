@@ -1,0 +1,16 @@
+{
+  "name": "v15-cognitive-hook",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Inject V15 cognitive pre-analysis (rules/memory/skills) into every turn",
+  "main": "index.ts",
+  "openclaw": {
+    "extensions": [
+      "./index.ts"
+    ]
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0"
+  }
+}

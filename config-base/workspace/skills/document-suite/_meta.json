@@ -1,0 +1,13 @@
+{
+  "name": "document-suite",
+  "version": "1.0.0",
+  "status": "stable",
+  "category": "document",
+  "provides": ["pdf_read", "pdf_generate", "word_generate", "excel_operation", "ppt_generate", "document_qa", "markdown_convert"],
+  "sub_skills": ["pdf-reader", "pdf-generator", "excel-xlsx", "word-docx-1.0.0", "ppt-agent", "pptx-reader-writer", "document-qa", "markdown-converter"],
+  "clawdbot": {
+    "emoji": "📄",
+    "category": "document",
+    "priority": 75
+  }
+}
