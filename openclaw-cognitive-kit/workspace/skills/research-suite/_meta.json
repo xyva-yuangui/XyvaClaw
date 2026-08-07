@@ -1,0 +1,21 @@
+{
+  "name": "research-suite",
+  "version": "3.0.0",
+  "description": "Perplexity级深度搜索v3: 5源并行搜索+全文提取+结构化合成+迭代深化",
+  "status": "stable",
+  "category": "search",
+  "priority": 90,
+  "emoji": "🔍",
+  "updated": "2026-04-14",
+  "provides": ["web_search", "deep_search", "news_search"],
+  "replaces": ["duckduckgo-search", "multi-search-engine", "generic-web-search"],
+  "os": ["darwin", "linux"],
+  "sub_skills": ["web-scraper", "browser-pilot"],
+  "integrations": ["auto-researcher"],
+  "legacy_backends": ["duckduckgo-search", "multi-search-engine"],
+  "clawdbot": {
+    "emoji": "🔍",
+    "category": "research",
+    "priority": 90
+  }
+}

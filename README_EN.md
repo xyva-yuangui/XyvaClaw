@@ -405,6 +405,20 @@ DEEPSEEK_API_KEY=sk-your-key \
 
 ---
 
+## 🧰 Community Cognitive Kit
+
+The community cognitive enhancement kit ships with this repository at [`openclaw-cognitive-kit/`](openclaw-cognitive-kit/):
+
+- **V15 cognitive pipeline**: cognitive core, rule engine/miner, memory fabric, skill forge, learning loop, LLM router, prescience & trajectory recorder (`workspace/scripts/v15/`)
+- **17 ready-to-use skills**: browser pilot, web scraper, research, data-viz, documents/PDF, stock data, maps, calendar, GitHub manager, and more
+- **Local memory workspace**: IDENTITY / USER / MEMORY / SOUL / HEARTBEAT templates, ready to fill in
+- **Secret hygiene**: bundled `scrub-secrets.py` / `sanitize-config.py` / `restore-config.py` toolchain — configs ship as `.sanitized` templates and are restored at install time
+- Standalone install: `cd openclaw-cognitive-kit && ./openclaw-install.sh`
+
+See the [Cognitive Kit README](openclaw-cognitive-kit/README.md) for details.
+
+---
+
 ## 📖 Documentation
 
 | Document | Description |

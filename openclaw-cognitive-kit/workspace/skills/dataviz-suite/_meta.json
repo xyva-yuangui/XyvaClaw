@@ -1,0 +1,13 @@
+{
+  "name": "dataviz-suite",
+  "version": "1.0.0",
+  "status": "stable",
+  "category": "visualization",
+  "provides": ["chart_generation", "data_visualization", "diagram_generation"],
+  "sub_skills": ["python-dataviz", "chart-image", "diagram-generator"],
+  "clawdbot": {
+    "emoji": "📊",
+    "category": "visualization",
+    "priority": 65
+  }
+}

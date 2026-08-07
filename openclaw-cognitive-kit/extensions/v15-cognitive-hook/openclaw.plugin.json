@@ -1,0 +1,60 @@
+{
+  "id": "v15-cognitive-hook",
+  "uiHints": {
+    "enabled": {
+      "label": "Enabled",
+      "help": "关闭后不再注册钩子，对话完全不受影响"
+    },
+    "timeoutMs": {
+      "label": "Analyze Timeout (ms)",
+      "help": "预分析硬超时，超时即放弃注入（实测 96-140ms，默认 1200ms）"
+    },
+    "pythonBin": {
+      "label": "Python Binary",
+      "help": "执行 cognitive-core 的 python 解释器，默认 python3"
+    },
+    "scriptPath": {
+      "label": "Cognitive Core Path",
+      "help": "cognitive-core-v15.py 绝对路径，默认 ~/.openclaw/workspace/scripts/v15/cognitive-core-v15.py"
+    },
+    "maxContextChars": {
+      "label": "Max Injected Chars",
+      "help": "单轮注入上限，防止挤占上下文预算"
+    },
+    "maxConsecutiveFailures": {
+      "label": "Mute After N Failures",
+      "help": "连续失败达此次数后自动熄火，重启 gateway 恢复"
+    }
+  },
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "enabled": {
+        "type": "boolean"
+      },
+      "timeoutMs": {
+        "type": "integer",
+        "minimum": 100
+      },
+      "pythonBin": {
+        "type": "string"
+      },
+      "scriptPath": {
+        "type": "string"
+      },
+      "minChars": {
+        "type": "integer",
+        "minimum": 1
+      },
+      "maxContextChars": {
+        "type": "integer",
+        "minimum": 100
+      },
+      "maxConsecutiveFailures": {
+        "type": "integer",
+        "minimum": 1
+      }
+    }
+  }
+}

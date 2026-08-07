@@ -1,0 +1,8 @@
+{
+  "name": "pdf-generator",
+  "version": "1.0.0",
+  "status": "stable",
+  "updated": "2026-04-14",
+  "category": "document",
+  "description": "PDF生成: Markdown/HTML转PDF、模板排版"
+}

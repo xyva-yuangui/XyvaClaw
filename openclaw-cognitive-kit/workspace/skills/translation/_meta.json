@@ -1,0 +1,9 @@
+{
+  "name": "translation",
+  "version": "1.0.0",
+  "status": "stable",
+  "entry": "scripts/translate.py",
+  "check": "scripts/translate.py --check --json",
+  "requires": ["python3"],
+  "category": "content"
+}

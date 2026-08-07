@@ -1,0 +1,77 @@
+# ─────────────────────────────────────────────
+# 密钥与私有配置 —— 绝对不要提交
+# ─────────────────────────────────────────────
+.env
+.env.*
+!.env.template
+openclaw.json
+*.key
+*.pem
+auth-profiles.json
+
+# ─────────────────────────────────────────────
+# 运行时状态：记忆、索引、日志、轨迹
+# 这些会随使用不断增长，且可能包含你的对话原文
+# ─────────────────────────────────────────────
+workspace/state/*
+!workspace/state/.gitkeep
+workspace/memory/*
+!workspace/memory/.gitkeep
+workspace/logs/*
+!workspace/logs/.gitkeep
+workspace/output/*
+!workspace/output/.gitkeep
+workspace/.reasoning/
+workspace/.learnings/
+workspace/.reflections/
+
+# 定时任务运行记录（含任务往来内容）
+cron/runs/
+cron/jobs.json.bak*
+
+# 数据库与索引
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+
+# ─────────────────────────────────────────────
+# 关于个人身份文件（IDENTITY/USER/MEMORY/LEARNINGS/TOOLS.md）
+#
+# 它们在本仓库里是**空模板**，因此是被追踪的 —— 否则你 clone 下来就没有
+# 起始文件可填。填写之后如果不想让自己的内容进 git，在本地执行：
+#
+#   git update-index --skip-worktree workspace/USER.md workspace/MEMORY.md
+#
+# 或者直接把这几个路径加进本文件。
+# ─────────────────────────────────────────────
+
+# ─────────────────────────────────────────────
+# 依赖与构建产物
+# ─────────────────────────────────────────────
+node_modules/
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+dist/
+build/
+*.egg-info/
+
+# ─────────────────────────────────────────────
+# 缓存与临时文件
+# ─────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+*.log
+*.tmp
+*.bak
+*.lock
+.cache/
+cookies/
+
+# 打包器的临时输出
+.oss/
+.restore/

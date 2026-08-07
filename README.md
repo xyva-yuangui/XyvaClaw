@@ -427,6 +427,20 @@ DEEPSEEK_API_KEY=sk-your-key \
 
 ---
 
+## 🧰 社区认知套件（Cognitive Kit）
+
+社区版认知增强套件，随仓库附带，位于 [`openclaw-cognitive-kit/`](openclaw-cognitive-kit/)：
+
+- **V15 认知管线**：认知核心、规则引擎/挖掘、记忆织物、技能锻造、学习循环、LLM 路由、预知与轨迹记录等脚本（`workspace/scripts/v15/`）
+- **17 个即用技能**：浏览器操控、网页抓取、研究、数据可视化、文档/PDF、股票数据、地图、日历、GitHub 管理等
+- **本地记忆工作区**：IDENTITY / USER / MEMORY / SOUL / HEARTBEAT 等模板，开箱即用
+- **密钥安全**：附 `scrub-secrets.py` / `sanitize-config.py` / `restore-config.py` 脱敏工具链，配置以 `.sanitized` 模板分发，安装时恢复
+- 独立安装：`cd openclaw-cognitive-kit && ./openclaw-install.sh`
+
+详细说明见 [Cognitive Kit README](openclaw-cognitive-kit/README.md)。
+
+---
+
 ## 📖 文档
 
 | 文档 | 说明 |

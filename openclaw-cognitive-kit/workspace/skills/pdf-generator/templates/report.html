@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8">
+<style>
+@page { size: A4; margin: 2cm 2.5cm; @bottom-center { content: counter(page) " / " counter(pages); font-size: 9pt; color: #999; } }
+body { font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; font-size: 11pt; line-height: 1.8; color: #333; }
+h1 { font-size: 22pt; color: #1a1a2e; border-bottom: 2px solid #16213e; padding-bottom: 8px; }
+h2 { font-size: 16pt; color: #16213e; margin-top: 1.5em; }
+h3 { font-size: 13pt; color: #0f3460; }
+table { width: 100%; border-collapse: collapse; margin: 1em 0; font-size: 10pt; }
+th { background: #16213e; color: white; padding: 8px 12px; text-align: left; }
+td { padding: 6px 12px; border-bottom: 1px solid #ddd; }
+tr:nth-child(even) { background: #f8f9fa; }
+.cover { text-align: center; padding-top: 25%; page-break-after: always; }
+.cover h1 { font-size: 28pt; border: none; color: #16213e; }
+.cover .subtitle { font-size: 14pt; color: #666; margin-top: 1em; }
+.cover .date { font-size: 11pt; color: #999; margin-top: 2em; }
+.section { page-break-before: always; }
+.summary-box { background: #f0f4ff; border-left: 4px solid #16213e; padding: 12px 16px; margin: 1em 0; border-radius: 4px; }
+.metric { display: inline-block; width: 30%; text-align: center; padding: 12px; margin: 0.5em 1%; background: #f8f9fa; border-radius: 8px; }
+.metric .value { font-size: 24pt; font-weight: bold; color: #16213e; }
+.metric .label { font-size: 9pt; color: #888; }
+</style>
+</head>
+<body>
+<div class="cover">
+    <h1>{{ title }}</h1>
+    {% if subtitle %}<div class="subtitle">{{ subtitle }}</div>{% endif %}
+    {% if date %}<div class="date">{{ date }}</div>{% endif %}
+    {% if author %}<div class="date">{{ author }}</div>{% endif %}
+</div>
+
+{% if summary %}
+<div class="summary-box">
+    <strong>摘要</strong><br>{{ summary }}
+</div>
+{% endif %}
+
+{% if metrics %}
+<div style="text-align:center; margin: 2em 0;">
+{% for m in metrics %}
+<div class="metric">
+    <div class="value">{{ m.value }}</div>
+    <div class="label">{{ m.label }}</div>
+</div>
+{% endfor %}
+</div>
+{% endif %}
+
+{% for section in sections %}
+<div class="section">
+    <h2>{{ section.title }}</h2>
+    {{ section.content }}
+    {% if section.table %}
+    <table>
+        <thead><tr>{% for h in section.table.headers %}<th>{{ h }}</th>{% endfor %}</tr></thead>
+        <tbody>
+        {% for row in section.table.rows %}
+        <tr>{% for cell in row %}<td>{{ cell }}</td>{% endfor %}</tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+</div>
+{% endfor %}
+
+{% if conclusion %}
+<div class="section">
+    <h2>结论</h2>
+    <p>{{ conclusion }}</p>
+</div>
+{% endif %}
+</body>
+</html>

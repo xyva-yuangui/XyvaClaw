@@ -1,0 +1,8 @@
+{
+  "name": "browser-pilot",
+  "version": "1.0.0",
+  "status": "stable",
+  "updated": "2026-04-14",
+  "category": "automation",
+  "description": "浏览器自动化: Playwright驱动的网页导航、截图、交互、提取"
+}

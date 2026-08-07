@@ -1,0 +1,148 @@
+{
+  "timestamp": "20260324_093710",
+  "total_time": 0.00015425682067871094,
+  "summary": {
+    "total_tests": 21,
+    "passed": 1,
+    "failed": 2,
+    "warnings": 2,
+    "manual": 16
+  },
+  "results": {
+    "basic_functionality": {
+      "name": "基础功能测试",
+      "subtests": [
+        {
+          "name": "文件结构检查",
+          "status": "fail",
+          "message": "缺少文件: ['stock_data_client.py', 'cache/__init__.py']"
+        },
+        {
+          "name": "模块导入测试",
+          "status": "fail",
+          "message": "导入失败: attempted relative import with no known parent package"
+        },
+        {
+          "name": "配置文件检查",
+          "status": "warning",
+          "message": "配置文件不存在"
+        }
+      ],
+      "status": "fail"
+    },
+    "data_consistency": {
+      "name": "数据一致性测试",
+      "subtests": [
+        {
+          "name": "股票基本信息获取",
+          "status": "manual",
+          "message": "需要手动测试实际数据获取"
+        },
+        {
+          "name": "日线数据获取",
+          "status": "manual",
+          "message": "需要手动测试实际数据获取"
+        },
+        {
+          "name": "财务数据获取",
+          "status": "manual",
+          "message": "需要手动测试实际数据获取"
+        },
+        {
+          "name": "资金流向数据获取",
+          "status": "manual",
+          "message": "需要手动测试实际数据获取"
+        }
+      ],
+      "status": "pass"
+    },
+    "performance_comparison": {
+      "name": "性能对比测试",
+      "subtests": [
+        {
+          "name": "股票基本信息响应时间",
+          "status": "manual",
+          "message": "需要实际测试，期望响应时间<1.0s"
+        },
+        {
+          "name": "日线数据(30天)响应时间",
+          "status": "manual",
+          "message": "需要实际测试，期望响应时间<2.0s"
+        },
+        {
+          "name": "财务数据响应时间",
+          "status": "manual",
+          "message": "需要实际测试，期望响应时间<1.5s"
+        },
+        {
+          "name": "资金流向数据响应时间",
+          "status": "manual",
+          "message": "需要实际测试，期望响应时间<1.5s"
+        },
+        {
+          "name": "并发性能",
+          "status": "manual",
+          "message": "需要测试多线程/多进程并发获取数据"
+        },
+        {
+          "name": "缓存性能",
+          "status": "manual",
+          "message": "需要测试缓存命中率和性能提升"
+        }
+      ],
+      "status": "pass"
+    },
+    "error_handling": {
+      "name": "错误处理测试",
+      "subtests": [
+        {
+          "name": "网络错误处理",
+          "status": "manual",
+          "message": "需要测试网络断开、超时等情况的处理"
+        },
+        {
+          "name": "数据源降级机制",
+          "status": "manual",
+          "message": "需要测试主数据源失败时自动切换到备用数据源"
+        },
+        {
+          "name": "数据格式错误处理",
+          "status": "manual",
+          "message": "需要测试返回数据格式不正确时的处理"
+        },
+        {
+          "name": "参数错误处理",
+          "status": "manual",
+          "message": "需要测试传入错误参数时的处理"
+        }
+      ],
+      "status": "pass"
+    },
+    "integration_alpha_research": {
+      "name": "alpha-research集成测试",
+      "subtests": [
+        {
+          "name": "alpha-research目录存在",
+          "status": "pass",
+          "message": "目录路径: __LEGACY_HOME__/.openclaw/workspace/skills/alpha-research"
+        },
+        {
+          "name": "alpha-research关键文件",
+          "status": "warning",
+          "message": "缺少文件: ['provider.py', 'analyzer.py', 'report_generator.py']"
+        },
+        {
+          "name": "数据接口兼容性分析",
+          "status": "manual",
+          "message": "需要分析alpha-research的provider.py与统一接口库的兼容性"
+        },
+        {
+          "name": "迁移复杂度评估",
+          "status": "manual",
+          "message": "需要评估迁移所需的工作量和风险"
+        }
+      ],
+      "status": "pass"
+    }
+  }
+}

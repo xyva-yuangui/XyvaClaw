@@ -1,0 +1,8 @@
+{
+  "name": "weather-query",
+  "version": "2.0.0",
+  "status": "stable",
+  "category": "info",
+  "description": "天气查询: wttr.in免费API, 实时天气+多日预报",
+  "updated": "2026-04-14"
+}

@@ -1,0 +1,31 @@
+{
+  "name": "amap-service",
+  "version": "1.0.0",
+  "description": "高德地图 Web Service — 路径规划、POI、地理编码、逆地理、静态地图、IP定位、行政区查询、天气",
+  "entry": "scripts/amap_service.py",
+  "runtime": "python",
+  "dependencies": [
+    "requests"
+  ],
+  "tags": [
+    "map",
+    "navigation",
+    "poi",
+    "geocoding",
+    "amap",
+    "gaode"
+  ],
+  "trigger_keywords": [
+    "导航",
+    "地图",
+    "附近",
+    "地址",
+    "经纬度",
+    "POI",
+    "高德",
+    "路径规划",
+    "逆地理"
+  ],
+  "category": "info",
+  "updated": "2026-04-14"
+}
